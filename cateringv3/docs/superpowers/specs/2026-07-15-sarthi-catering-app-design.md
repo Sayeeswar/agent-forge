@@ -1,0 +1,184 @@
+# Sarthi Catering App — Design Spec
+
+**Date:** 2026-07-15
+**Status:** Approved (design), pending implementation plan
+**Framework:** Reflex 0.9.6 (Python), Tailwind V4 plugin enabled
+
+## Goal
+
+A componentized, fully interactive mock of the Sarthi catering ordering flow — a
+mobile-first single-page app that matches the 7 provided design screenshots
+(`assets/01`–`07`). Menu → date → profile → cart → container packing → payment →
+success. All state and events are real; payment is mocked but shaped so real
+Razorpay drops in later.
+
+## Locked-in decisions
+
+| Topic | Decision |
+| --- | --- |
+| Scope | Full working flow, all screens |
+| Layout | Hybrid: `state.py` + `components/` (reusable atoms) + `views/` (screens) |
+| Behavior | Fully interactive — real state & event handlers |
+| Data | Hardcoded: real Rotis & Breads items + invented veg items for other categories |
+| Payment | Mocked; `pay` handler shaped so real Razorpay drops in cleanly later |
+| Phone frame | **No bezel.** Mobile-first, responsive centered ~430px column on cream; tablet/desktop show cream gutters |
+| Auth | Hardcoded mock user "Priya S." |
+| Container packing | **Medium fidelity**: tap-to-pack, per-container capacity + progress bar, packing fee, Auto-pack. **No** wet/dry rule (DRY tag cosmetic or omitted) |
+
+## Architecture
+
+Single page at `/`. The **menu is the always-mounted base layer**.
+
+- **Overlays** (menu stays underneath, dimmed) toggled by boolean flags:
+  `show_cart`, `show_date_picker`, `show_profile`.
+- **Full-screen stages** swap out the menu via a `stage` var:
+  `"menu" | "containers" | "success"`.
+
+This keeps all cart/order state in one place with no cross-route passing.
+
+### Responsive shell (`components/background.py`)
+
+Cream full-bleed page. App content lives in a column of `width: 100%` with
+`max_width ≈ 430px`, centered. Phones: fills viewport. Tablet/desktop: centered
+column with cream gutters. One shell, styled with `rx.breakpoints` per reflex-docs.
+
+## Folder structure
+
+```
+cateringv3/
+  state.py                 # ALL app state + event handlers + computed vars
+  theme.py                 # color tokens, fonts, shared style dicts
+  data.py                  # hardcoded menu: categories + items
+  components/
+    background.py          # responsive cream shell + centered mobile column
+    header.py              # "Sarthi" logo, delivery pill, profile + Cart buttons
+    category_chips.py      # horizontal scrolling category pills
+    food_card.py           # one food item row: veg dot, name, desc, price, Add/stepper
+    quantity_stepper.py    # the − qty + control
+    bottom_sheet.py        # reusable bottom sheet (cart, date picker)
+    buttons.py             # primary terracotta button + outline pill button
+  views/
+    menu.py                # screen 1
+    delivery_date.py       # screen 2 (calendar bottom sheet)
+    profile_drawer.py      # screen 3 (right-side drawer)
+    cart.py                # screen 4 ("Your order")
+    containers.py          # screens 5 & 6 ("Pack your order")
+    success.py             # screen 7 ("Payment received")
+  cateringv3.py            # assembles the page + drives overlay/stage switching
+```
+
+## State model (`state.py`)
+
+```python
+# cart
+cart: dict[str, int]                 # item_id -> qty
+# computed: cart_count, items_total
+
+# menu
+active_category: str                 # default "Rotis & Breads"
+
+# delivery
+selected_date: str                   # e.g. "Thu, 16 Jul"
+
+# overlays
+show_cart: bool
+show_date_picker: bool
+show_profile: bool
+
+# stage
+stage: str                           # "menu" | "containers" | "success"
+
+# packing (MEDIUM fidelity)
+containers: list[dict]               # [{id, size, capacity, fee, items: {item_id: qty}}]
+selected_item_to_pack: str | None
+# computed: portions_left, packing_fee, grand_total, is_fully_packed
+
+# mock user
+user_name = "Priya S."
+orders_placed = 12
+balance_status = "All paid up"
+
+# order result
+order_number: str                    # generated, e.g. "SAR-3411"
+```
+
+### Event handlers
+
+`add_item`, `inc`, `dec`, `open_cart`, `close_cart`, `open_date_picker`,
+`select_date`, `close_date_picker`, `open_profile`, `close_profile`,
+`go_to_containers`, `add_container(size)`, `select_item_to_pack(item_id)`,
+`pack_into(container_id)`, `remove_from_container(container_id, item_id)`,
+`auto_pack`, `pay` (mock → generate order number → `stage="success"`),
+`back_to_menu` (resets cart + containers + stage).
+
+### Packing math
+
+- Container specs: Small = capacity 3 / fee ₹5; Medium = 6 / ₹8; Large = 12 / ₹12.
+- `packing_fee` = sum of chosen containers' fees.
+- `grand_total = items_total + packing_fee`.
+- `portions_left` = total cart portions − portions already packed.
+- Pay button disabled until `portions_left == 0` (`is_fully_packed`).
+- `auto_pack`: greedily add containers and distribute portions until packed.
+
+## Data (`data.py`)
+
+Categories (horizontal chips): **Rotis & Breads · Rice · Curries · Raw Salads · Dals**.
+
+- **Rotis & Breads** (real, from screenshot): Paneer Paratha ₹80, Aloo Paratha ₹50,
+  Puri ₹15, Oilless Phulka ₹10, Ghee Phulka ₹15, Ghee Chapathi ₹20.
+- **Rice / Curries / Raw Salads / Dals:** ~4–6 invented plausible veg items each,
+  with name, one-line description, price, unit.
+- All items are **veg** (green dot) — matches every screenshot.
+
+Item shape: `{id, category, name, desc, price, unit, veg: True}`.
+
+## Visual system (`theme.py`) — approximated from screenshots
+
+| Token | Value (approx) | Use |
+| --- | --- | --- |
+| `cream` | `#F5EFE6` | page background |
+| `card` | `#FFFFFF` | food cards, sheets |
+| `terracotta` | `#B5502E` | primary buttons, active chip fill, stepper, selected date |
+| `terracotta_soft` | peach `#F6E6DC` | Add-button hover, reminder box |
+| `ink` | `#241E1A` | headings, "Done" button, active chip |
+| `muted` | `#8A8178` | descriptions, secondary labels |
+| `green` | `#2E7D32` | veg dot, success check, "All paid up", "Secured by Razorpay" |
+| `green_soft` | `#E8F0E9` | info/success boxes |
+| `today_blue` | `#DCE7F0` | today's date outline in calendar |
+
+Fonts: **serif** headings (Playfair Display / Fraunces style) for "Sarthi", section
+titles, sheet titles, "Payment received"; **sans** body (Inter/system). Loaded via
+theme; approximated since exact hex/font can't be extracted from images (easy to
+fine-tune later).
+
+## Screen-by-screen behavior
+
+1. **Menu** — header (logo, "Delivering <date> ▾" opens date picker, profile icon,
+   Cart pill with count badge), category chips (tap sets `active_category`),
+   section title + item count, food cards. "Add" → stepper once qty > 0.
+2. **Delivery date** — bottom sheet over dimmed menu; month nav; past dates disabled;
+   today outlined; selected date terracotta; green tip box; "Done" closes.
+3. **Profile drawer** — right-side drawer; avatar "P", "Priya S.", stat cards
+   (orders placed, current orders empty-state, balance "All paid up"); bottom links
+   "Order history on WhatsApp" / "Saved addresses" (no-op stubs) / "Sign out".
+4. **Cart ("Your order")** — bottom sheet; delivery reminder box with "Change"
+   (reopens date picker); line items with steppers; summary (Items, Containers
+   "chosen next", Items total); "Choose containers →" → `stage="containers"`.
+5. **Containers ("Pack your order")** — screens 5 (empty) & 6 (packed). Item chips to
+   pack, capacity/progress per container, add S/M/L, Auto-pack, packing status
+   footer; "Pay ₹<grand_total> securely" enabled only when fully packed → `pay`.
+6. **Success ("Payment received")** — full-screen; green check; "₹<total> paid
+   successfully"; receipt (order number, delivery date, container count, "UPI ·
+   Razorpay"); WhatsApp confirmation box; "Back to menu" resets and returns.
+
+## Out of scope (stubs / mocked)
+
+- Real payment gateway (mocked; Razorpay shape preserved at `pay`).
+- WhatsApp order history, saved addresses, sign out — visual buttons, no behavior.
+- Wet/dry container rules and strict capacity validation beyond simple counts.
+- Persistence / backend / real auth.
+
+## Verification
+
+Follow reflex-process-management to compile & run, then drive each screen with
+Playwright and compare screenshots against `assets/01`–`07`; fix visual gaps.
