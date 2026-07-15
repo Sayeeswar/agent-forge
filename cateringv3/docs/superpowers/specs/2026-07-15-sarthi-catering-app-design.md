@@ -38,7 +38,12 @@ This keeps all cart/order state in one place with no cross-route passing.
 
 ### Responsive shell (`components/background.py`)
 
-Cream full-bleed page, mobile-first, styled with `rx.breakpoints` per reflex-docs.
+Cream full-bleed page, mobile-first. Breakpoint switching uses Reflex's display
+helper components (confirmed in installed Reflex 0.9.6): **`rx.mobile_only()`** wraps
+the single-column phone layout, and **`rx.tablet_and_desktop()`** (= `tablet_only` +
+`desktop_only`) wraps the two-pane layout. `rx.tablet_only()` / `rx.desktop_only()`
+are used where a piece must differ between tablet and desktop. Default breakpoints:
+mobile ≤ 48em, tablet 48–62em, desktop ≥ 62em.
 
 **Phone (< 768px):** single column, `width: 100%`, `max_width ≈ 430px`, centered —
 matches the screenshots exactly. Cart / date picker are bottom sheets; profile is a
