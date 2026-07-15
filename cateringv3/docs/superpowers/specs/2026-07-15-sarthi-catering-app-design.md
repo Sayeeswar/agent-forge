@@ -116,6 +116,20 @@ cateringv3/
 
 State is split into three `rx.State` classes, each owning one concern.
 
+**Backend-only logic rule.** All business logic and computation lives in the state
+layer, never in the UI. Pages/components only *read and display* `State.<var>` — no
+arithmetic, conditionals-as-logic, or formatting math in the component tree. The
+pattern per state:
+
+- **`_private` helper methods** hold the actual logic (e.g. `_calc_items_total`,
+  `_calc_packing_fee`, `_next_order_number`). Pure, unit-testable, ≤40 lines.
+- **`@rx.var` computed vars** call the helpers and expose *display-ready* values,
+  including formatted strings (e.g. `items_total_display -> "₹80"`,
+  `space_used_label -> "1 of 3 space used"`, `delivery_label -> "Delivering Thu, 16 Jul"`).
+- Cross-state derived values use **async computed vars** (verified: `@rx.var` on an
+  `async def` yields an `AsyncComputedVar` in Reflex 0.9.6) that
+  `await self.get_state(OtherState)` — so even cross-state math stays in the backend.
+
 ### 1. `CustomerOrderSelectionState` (`customerorderstate.py`) — cart, menu, date
 
 ```python
@@ -157,31 +171,35 @@ Handlers: `open_cart/close_cart`, `open_date_picker/close_date_picker`,
 `pay` (**async** — reads order + packing via `get_state`, snapshots total &
 container count, generates `order_number`, sets `stage="success"`).
 
-### Cross-state access rules (verified against Reflex 0.9.6)
+### Cross-state derived values (backend, async computed vars)
 
-`get_state` / `get_var_value` work **only inside async event handlers**, never inside
-`@rx.var` computed vars. So values that span two states are NOT computed vars:
+Values that span two states live on `CustomerPackingState` as **async computed vars**
+(they read the cart via `get_state`), so the UI never does the math:
 
-- **`grand_total` / `portions_left`** are combined in the **component tree via var
-  operations** — e.g. `CustomerOrderSelectionState.items_total +
-  CustomerPackingState.packing_fee`. Both states' vars are available to the frontend.
-- **`is_fully_packed`** (gates Pay) is a var expression in the page:
-  `CustomerPackingState.portions_packed >= CustomerOrderSelectionState.total_portions`.
-- Handlers needing another state's data (`auto_pack`, `pay`, `back_to_menu`'s full
-  reset) use `other = await self.get_state(OtherState)`.
-- `back_to_menu` resets all three states (cart, packing, stage) via `get_state`.
+- `grand_total` → `await get_state(order)`; returns `items_total + packing_fee`.
+- `grand_total_display` → formatted `"₹85"` for the Pay button / receipt.
+- `portions_left` → `total_portions − portions_packed`.
+- `is_fully_packed` → `portions_left == 0` (drives Pay button `disabled`).
 
-### Packing math (`packing.py` — pure helpers)
+The UI reads these directly: `rx.button(CustomerPackingState.pay_button_label,
+disabled=~CustomerPackingState.is_fully_packed)`. Because auto-dep tracking across
+states inside async vars is not guaranteed, these vars declare explicit
+`@rx.var(deps=[...])` on the cart/packing inputs they depend on.
+
+Event handlers that touch another state (`auto_pack`, `pay`, `back_to_menu`'s full
+reset) use `other = await self.get_state(OtherState)`. `back_to_menu` resets all
+three states.
+
+### Packing math (`packing.py` — pure helpers, called by state `_` methods)
 
 - Container specs (from `data.py`): Small cap 3 / fee ₹5; Medium 6 / ₹8; Large 12 / ₹12.
-- `packing_fee` = sum of chosen containers' fees (computed var on packing state).
-- `grand_total` = `items_total + packing_fee` (var op in the view).
-- `portions_left` = `total_portions − portions_packed` (var op in the view).
+- `packing_fee` = sum of chosen containers' fees (sync computed var; own state).
+- `grand_total` / `portions_left` / `is_fully_packed` = async computed vars (above).
 - Pay disabled until `portions_left == 0`.
 - `auto_pack`: **First Fit Decreasing (FFD)** bin-packing — sort portions descending,
   place each into the first container with room, opening a new (cheapest-fitting)
-  container when none fits. Implemented as a pure helper in `packing.py`, given the
-  cart dict, called from the async handler after `get_state(CustomerOrderSelectionState)`.
+  container when none fits. Pure helper `packing.ffd_pack(cart, specs)` in
+  `packing.py`, called by the async `auto_pack` handler after `get_state`.
 
 ## Data (`data.py`)
 
