@@ -38,9 +38,38 @@ This keeps all cart/order state in one place with no cross-route passing.
 
 ### Responsive shell (`components/background.py`)
 
-Cream full-bleed page. App content lives in a column of `width: 100%` with
-`max_width ≈ 430px`, centered. Phones: fills viewport. Tablet/desktop: centered
-column with cream gutters. One shell, styled with `rx.breakpoints` per reflex-docs.
+Cream full-bleed page, mobile-first, styled with `rx.breakpoints` per reflex-docs.
+
+**Phone (< 768px):** single column, `width: 100%`, `max_width ≈ 430px`, centered —
+matches the screenshots exactly. Cart / date picker are bottom sheets; profile is a
+right drawer; containers and success are full-screen stages.
+
+**Tablet / desktop (≥ 768px): two-pane layout that fills the viewport.**
+
+```
+┌──────────────────────────────┬────────────────────────┐
+│ LEFT PANE (flex, scrolls)    │ RIGHT PANE (~420px)    │
+│ header + category chips +    │ persistent "order rail"│
+│ menu list                    │ = cart / "Your order"  │
+└──────────────────────────────┴────────────────────────┘
+```
+
+Cross-breakpoint mapping (same components, placed differently by breakpoint — not a
+second UI):
+
+| Element | Phone (< 768px) | Tablet (≥ 768px) |
+| --- | --- | --- |
+| Cart ("Your order") | Bottom-sheet overlay | **Persistent right pane**, always visible |
+| Header "Cart" button | Shown (opens sheet) | Hidden (cart already visible) |
+| Empty cart | Sheet not opened | Right pane shows empty state ("Add dishes…") |
+| Containers ("Pack your order") | Full-screen stage | **Full-screen stage** (takes over both panes) |
+| Success ("Payment received") | Full-screen stage | **Full-screen takeover** (centered card) |
+| Date picker | Bottom sheet | Centered **modal dialog** |
+| Profile | Right drawer | Right drawer (unchanged) |
+
+The `containers` and `success` stages swap out the entire two-pane shell at all
+breakpoints. `show_cart` still gates the phone bottom sheet; on tablet the right
+pane renders the cart directly regardless of `show_cart`.
 
 ## Folder structure
 
