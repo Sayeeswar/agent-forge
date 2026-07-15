@@ -17,11 +17,11 @@ Razorpay drops in later.
 | Topic | Decision |
 | --- | --- |
 | Scope | Full working flow, all screens |
-| Layout | Hybrid: `state.py` + `components/` (reusable atoms) + `views/` (screens) |
+| Layout | Hybrid: `state/` package (3 states) + `components/` (atoms) + `pages/` (screens) |
 | Behavior | Fully interactive — real state & event handlers |
 | Data | Hardcoded: real Rotis & Breads items + invented veg items for other categories |
 | Payment | Mocked; `pay` handler shaped so real Razorpay drops in cleanly later |
-| Phone frame | **No bezel.** Mobile-first, responsive centered ~430px column on cream; tablet/desktop show cream gutters |
+| Phone frame | **No bezel.** Mobile-first: ~430px column on phone; two-pane fills the viewport on tablet/desktop |
 | Auth | Hardcoded mock user "Priya S." |
 | Container packing | **Medium fidelity**: tap-to-pack, per-container capacity + progress bar, packing fee, Auto-pack. **No** wet/dry rule (DRY tag cosmetic or omitted) |
 
@@ -34,7 +34,9 @@ Single page at `/`. The **menu is the always-mounted base layer**.
 - **Full-screen stages** swap out the menu via a `stage` var:
   `"menu" | "containers" | "success"`.
 
-This keeps all cart/order state in one place with no cross-route passing.
+A single page means no cross-route state passing; shared state lives on three
+purpose-scoped states (see State model), read across states via var operations in
+the UI and `get_state` in handlers.
 
 ### Responsive shell (`components/background.py`)
 
@@ -78,81 +80,108 @@ pane renders the cart directly regardless of `show_cart`.
 
 ## Folder structure
 
+Follows the repo's Reflex architecture rules (`pages/`, `state/` package) and the
+**300-line-per-file / 40-line-per-function** caps.
+
 ```
 cateringv3/
-  state.py                 # ALL app state + event handlers + computed vars
   theme.py                 # color tokens, fonts, shared style dicts
-  data.py                  # hardcoded menu: categories + items
+  data.py                  # hardcoded menu: categories + items; container specs
+  state/
+    __init__.py                  # exports the three states
+    customerorderstate.py        # CustomerOrderSelectionState (cart + menu + date)
+    customerpackingstate.py      # CustomerPackingState (containers, packing)
+    stageoverlaystate.py         # StageOverlaysState (stage, overlays, user, order #)
+    packing.py                   # pure helper fns for auto-pack / capacity math
+                                 #   (keeps handlers <=40 lines, files <=300)
   components/
-    background.py          # responsive cream shell + centered mobile column
+    background.py          # responsive shell: mobile_only column + two-pane
     header.py              # "Sarthi" logo, delivery pill, profile + Cart buttons
     category_chips.py      # horizontal scrolling category pills
     food_card.py           # one food item row: veg dot, name, desc, price, Add/stepper
     quantity_stepper.py    # the − qty + control
     bottom_sheet.py        # reusable bottom sheet (cart, date picker)
     buttons.py             # primary terracotta button + outline pill button
-  views/
+  pages/
     menu.py                # screen 1
-    delivery_date.py       # screen 2 (calendar bottom sheet)
+    delivery_date.py       # screen 2 (calendar bottom sheet / tablet modal)
     profile_drawer.py      # screen 3 (right-side drawer)
-    cart.py                # screen 4 ("Your order")
+    cart.py                # screen 4 ("Your order") — sheet on phone, right pane on tablet
     containers.py          # screens 5 & 6 ("Pack your order")
     success.py             # screen 7 ("Payment received")
   cateringv3.py            # assembles the page + drives overlay/stage switching
 ```
 
-## State model (`state.py`)
+## State model — three states (`state/` package)
+
+State is split into three `rx.State` classes, each owning one concern.
+
+### 1. `CustomerOrderSelectionState` (`customerorderstate.py`) — cart, menu, date
 
 ```python
-# cart
 cart: dict[str, int]                 # item_id -> qty
-# computed: cart_count, items_total
-
-# menu
-active_category: str                 # default "Rotis & Breads"
-
-# delivery
-selected_date: str                   # e.g. "Thu, 16 Jul"
-
-# overlays
-show_cart: bool
-show_date_picker: bool
-show_profile: bool
-
-# stage
-stage: str                           # "menu" | "containers" | "success"
-
-# packing (MEDIUM fidelity)
-containers: list[dict]               # [{id, size, capacity, fee, items: {item_id: qty}}]
-selected_item_to_pack: str | None
-# computed: portions_left, packing_fee, grand_total, is_fully_packed
-
-# mock user
-user_name = "Priya S."
-orders_placed = 12
-balance_status = "All paid up"
-
-# order result
-order_number: str                    # generated, e.g. "SAR-3411"
+active_category: str = "Rotis & Breads"
+selected_date: str = "Thu, 16 Jul"
+# computed (own-state only): cart_count, items_total, total_portions
 ```
+Handlers: `add_item(item_id)`, `inc(item_id)`, `dec(item_id)`,
+`set_category(name)`, `select_date(date)`.
 
-### Event handlers
+### 2. `CustomerPackingState` (`customerpackingstate.py`) — packing
 
-`add_item`, `inc`, `dec`, `open_cart`, `close_cart`, `open_date_picker`,
-`select_date`, `close_date_picker`, `open_profile`, `close_profile`,
-`go_to_containers`, `add_container(size)`, `select_item_to_pack(item_id)`,
+```python
+containers: list[dict]               # [{id, size, capacity, fee, items:{item_id:qty}}]
+selected_item_to_pack: str | None = None
+# computed (own-state only): packing_fee, portions_packed, container_count
+```
+Handlers: `add_container(size)`, `select_item_to_pack(item_id)`,
 `pack_into(container_id)`, `remove_from_container(container_id, item_id)`,
-`auto_pack`, `pay` (mock → generate order number → `stage="success"`),
-`back_to_menu` (resets cart + containers + stage).
+`auto_pack` (**async** — reads cart via `get_state`), `reset_packing`.
 
-### Packing math
+### 3. `StageOverlaysState` (`stageoverlaystate.py`) — nav, overlays, user, result
 
-- Container specs: Small = capacity 3 / fee ₹5; Medium = 6 / ₹8; Large = 12 / ₹12.
-- `packing_fee` = sum of chosen containers' fees.
-- `grand_total = items_total + packing_fee`.
-- `portions_left` = total cart portions − portions already packed.
-- Pay button disabled until `portions_left == 0` (`is_fully_packed`).
-- `auto_pack`: greedily add containers and distribute portions until packed.
+```python
+stage: str = "menu"                  # "menu" | "containers" | "success"
+show_cart: bool = False
+show_date_picker: bool = False
+show_profile: bool = False
+user_name: str = "Priya S."          # mock user
+orders_placed: int = 12
+balance_status: str = "All paid up"
+order_number: str = ""               # generated on pay, e.g. "SAR-3411"
+paid_total: int = 0                  # snapshotted grand total for the receipt
+receipt_container_count: int = 0     # snapshotted for the receipt
+```
+Handlers: `open_cart/close_cart`, `open_date_picker/close_date_picker`,
+`open_profile/close_profile`, `go_to_containers`, `back_to_menu`,
+`pay` (**async** — reads order + packing via `get_state`, snapshots total &
+container count, generates `order_number`, sets `stage="success"`).
+
+### Cross-state access rules (verified against Reflex 0.9.6)
+
+`get_state` / `get_var_value` work **only inside async event handlers**, never inside
+`@rx.var` computed vars. So values that span two states are NOT computed vars:
+
+- **`grand_total` / `portions_left`** are combined in the **component tree via var
+  operations** — e.g. `CustomerOrderSelectionState.items_total +
+  CustomerPackingState.packing_fee`. Both states' vars are available to the frontend.
+- **`is_fully_packed`** (gates Pay) is a var expression in the page:
+  `CustomerPackingState.portions_packed >= CustomerOrderSelectionState.total_portions`.
+- Handlers needing another state's data (`auto_pack`, `pay`, `back_to_menu`'s full
+  reset) use `other = await self.get_state(OtherState)`.
+- `back_to_menu` resets all three states (cart, packing, stage) via `get_state`.
+
+### Packing math (`packing.py` — pure helpers)
+
+- Container specs (from `data.py`): Small cap 3 / fee ₹5; Medium 6 / ₹8; Large 12 / ₹12.
+- `packing_fee` = sum of chosen containers' fees (computed var on packing state).
+- `grand_total` = `items_total + packing_fee` (var op in the view).
+- `portions_left` = `total_portions − portions_packed` (var op in the view).
+- Pay disabled until `portions_left == 0`.
+- `auto_pack`: **First Fit Decreasing (FFD)** bin-packing — sort portions descending,
+  place each into the first container with room, opening a new (cheapest-fitting)
+  container when none fits. Implemented as a pure helper in `packing.py`, given the
+  cart dict, called from the async handler after `get_state(CustomerOrderSelectionState)`.
 
 ## Data (`data.py`)
 
