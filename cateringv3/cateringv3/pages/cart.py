@@ -27,6 +27,27 @@ def _line(line: dict) -> rx.Component:
     )
 
 
+def _delivery_reminder() -> rx.Component:
+    return rx.box(
+        rx.hstack(
+            rx.text("Delivering ", OS.selected_date, color=COLORS["ink"]),
+            rx.spacer(),
+            rx.button(
+                "Change",
+                on_click=SO.open_date_picker,
+                variant="ghost",
+                color=COLORS["terracotta"],
+            ),
+            width="100%",
+            align="center",
+        ),
+        background=COLORS["green_soft"],
+        border_radius="12px",
+        padding="12px",
+        width="100%",
+    )
+
+
 def cart_body() -> rx.Component:
     return rx.vstack(
         rx.text(
@@ -36,24 +57,7 @@ def cart_body() -> rx.Component:
             font_weight="700",
             color=COLORS["ink"],
         ),
-        rx.box(
-            rx.hstack(
-                rx.text("Delivering ", OS.selected_date, color=COLORS["ink"]),
-                rx.spacer(),
-                rx.button(
-                    "Change",
-                    on_click=SO.open_date_picker,
-                    variant="ghost",
-                    color=COLORS["terracotta"],
-                ),
-                width="100%",
-                align="center",
-            ),
-            background=COLORS["green_soft"],
-            border_radius="12px",
-            padding="12px",
-            width="100%",
-        ),
+        _delivery_reminder(),
         rx.cond(
             OS.is_cart_empty,
             rx.text("Add dishes to start your order.", color=COLORS["muted"]),

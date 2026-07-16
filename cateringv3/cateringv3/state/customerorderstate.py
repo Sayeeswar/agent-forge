@@ -58,15 +58,22 @@ class CustomerOrderSelectionState(rx.State):
             })
         return out
 
+    def _active_ym(self) -> tuple[int, int]:
+        """Year/month to render, defaulting to today's if init_date hasn't
+        run yet (computed vars can evaluate before on_load fires)."""
+        today = datetime.date.today()
+        return (self.cal_year or today.year, self.cal_month or today.month)
+
     @rx.var
     def calendar_weeks(self) -> list[list[dict]]:
         import calendar as _cal
         today = datetime.date.today()
+        year, month = self._active_ym()
         weeks = []
-        for week in _cal.Calendar(firstweekday=6).monthdatescalendar(self.cal_year, self.cal_month):
+        for week in _cal.Calendar(firstweekday=6).monthdatescalendar(year, month):
             row = []
             for d in week:
-                in_month = d.month == self.cal_month
+                in_month = d.month == month
                 row.append({
                     "day": d.day if in_month else 0,
                     "label": d.strftime("%a, %d %b").replace(" 0", " ") if in_month else "",
@@ -78,7 +85,8 @@ class CustomerOrderSelectionState(rx.State):
 
     @rx.var
     def cal_month_label(self) -> str:
-        return datetime.date(self.cal_year, self.cal_month, 1).strftime("%B %Y")
+        year, month = self._active_ym()
+        return datetime.date(year, month, 1).strftime("%B %Y")
 
     @rx.event
     def init_date(self):
