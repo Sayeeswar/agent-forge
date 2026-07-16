@@ -24,10 +24,12 @@ def _chip(name: str) -> rx.Component:
 def category_chips() -> rx.Component:
     """Scrollable chip row driven by the static category list in `data.py`.
 
-    Note: `data.CATEGORIES` is a plain Python list (not a Var), so this is
-    unrolled at build time into one `_chip(...)` call per category. Either
-    a Python loop or `rx.foreach` works for a static list; `rx.foreach` is
-    used here to stay consistent with the dynamic lists used elsewhere.
+    Note: `data.CATEGORIES` is a plain Python list (not a Var). `rx.foreach`
+    does NOT unroll it into separate literal `_chip(...)` calls at build
+    time — it always templates the render function against a synthetic
+    per-item Var, the same mechanism used for dynamic lists. A plain Python
+    `for` loop would be the build-time-unrolled alternative; `rx.foreach`
+    is used here to stay consistent with the dynamic lists used elsewhere.
     """
     return rx.hstack(
         rx.foreach(data.CATEGORIES, _chip),

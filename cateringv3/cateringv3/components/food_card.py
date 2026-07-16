@@ -28,8 +28,15 @@ def food_card(item: dict) -> rx.Component:
     so `item["id"]`, `item["name"]`, `item["price"]` are Var (dict) accesses.
     `item["price"].to(str)` casts the numeric Var to a StringVar so it can
     sit alongside the literal "₹" as sibling text children.
+
+    `item["id"]` on its own is an UNTYPED Var (because `OS.active_items` is
+    typed `list[dict]`), and `OS.quantities[item_id]` in `quantity_stepper`
+    requires a typed key or `ObjectVar.__getitem__` raises `VarTypeError` at
+    component-build time. `.to(str)` casts it to a StringVar up front so the
+    same typed `item_id` can safely be passed to `quantity_stepper`,
+    `OS.cart.contains`, and `OS.add_item`.
     """
-    item_id = item["id"]
+    item_id = item["id"].to(str)
     in_cart = OS.cart.contains(item_id)
     return rx.hstack(
         rx.vstack(

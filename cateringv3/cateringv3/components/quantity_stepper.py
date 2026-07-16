@@ -21,12 +21,14 @@ def _btn(symbol: str, on_click) -> rx.Component:
 def quantity_stepper(item_id) -> rx.Component:
     """Render `- qty +` for a cart item.
 
-    `OS.quantities[item_id]` (an ObjectVar `__getitem__`) compiles to plain
-    JS object indexing, so a missing key resolves to `undefined` in the
-    browser rather than raising a Python KeyError — no crash either way.
-    Even so, callers MUST only mount this when the item is already in the
-    cart (`food_card` guards with `rx.cond(OS.cart.contains(item_id), ...)`)
-    so the displayed quantity is always a real number, never `undefined`.
+    `item_id` MUST be a typed StringVar (or plain `str`) — `OS.quantities`
+    is an `ObjectVar`, and `ObjectVar.__getitem__` raises `VarTypeError` at
+    component-build time if the key Var is untyped. `food_card` guarantees
+    this by casting with `item["id"].to(str)` before calling here.
+
+    Callers must also only mount this when the item is already in the cart
+    (`food_card` guards with `rx.cond(OS.cart.contains(item_id), ...)`) so
+    the displayed quantity is always a real number, never `undefined`.
     """
     return rx.hstack(
         _btn("−", OS.dec(item_id)),
