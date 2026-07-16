@@ -48,24 +48,31 @@ class CustomerOrderSelectionState(rx.State):
             today = datetime.date.today()
             self.selected_date = today.strftime("%a, %d %b").replace(" 0", " ")
 
-    @rx.event
-    def add_item(self, item_id: str):
-        self.cart[item_id] = self.cart.get(item_id, 0) + 1
-        # TODO(Task 7): reset packing
+    async def _reset_packing(self):
+        # Local import avoids a circular import: customerpackingstate imports
+        # CustomerOrderSelectionState at module load time.
+        from cateringv3.state.customerpackingstate import CustomerPackingState
+        pk = await self.get_state(CustomerPackingState)
+        pk.reset_packing()
 
     @rx.event
-    def inc(self, item_id: str):
+    async def add_item(self, item_id: str):
         self.cart[item_id] = self.cart.get(item_id, 0) + 1
-        # TODO(Task 7): reset packing
+        await self._reset_packing()
 
     @rx.event
-    def dec(self, item_id: str):
+    async def inc(self, item_id: str):
+        self.cart[item_id] = self.cart.get(item_id, 0) + 1
+        await self._reset_packing()
+
+    @rx.event
+    async def dec(self, item_id: str):
         current = self.cart.get(item_id, 0)
         if current <= 1:
             self.cart.pop(item_id, None)
         else:
             self.cart[item_id] = current - 1
-        # TODO(Task 7): reset packing
+        await self._reset_packing()
 
     @rx.event
     def set_category(self, name: str):
