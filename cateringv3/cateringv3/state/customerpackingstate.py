@@ -30,6 +30,27 @@ class CustomerPackingState(rx.State):
     def has_containers(self) -> bool:
         return len(self.containers) > 0
 
+    @rx.var
+    def container_cards(self) -> list[dict]:
+        """Display-ready per-container cards: size/capacity/space label/
+        progress percent, plus packed line items (id/name/qty) for the
+        UI to render without doing any math itself."""
+        cards = []
+        for c in self.containers:
+            used = packing.container_used(c)
+            lines = [
+                {"item_id": i, "name": data.ITEMS_BY_ID[i]["name"], "qty": q}
+                for i, q in c["items"].items()
+            ]
+            cards.append({
+                "id": c["id"], "size": c["size"], "capacity": c["capacity"],
+                "used": used, "room": c["capacity"] - used,
+                "space_label": f"{used} of {c['capacity']} space used",
+                "progress": int(used / c["capacity"] * 100) if c["capacity"] else 0,
+                "lines": lines,
+            })
+        return cards
+
     # ---- async computed (cross-state) ----
     @rx.var(deps=[CustomerOrderSelectionState.cart, "containers"])
     async def grand_total(self) -> int:
@@ -59,6 +80,23 @@ class CustomerPackingState(rx.State):
     async def portions_left_label(self) -> str:
         left = await self.portions_left
         return "All packed!" if left <= 0 else f"{left} portions left to pack"
+
+    @rx.var(deps=[CustomerOrderSelectionState.cart, "containers", "selected_item_to_pack"])
+    async def pack_chips(self) -> list[dict]:
+        """Display-ready chips for each cart item: how many units remain
+        unpacked, whether it's the currently-selected item to pack, and
+        whether it's fully packed (done -> chip disabled in the UI)."""
+        order = await self.get_state(CustomerOrderSelectionState)
+        left = packing.unpacked_counts(order.cart, self.containers)
+        chips = []
+        for item_id, qty in order.cart.items():
+            chips.append({
+                "id": item_id, "name": data.ITEMS_BY_ID[item_id]["name"],
+                "left": left.get(item_id, 0),
+                "selected": self.selected_item_to_pack == item_id,
+                "done": left.get(item_id, 0) == 0,
+            })
+        return chips
 
     # ---- handlers ----
     @rx.event
