@@ -1,7 +1,7 @@
 # Sarthi Catering App — Design Spec
 
 **Date:** 2026-07-15
-**Status:** Approved (design), pending implementation plan
+**Status:** Approved (design); open questions resolved 2026-07-16 (see *Resolved decisions*); pending implementation plan
 **Framework:** Reflex 0.9.6 (Python), Tailwind V4 plugin enabled
 
 ## Goal
@@ -25,12 +25,45 @@ Razorpay drops in later.
 | Auth | Hardcoded mock user "Priya S." |
 | Container packing | **Medium fidelity**: tap-to-pack, per-container capacity + progress bar, packing fee, Auto-pack. **No** wet/dry rule (DRY tag cosmetic or omitted) |
 
+## Resolved decisions (grilling, 2026-07-16)
+
+Eleven gaps the sections below left open or under-specified, now settled. Where a
+row **overrides** earlier prose, the relevant section has also been edited to match.
+
+| # | Gap | Decision |
+| --- | --- | --- |
+| 1 | Empty-cart Pay | `is_fully_packed` also requires `total_portions > 0`, so Pay stays disabled on an empty order. |
+| 2 | Cart edited after packing | **Any cart change (`add_item`/`inc`/`dec`) resets packing** — all containers cleared. |
+| 3 | Font sourcing | **Self-host** Playfair Display + Inter as `@font-face` under a **new `assets/fonts/` subfolder** — a deliberate, one-time exception to the CLAUDE.md "don't touch `assets/`" guard rail (existing screenshots + favicon stay untouched). Font `.woff2` files are downloaded once at build time; the running app makes no external/CDN font fetch. |
+| 4 | Verification depth | Compile + run + one click-through smoke test per screen. **Not** a full Playwright screenshot-diff pass. |
+| 5 | Calendar fidelity | **Real functional calendar**: real current month, real weekday grid, real `today` outlined, real past dates disabled, working month nav. |
+| 6 | Portion unit | **1 cart unit = 1 portion.** `total_portions = sum(cart.values())`. No per-item portion size. |
+| 7 | Pack-per-tap | **One unit per tap.** Tapping a container packs a single unit of `selected_item_to_pack` (until capacity). |
+| 8 | Order number | **Random `SAR-####`** (random 4-digit suffix) generated in `pay`. |
+| 9 | Default date | **Computed = real today**, formatted `"Thu, 16 Jul"`; not a hardcoded literal (keeps it consistent with the real calendar). |
+| 10 | Auto-pack scope | **Augment existing** — keep manually-added containers and their packs; only place currently-unpacked units, opening new containers as needed. (Overrides from-scratch implication.) |
+| 11 | Auto-pack goal | **Fewest containers** — prefer larger sizes to minimize container count. (Overrides "cheapest-fitting" wording in *Packing math*.) |
+
+Second grilling round (softer gaps), 2026-07-16:
+
+| # | Gap | Decision |
+| --- | --- | --- |
+| 12 | Tablet profile drawer vs cart pane | Since the right edge is the persistent cart pane, the profile drawer slides in from the **LEFT on tablet/desktop** (still right-side on phone). Avoids the collision. |
+| 13 | Emptied / mistaken containers | Emptying a container **keeps it in place** (ready to re-pack); a separate **delete (×) control** removes a container and **refunds its fee**. |
+| 14 | Overlay dismissal | **Explicit buttons only** (Done / X / primary action). Backdrop taps do **not** dismiss — avoids losing a half-filled cart/selection. |
+| 15 | Pack selection after an item is fully packed | **Auto-advance** `selected_item_to_pack` to the next item with unpacked units; clears to `None` only when nothing is left. |
+| 16 | Stepper at qty 1, tap − | **Removes the line** (item deleted from cart); the food card reverts to the "Add" button. |
+| 17 | Delivery date after "Back to menu" | **Reset to today** — `back_to_menu` resets all three states, `selected_date` returns to the computed real today (#9). |
+| 18 | Auto-pack button availability | **Always enabled**; it's simply a no-op when there is nothing to pack. |
+| 19 | Menu scroll on category switch | **Reset to top** — switching category chips scrolls the item list back to the section header. |
+
 ## Architecture
 
 Single page at `/`. The **menu is the always-mounted base layer**.
 
 - **Overlays** (menu stays underneath, dimmed) toggled by boolean flags:
-  `show_cart`, `show_date_picker`, `show_profile`.
+  `show_cart`, `show_date_picker`, `show_profile`. Overlays are dismissed by their
+  **explicit buttons only** — tapping the dimmed backdrop does nothing (#14).
 - **Full-screen stages** swap out the menu via a `stage` var:
   `"menu" | "containers" | "success"`.
 
@@ -72,7 +105,7 @@ second UI):
 | Containers ("Pack your order") | Full-screen stage | **Full-screen stage** (takes over both panes) |
 | Success ("Payment received") | Full-screen stage | **Full-screen takeover** (centered card) |
 | Date picker | Bottom sheet | Centered **modal dialog** |
-| Profile | Right drawer | Right drawer (unchanged) |
+| Profile | Right drawer | **Left drawer** (right edge is the cart pane — #12) |
 
 The `containers` and `success` stages swap out the entire two-pane shell at all
 breakpoints. `show_cart` still gates the phone bottom sheet; on tablet the right
@@ -135,11 +168,18 @@ pattern per state:
 ```python
 cart: dict[str, int]                 # item_id -> qty
 active_category: str = "Rotis & Breads"
-selected_date: str = "Thu, 16 Jul"
+selected_date: str = ""              # defaults to real today via on-load (#9)
 # computed (own-state only): cart_count, items_total, total_portions
+#   total_portions = sum(cart.values())  (1 cart unit = 1 portion, #6)
 ```
 Handlers: `add_item(item_id)`, `inc(item_id)`, `dec(item_id)`,
 `set_category(name)`, `select_date(date)`.
+`add_item`/`inc`/`dec` **also reset packing** (clear all containers via
+`get_state(CustomerPackingState)`) so a stale pack can't survive a cart edit (#2).
+`dec` at qty 1 **removes the item** from `cart` entirely (card reverts to "Add", #16).
+`set_category` also scrolls the menu list back to the top (#19).
+`selected_date` is initialized to the real current day (formatted `"Thu, 16 Jul"`)
+on page load, not a hardcoded literal (#9).
 
 ### 2. `CustomerPackingState` (`customerpackingstate.py`) — packing
 
@@ -148,9 +188,15 @@ containers: list[dict]               # [{id, size, capacity, fee, items:{item_id
 selected_item_to_pack: str | None = None
 # computed (own-state only): packing_fee, portions_packed, container_count
 ```
-Handlers: `add_container(size)`, `select_item_to_pack(item_id)`,
-`pack_into(container_id)`, `remove_from_container(container_id, item_id)`,
-`auto_pack` (**async** — reads cart via `get_state`), `reset_packing`.
+Handlers: `add_container(size)`, `delete_container(container_id)` (removes a
+container and refunds its fee; emptied containers otherwise stay in place — #13),
+`select_item_to_pack(item_id)`, `pack_into(container_id)` (**packs one unit** of
+`selected_item_to_pack` per call, up to capacity; when that item's last unit is
+packed, **auto-advances** the selection to the next item with unpacked units, else
+`None` — #7/#15), `remove_from_container(container_id, item_id)`,
+`auto_pack` (**async, always enabled** — reads cart via `get_state`; augments
+existing packing, minimizes container count; no-op when nothing to pack —
+#10/#11/#18), `reset_packing`.
 
 ### 3. `StageOverlaysState` (`stageoverlaystate.py`) — nav, overlays, user, result
 
@@ -162,14 +208,15 @@ show_profile: bool = False
 user_name: str = "Priya S."          # mock user
 orders_placed: int = 12
 balance_status: str = "All paid up"
-order_number: str = ""               # generated on pay, e.g. "SAR-3411"
+order_number: str = ""               # generated on pay: random "SAR-####" (#8)
 paid_total: int = 0                  # snapshotted grand total for the receipt
 receipt_container_count: int = 0     # snapshotted for the receipt
 ```
 Handlers: `open_cart/close_cart`, `open_date_picker/close_date_picker`,
 `open_profile/close_profile`, `go_to_containers`, `back_to_menu`,
 `pay` (**async** — reads order + packing via `get_state`, snapshots total &
-container count, generates `order_number`, sets `stage="success"`).
+container count, generates a random `order_number` (`"SAR-####"`, #8), sets
+`stage="success"`).
 
 ### Cross-state derived values (backend, async computed vars)
 
@@ -179,7 +226,9 @@ Values that span two states live on `CustomerPackingState` as **async computed v
 - `grand_total` → `await get_state(order)`; returns `items_total + packing_fee`.
 - `grand_total_display` → formatted `"₹85"` for the Pay button / receipt.
 - `portions_left` → `total_portions − portions_packed`.
-- `is_fully_packed` → `portions_left == 0` (drives Pay button `disabled`).
+- `is_fully_packed` → `portions_left == 0 and total_portions > 0` (drives Pay
+  button `disabled`; the `total_portions > 0` guard keeps Pay disabled on an empty
+  order — see *Resolved decisions* #1).
 
 The UI reads these directly: `rx.button(CustomerPackingState.pay_button_label,
 disabled=~CustomerPackingState.is_fully_packed)`. Because auto-dep tracking across
@@ -197,9 +246,13 @@ three states.
 - `grand_total` / `portions_left` / `is_fully_packed` = async computed vars (above).
 - Pay disabled until `portions_left == 0`.
 - `auto_pack`: **First Fit Decreasing (FFD)** bin-packing — sort portions descending,
-  place each into the first container with room, opening a new (cheapest-fitting)
-  container when none fits. Pure helper `packing.ffd_pack(cart, specs)` in
-  `packing.py`, called by the async `auto_pack` handler after `get_state`.
+  place each into the first container with room. **Augments** the current packing
+  (keeps manually-added containers and their packs; only places currently-unpacked
+  units — *Resolved decisions* #10). When a unit fits nowhere, open a **new container
+  that minimizes total container count** (prefer larger sizes — *Resolved decisions*
+  #11, which supersedes the earlier "cheapest-fitting" wording). Pure helper
+  `packing.ffd_pack(cart, specs, existing_containers)` in `packing.py`, called by the
+  async `auto_pack` handler after `get_state`.
 
 ## Data (`data.py`)
 
@@ -227,18 +280,21 @@ Item shape: `{id, category, name, desc, price, unit, veg: True}`.
 | `green_soft` | `#E8F0E9` | info/success boxes |
 | `today_blue` | `#DCE7F0` | today's date outline in calendar |
 
-Fonts: **serif** headings (Playfair Display / Fraunces style) for "Sarthi", section
-titles, sheet titles, "Payment received"; **sans** body (Inter/system). Loaded via
-theme; approximated since exact hex/font can't be extracted from images (easy to
-fine-tune later).
+Fonts: **serif** headings (Playfair Display) for "Sarthi", section titles, sheet
+titles, "Payment received"; **sans** body (Inter). **Self-hosted** under `assets/`
+and declared via `@font-face` in the theme — no Google Fonts / CDN fetch (#3),
+so the app works offline and under a strict CSP. Approximated since exact hex/font
+can't be extracted from images (easy to fine-tune later).
 
 ## Screen-by-screen behavior
 
 1. **Menu** — header (logo, "Delivering <date> ▾" opens date picker, profile icon,
    Cart pill with count badge), category chips (tap sets `active_category`),
    section title + item count, food cards. "Add" → stepper once qty > 0.
-2. **Delivery date** — bottom sheet over dimmed menu; month nav; past dates disabled;
-   today outlined; selected date terracotta; green tip box; "Done" closes.
+2. **Delivery date** — bottom sheet over dimmed menu. **Real functional calendar**
+   (#5): real current month + weekday grid, working month nav, real past dates
+   disabled, real today outlined; selected date terracotta; green tip box; "Done"
+   closes. Default selection = real today (#9).
 3. **Profile drawer** — right-side drawer; avatar "P", "Priya S.", stat cards
    (orders placed, current orders empty-state, balance "All paid up"); bottom links
    "Order history on WhatsApp" / "Saved addresses" (no-op stubs) / "Sign out".
@@ -261,5 +317,7 @@ fine-tune later).
 
 ## Verification
 
-Follow reflex-process-management to compile & run, then drive each screen with
-Playwright and compare screenshots against `assets/01`–`07`; fix visual gaps.
+Follow reflex-process-management to compile & run, then do a **click-through smoke
+test**: visit each screen once, confirm no crashes and that state/events behave
+(#4). A full Playwright screenshot-diff pass against `assets/01`–`07` is **out of
+scope** for this build; eyeball visual gaps informally and fix the obvious ones.
