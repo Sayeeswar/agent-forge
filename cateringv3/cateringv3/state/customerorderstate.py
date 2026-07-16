@@ -9,6 +9,8 @@ class CustomerOrderSelectionState(rx.State):
     cart: dict[str, int] = {}
     active_category: str = "Rotis & Breads"
     selected_date: str = ""
+    cal_year: int = 0
+    cal_month: int = 0  # 1-12
 
     @rx.var
     def cart_count(self) -> int:
@@ -42,11 +44,49 @@ class CustomerOrderSelectionState(rx.State):
     def quantities(self) -> dict[str, int]:
         return dict(self.cart)
 
+    @rx.var
+    def cart_lines(self) -> list[dict]:
+        out = []
+        for item_id, qty in self.cart.items():
+            it = data.ITEMS_BY_ID[item_id]
+            out.append({
+                "id": item_id,
+                "name": it["name"],
+                "qty": qty,
+                "price": it["price"],
+                "line_total_display": packing.money(it["price"] * qty),
+            })
+        return out
+
+    @rx.var
+    def calendar_weeks(self) -> list[list[dict]]:
+        import calendar as _cal
+        today = datetime.date.today()
+        weeks = []
+        for week in _cal.Calendar(firstweekday=6).monthdatescalendar(self.cal_year, self.cal_month):
+            row = []
+            for d in week:
+                in_month = d.month == self.cal_month
+                row.append({
+                    "day": d.day if in_month else 0,
+                    "label": d.strftime("%a, %d %b").replace(" 0", " ") if in_month else "",
+                    "is_today": d == today,
+                    "disabled": (not in_month) or d < today,
+                })
+            weeks.append(row)
+        return weeks
+
+    @rx.var
+    def cal_month_label(self) -> str:
+        return datetime.date(self.cal_year, self.cal_month, 1).strftime("%B %Y")
+
     @rx.event
     def init_date(self):
+        today = datetime.date.today()
         if not self.selected_date:
-            today = datetime.date.today()
             self.selected_date = today.strftime("%a, %d %b").replace(" 0", " ")
+        if self.cal_month == 0:
+            self.cal_year, self.cal_month = today.year, today.month
 
     async def _reset_packing(self):
         # Local import avoids a circular import: customerpackingstate imports
@@ -82,3 +122,15 @@ class CustomerOrderSelectionState(rx.State):
     @rx.event
     def select_date(self, date: str):
         self.selected_date = date
+
+    @rx.event
+    def prev_month(self):
+        self.cal_month -= 1
+        if self.cal_month < 1:
+            self.cal_month, self.cal_year = 12, self.cal_year - 1
+
+    @rx.event
+    def next_month(self):
+        self.cal_month += 1
+        if self.cal_month > 12:
+            self.cal_month, self.cal_year = 1, self.cal_year + 1
