@@ -2,24 +2,24 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a componentized, fully-interactive mock of the Sarthi catering ordering flow (menu → date → profile → cart → container packing → payment → success) as a mobile-first, responsive Reflex single-page app matching the 7 design screenshots.
+**Goal:** Build componentized, fully-interactive mock of Sarthi catering ordering flow (menu → date → profile → cart → container packing → payment → success) as mobile-first, responsive Reflex single-page app matching 7 design screenshots.
 
-**Architecture:** Single page at `/`. The menu is the always-mounted base layer; overlays (cart, date picker, profile) toggle via boolean flags on a nav state; `stage` swaps in full-screen `containers`/`success` takeovers. All business logic is pure functions in `packing.py` (unit-tested); three thin `rx.State` classes wire those functions to events and expose display-ready computed vars; the UI only reads and displays `State.<var>`. Responsive shell uses `rx.mobile_only()` (phone column) and `rx.tablet_and_desktop()` (two-pane).
+**Architecture:** Single page at `/`. Menu = always-mounted base layer; overlays (cart, date picker, profile) toggle via boolean flags on nav state; `stage` swaps in full-screen `containers`/`success` takeovers. Business logic = pure functions in `packing.py` (unit-tested); three thin `rx.State` classes wire those functions to events, expose display-ready computed vars; UI only reads/displays `State.<var>`. Responsive shell uses `rx.mobile_only()` (phone column) and `rx.tablet_and_desktop()` (two-pane).
 
-**Tech Stack:** Reflex 0.9.6 (Python), Tailwind V4 plugin, self-hosted `@font-face` fonts, pytest for the pure logic layer.
+**Tech Stack:** Reflex 0.9.6 (Python), Tailwind V4 plugin, self-hosted `@font-face` fonts, pytest for pure logic layer.
 
 ## Global Constraints
 
-- **Reflex version:** 0.9.6 — verify every Reflex API against the reflex-docs skill or installed source before use; never guess component/prop/event names.
-- **Backend-only logic:** No arithmetic, business conditionals, or formatting math in the component tree. Pages/components read display-ready `State.<var>` only. All math lives in `packing.py` pure functions; states delegate to them.
+- **Reflex version:** 0.9.6 — verify every Reflex API against reflex-docs skill or installed source before use; never guess component/prop/event names.
+- **Backend-only logic:** No arithmetic, business conditionals, or formatting math in component tree. Pages/components read display-ready `State.<var>` only. All math lives in `packing.py` pure functions; states delegate to them.
 - **File/function caps:** ≤ 300 lines per file, ≤ 40 lines per function.
-- **Components:** Never `rx.html()`. Prefer `rx.box / vstack / hstack / flex / grid / card / dialog / drawer / foreach`. Rebuild designs with native Reflex components — no 1:1 HTML translation.
-- **Folder layout:** `state/` package + `components/` + `pages/`, exactly as in the spec's folder structure.
+- **Components:** Never `rx.html()`. Prefer `rx.box / vstack / hstack / flex / grid / card / dialog / drawer / foreach`. Rebuild designs w/ native Reflex components — no 1:1 HTML translation.
+- **Folder layout:** `state/` package + `components/` + `pages/`, exactly as in spec's folder structure.
 - **Git:** Work only on branch `sarthi-catering-app` (already checked out). Never commit to `main`/`master`. Commit after each task.
-- **Guard rails:** Do NOT read or write `.web/`, `rxconfig.py`, `assets/favicon.ico`, existing `assets/*.png`, or `alembic/`. The ONE sanctioned exception: create the new `assets/fonts/` subfolder (spec Resolved decision #3).
+- **Guard rails:** Do NOT read or write `.web/`, `rxconfig.py`, `assets/favicon.ico`, existing `assets/*.png`, or `alembic/`. ONE sanctioned exception: create new `assets/fonts/` subfolder (spec Resolved decision #3).
 - **Menu items:** Rotis & Breads are real (Paneer Paratha ₹80, Aloo Paratha ₹50, Puri ₹15, Oilless Phulka ₹10, Ghee Phulka ₹15, Ghee Chapathi ₹20); invent ~4–6 veg items each for Rice / Curries / Raw Salads / Dals. All items veg.
 - **Container specs:** Small cap 3 / fee ₹5; Medium cap 6 / fee ₹8; Large cap 12 / fee ₹12.
-- **Money:** All prices are whole rupees (ints). Display as `"₹85"` (no decimals). 1 cart unit = 1 portion.
+- **Money:** All prices whole rupees (ints). Display as `"₹85"` (no decimals). 1 cart unit = 1 portion.
 - **Mock user:** "Priya S.", orders_placed 12, balance "All paid up".
 
 ---
@@ -31,9 +31,9 @@
 - Create: `assets/fonts/` (download 2 `.woff2` files into it)
 
 **Interfaces:**
-- Produces: `theme.COLORS` (dict of the 9 tokens), `theme.FONT_SERIF` (str), `theme.FONT_SANS` (str), `theme.FONT_FACE_CSS` (str of `@font-face` rules), and shared style dicts `theme.CARD_STYLE`, `theme.PILL_STYLE`, `theme.SHEET_STYLE`.
+- Produces: `theme.COLORS` (dict of 9 tokens), `theme.FONT_SERIF` (str), `theme.FONT_SANS` (str), `theme.FONT_FACE_CSS` (str of `@font-face` rules), shared style dicts `theme.CARD_STYLE`, `theme.PILL_STYLE`, `theme.SHEET_STYLE`.
 
-- [ ] **Step 1: Download the two font files**
+- [ ] **Step 1: Download two font files**
 
 Run (from repo root):
 ```bash
@@ -42,7 +42,7 @@ curl -L -o assets/fonts/PlayfairDisplay.woff2 "https://raw.githubusercontent.com
 curl -L -o assets/fonts/Inter.woff2 "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.woff2"
 ls -la assets/fonts/
 ```
-Expected: two non-empty `.woff2` files listed. If either download 404s or is < 10 KB, find the current variable-font `.woff2` path in the google/fonts repo (`ofl/playfairdisplay/`, `ofl/inter/`) and retry; do NOT fall back to a CDN `<link>` (offline/CSP requirement).
+Expected: two non-empty `.woff2` files listed. If either download 404s or < 10 KB, find current variable-font `.woff2` path in google/fonts repo (`ofl/playfairdisplay/`, `ofl/inter/`), retry; do NOT fall back to CDN `<link>` (offline/CSP requirement).
 
 - [ ] **Step 2: Write `theme.py`**
 
@@ -128,7 +128,7 @@ git commit -m "feat: add theme tokens and self-hosted fonts"
   - `data.items_for(category: str) -> list[dict]`
   - `data.CONTAINER_SPECS: dict[str, dict]` = `{"Small": {"capacity": 3, "fee": 5}, "Medium": {"capacity": 6, "fee": 8}, "Large": {"capacity": 12, "fee": 12}}`
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Write failing test**
 
 ```python
 # tests/test_data.py
@@ -167,14 +167,14 @@ def test_container_specs():
     assert data.CONTAINER_SPECS["Large"] == {"capacity": 12, "fee": 12}
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **Step 2: Run test, verify fail**
 
 Run: `python -m pytest tests/test_data.py -v`
 Expected: FAIL — `ModuleNotFoundError: No module named 'cateringv3.data'`
 
 - [ ] **Step 3: Write `data.py`**
 
-Write the module so all tests pass. Use slug ids (`"paneer-paratha"`, etc.). Real breads verbatim from the screenshot descriptions:
+Write module so all tests pass. Use slug ids (`"paneer-paratha"`, etc.). Real breads verbatim from screenshot descriptions:
 ```python
 """Hardcoded menu data and container specifications. All items are vegetarian."""
 
@@ -227,7 +227,7 @@ CONTAINER_SPECS = {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 4: Run test, verify pass**
 
 Run: `python -m pytest tests/test_data.py -v`
 Expected: PASS (5 passed)
@@ -261,7 +261,7 @@ git commit -m "feat: add menu and container data with tests"
   - `money(n: int) -> str` → `"₹85"`
   - `make_order_number() -> str` → `"SAR-####"` (random 4 digits)
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Write failing test**
 
 ```python
 # tests/test_packing_totals.py
@@ -309,12 +309,12 @@ def test_order_number_format():
         assert re.fullmatch(r"SAR-\d{4}", packing.make_order_number())
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **Step 2: Run test, verify fail**
 
 Run: `python -m pytest tests/test_packing_totals.py -v`
 Expected: FAIL — `ModuleNotFoundError: No module named 'cateringv3.state.packing'`
 
-- [ ] **Step 3: Write the helpers in `packing.py`**
+- [ ] **Step 3: Write helpers in `packing.py`**
 
 ```python
 """Pure logic for totals, fees, capacity and bin-packing. No Reflex imports."""
@@ -351,7 +351,7 @@ def make_order_number():
 
 Also create empty `cateringv3/state/__init__.py`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 4: Run test, verify pass**
 
 Run: `python -m pytest tests/test_packing_totals.py -v`
 Expected: PASS (8 passed)
@@ -377,9 +377,9 @@ git commit -m "feat: add pure totals/fee/capacity helpers with tests"
   - `unpacked_counts(cart: dict[str,int], containers: list[dict]) -> dict[str,int]` — per-item units in cart not yet packed (never negative).
   - `container_room(container: dict) -> int` — `capacity - used`.
   - `next_container_id(containers: list[dict]) -> int` — `max(id)+1` or `1`.
-  - `ffd_pack(cart, containers) -> list[dict]` — returns a NEW containers list: keeps existing containers and their packs, places every currently-unpacked unit (First Fit Decreasing), opening new containers preferring the LARGEST size to minimize container count. Pure; no mutation of the input list/dicts.
+  - `ffd_pack(cart, containers) -> list[dict]` — returns NEW containers list: keeps existing containers + packs, places every currently-unpacked unit (First Fit Decreasing), opening new containers preferring LARGEST size to minimize container count. Pure; no mutation of input list/dicts.
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Write failing test**
 
 ```python
 # tests/test_ffd_pack.py
@@ -429,14 +429,14 @@ def test_ffd_does_not_mutate_input():
     assert containers[0]["items"] == {}
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **Step 2: Run test, verify fail**
 
 Run: `python -m pytest tests/test_ffd_pack.py -v`
 Expected: FAIL — `AttributeError: module ... has no attribute 'unpacked_counts'`
 
-- [ ] **Step 3: Implement the helpers**
+- [ ] **Step 3: Implement helpers**
 
-Append to `packing.py`. Algorithm: build a flat list of unpacked units, sort descending by ... units are size-1 (1 portion each), so ordering is trivial — the "decreasing" applies to choosing the largest NEW container. First fit into existing containers with room (by current order), then open new containers largest-first to cover the remainder count with the fewest bins.
+Append to `packing.py`. Algorithm: build flat list of unpacked units, sort descending by ... units size-1 (1 portion each), ordering trivial for that part — "decreasing" applies to choosing largest NEW container. First fit into existing containers with room (current order), then open new containers largest-first to cover remainder count w/ fewest bins.
 
 ```python
 import copy
@@ -491,12 +491,12 @@ def ffd_pack(cart, containers):
     return result
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 4: Run test, verify pass**
 
 Run: `python -m pytest tests/test_ffd_pack.py -v`
 Expected: PASS (8 passed)
 
-- [ ] **Step 5: Run the whole suite**
+- [ ] **Step 5: Run whole suite**
 
 Run: `python -m pytest -v`
 Expected: all pass (data + totals + ffd).
@@ -523,7 +523,7 @@ git commit -m "feat: add FFD auto-pack helpers with tests"
   - Handlers: `init_date`, `add_item(item_id)`, `inc(item_id)`, `dec(item_id)`, `set_category(name)`, `select_date(date)`, `qty_of(item_id) -> int` (helper var-callable via computed dict `quantities`).
   - Emits `on_load` initializer `init_date` that sets `selected_date` to real today formatted `"Thu, 16 Jul"`.
 
-> **Cross-state note:** `add_item`/`inc`/`dec` must reset packing. Since `CustomerPackingState` doesn't exist until Task 6, this task adds the handlers WITHOUT the reset call and leaves a `# TODO(Task 7): reset packing` marker; Task 7 wires the reset once both states exist. This keeps tasks independently compilable.
+> **Cross-state note:** `add_item`/`inc`/`dec` must reset packing. Since `CustomerPackingState` doesn't exist until Task 6, this task adds handlers WITHOUT reset call, leaves `# TODO(Task 7): reset packing` marker; Task 7 wires reset once both states exist. Keeps tasks independently compilable.
 
 - [ ] **Step 1: Write the state**
 
@@ -607,7 +607,7 @@ class CustomerOrderSelectionState(rx.State):
         self.selected_date = date
 ```
 
-- [ ] **Step 2: Verify it imports and the date formats**
+- [ ] **Step 2: Verify import + date format**
 
 Run:
 ```bash
@@ -615,7 +615,7 @@ python -c "import cateringv3.state.customerorderstate as m; print('ok', m.Custom
 ```
 Expected: `ok CustomerOrderSelectionState`
 
-Verify `rx.scroll_to` exists (reflex-docs / source) before relying on it; if the API differs, drop the return and rely on default scroll — leave a `# TODO` and note it in the task report.
+Verify `rx.scroll_to` exists (reflex-docs / source) before relying on it; if API differs, drop return, rely on default scroll — leave `# TODO`, note in task report.
 
 - [ ] **Step 3: Commit**
 
@@ -760,7 +760,7 @@ class CustomerPackingState(rx.State):
         self.selected_item_to_pack = next(iter(left), "")
 ```
 
-- [ ] **Step 2: Verify it imports**
+- [ ] **Step 2: Verify import**
 
 Run:
 ```bash
@@ -768,7 +768,7 @@ python -c "import cateringv3.state.customerpackingstate as m; print('ok', m.Cust
 ```
 Expected: `ok CustomerPackingState`
 
-If `@rx.var(deps=[...])` with a mix of another state's var and a local var name raises at import, consult reflex-docs for the exact `deps` reference form (local var may need `CustomerPackingState.containers` — but the class isn't bound yet inside its own body). Fallback that is known-safe: reference only the cross-state var in `deps` (`deps=[CustomerOrderSelectionState.cart]`) and let local-var changes trigger recompute via normal tracking; adjust and note it in the task report.
+If `@rx.var(deps=[...])` mixing another state's var + local var name raises at import, consult reflex-docs for exact `deps` reference form (local var may need `CustomerPackingState.containers` — but class not bound yet inside own body). Known-safe fallback: reference only cross-state var in `deps` (`deps=[CustomerOrderSelectionState.cart]`), let local-var changes trigger recompute via normal tracking; adjust, note in task report.
 
 - [ ] **Step 3: Commit**
 
@@ -783,7 +783,7 @@ git commit -m "feat: add CustomerPackingState with cross-state async totals"
 
 **Files:**
 - Create: `cateringv3/state/stageoverlaystate.py`
-- Modify: `cateringv3/state/customerorderstate.py` (replace the 3 `# TODO(Task 7)` markers)
+- Modify: `cateringv3/state/customerorderstate.py` (replace 3 `# TODO(Task 7)` markers)
 - Modify: `cateringv3/state/__init__.py` (export all three states)
 
 **Interfaces:**
@@ -794,9 +794,9 @@ git commit -m "feat: add CustomerPackingState with cross-state async totals"
   - Handlers: `open_cart/close_cart`, `open_date_picker/close_date_picker`, `open_profile/close_profile`, `go_to_containers`, `back_to_menu` (async, resets all three states), `pay` (async).
 - `state/__init__.py` exports `CustomerOrderSelectionState`, `CustomerPackingState`, `StageOverlaysState`.
 
-- [ ] **Step 1: Wire the packing reset into the order state**
+- [ ] **Step 1: Wire packing reset into order state**
 
-In `customerorderstate.py`, add an async reset helper and call it from the three handlers. Replace each `# TODO(Task 7): reset packing` and make the handlers async:
+In `customerorderstate.py`, add async reset helper, call from three handlers. Replace each `# TODO(Task 7): reset packing`, make handlers async:
 
 ```python
 # add import at top:
@@ -825,14 +825,14 @@ from cateringv3.state.customerpackingstate import CustomerPackingState
             self.cart[item_id] = current - 1
         await self._reset_packing()
 ```
-> Note the import creates a cycle (`customerpackingstate` imports `customerorderstate`). Import `CustomerPackingState` **inside** `_reset_packing` (local import) to avoid the circular import at module load:
+> Note: import creates cycle (`customerpackingstate` imports `customerorderstate`). Import `CustomerPackingState` **inside** `_reset_packing` (local import) to avoid circular import at module load:
 ```python
     async def _reset_packing(self):
         from cateringv3.state.customerpackingstate import CustomerPackingState
         pk = await self.get_state(CustomerPackingState)
         pk.reset_packing()
 ```
-Remove the top-level `CustomerPackingState` import; keep only the local one.
+Remove top-level `CustomerPackingState` import; keep only local one.
 
 - [ ] **Step 2: Write `stageoverlaystate.py`**
 
@@ -922,7 +922,7 @@ class StageOverlaysState(rx.State):
         self.paid_total = 0
         self.receipt_container_count = 0
 ```
-> `back_to_menu` resets `selected_date` to today: set it to `""` then call `init_date()` once (remove the duplicate line above — keep a single `order.selected_date = ""` followed by `order.init_date()`).
+> `back_to_menu` resets `selected_date` to today: set to `""` then call `init_date()` once (remove duplicate line above — keep single `order.selected_date = ""` followed by `order.init_date()`).
 
 - [ ] **Step 3: Write `state/__init__.py`**
 
@@ -942,7 +942,7 @@ python -c "from cateringv3 import state; print(state.CustomerOrderSelectionState
 ```
 Expected: three class reprs, no circular-import error.
 
-- [ ] **Step 5: Run the full logic suite (regression)**
+- [ ] **Step 5: Run full logic suite (regression)**
 
 Run: `python -m pytest -v`
 Expected: all still pass.
@@ -1019,7 +1019,7 @@ def quantity_stepper(item_id):
         align="center", spacing="2",
     )
 ```
-> Verify `OS.quantities[item_id]` var-indexing renders; if a missing key errors in the frontend, guard in the component with `rx.cond(OS.cart.contains(item_id), ...)` or expose a `qty_display` computed. Prefer the state-side fix (backend-only rule).
+> Verify `OS.quantities[item_id]` var-indexing renders; if missing key errors in frontend, guard in component with `rx.cond(OS.cart.contains(item_id), ...)` or expose `qty_display` computed. Prefer state-side fix (backend-only rule).
 
 - [ ] **Step 3: Write `category_chips.py`**
 
@@ -1045,7 +1045,7 @@ def category_chips():
         overflow_x="auto", spacing="2", width="100%", padding_y="4px",
     )
 ```
-> `OS` has no `CATEGORIES_LIST`. Use module data instead: `rx.foreach(data.CATEGORIES, _chip)` — import `from cateringv3 import data`. Fix this in the actual code.
+> `OS` has no `CATEGORIES_LIST`. Use module data instead: `rx.foreach(data.CATEGORIES, _chip)` — import `from cateringv3 import data`. Fix in actual code.
 
 - [ ] **Step 4: Write `food_card.py`**
 
@@ -1084,15 +1084,15 @@ def food_card(item):
         width="100%", align="center", **CARD_STYLE,
     )
 ```
-> `item` here is a Var (from `rx.foreach`), so `item["id"]`, `item["name"]`, `item["price"]` are Var accesses — correct. `rx.text("₹", item["price"].to(str))` concatenates; verify rendering.
+> `item` here is Var (from `rx.foreach`), so `item["id"]`, `item["name"]`, `item["price"]` are Var accesses — correct. `rx.text("₹", item["price"].to(str))` concatenates; verify rendering.
 
-- [ ] **Step 5: Compile-check the components import**
+- [ ] **Step 5: Compile-check components import**
 
 Run:
 ```bash
 python -c "from cateringv3.components import buttons, category_chips, quantity_stepper, food_card; print('components ok')"
 ```
-Expected: `components ok` (fix the `CATEGORIES_LIST` → `data.CATEGORIES` issue first).
+Expected: `components ok` (fix `CATEGORIES_LIST` → `data.CATEGORIES` issue first).
 
 - [ ] **Step 6: Commit**
 
@@ -1135,7 +1135,7 @@ def bottom_sheet(open_var, *body):
         ),
     )
 ```
-> Backdrop box has no `on_click` — taps do nothing (#14). On tablet the date picker is a modal, not this sheet (handled in Task 10).
+> Backdrop box has no `on_click` — taps do nothing (#14). On tablet, date picker is a modal, not this sheet (handled in Task 10).
 
 - [ ] **Step 2: Write `header.py`**
 
@@ -1195,7 +1195,7 @@ def page_shell(phone_body, left_pane, right_pane):
         font_family="Inter, sans-serif",
     )
 ```
-> Verify `rx.el.style` exists for injecting the `@font-face` CSS (reflex-docs). If not, use `rx.html`-free alternative: pass the font CSS via `app.add_page(..., style=...)` or `rx.App(stylesheets=[...])`. Since `rx.html()` is banned, prefer `rx.el.style(FONT_FACE_CSS)`; confirm in source. Note the resolution in the task report.
+> Verify `rx.el.style` exists for injecting `@font-face` CSS (reflex-docs). If not, use `rx.html`-free alternative: pass font CSS via `app.add_page(..., style=...)` or `rx.App(stylesheets=[...])`. Since `rx.html()` banned, prefer `rx.el.style(FONT_FACE_CSS)`; confirm in source. Note resolution in task report.
 
 - [ ] **Step 4: Compile-check**
 
@@ -1230,9 +1230,9 @@ git commit -m "feat: add responsive shell, header, bottom sheet"
   - `delivery_date.date_picker_sheet() -> rx.Component` — phone bottom sheet; `delivery_date.date_picker_modal() -> rx.Component` — tablet `rx.dialog`. Both use `delivery_date.calendar()`.
   - `delivery_date.calendar() -> rx.Component` — real month grid (see below).
 
-- [ ] **Step 1: Add a calendar computed var to the order state**
+- [ ] **Step 1: Add calendar computed var to order state**
 
-Real functional calendar logic is math → backend. Add to `CustomerOrderSelectionState`:
+Real functional calendar logic = math → backend. Add to `CustomerOrderSelectionState`:
 ```python
     cal_year: int = 0
     cal_month: int = 0  # 1-12
@@ -1279,7 +1279,7 @@ Real functional calendar logic is math → backend. Add to `CustomerOrderSelecti
         if self.cal_month > 12:
             self.cal_month, self.cal_year = 1, self.cal_year + 1
 ```
-Verify it imports: `python -c "import cateringv3.state.customerorderstate"`.
+Verify import: `python -c "import cateringv3.state.customerorderstate"`.
 
 - [ ] **Step 2: Write `menu.py`**
 
@@ -1353,9 +1353,9 @@ def cart_body():
         spacing="4", width="100%",
     )
 ```
-> `_line` needs the real item name/price. `entry` from `rx.foreach(dict)` yields `(key, value)` Var tuples. Look up name via a state computed instead of `data.ITEMS_BY_ID` in the component (backend-only). Add an `OS.cart_lines -> list[dict]` computed var returning `[{"id","name","price","qty","line_total_display"}]` and foreach over that. Implement `cart_lines` in the order state; rewrite `_line` to read `line["name"]`, `line["qty"]`, `quantity_stepper(line["id"])`. Do this rather than computing in the component.
+> `_line` needs real item name/price. `entry` from `rx.foreach(dict)` yields `(key, value)` Var tuples. Look up name via state computed instead of `data.ITEMS_BY_ID` in component (backend-only). Add `OS.cart_lines -> list[dict]` computed var returning `[{"id","name","price","qty","line_total_display"}]`, foreach over that. Implement `cart_lines` in order state; rewrite `_line` to read `line["name"]`, `line["qty"]`, `quantity_stepper(line["id"])`. Do this rather than computing in component.
 
-- [ ] **Step 3b: Add `cart_lines` computed var to the order state**
+- [ ] **Step 3b: Add `cart_lines` computed var to order state**
 
 ```python
     @rx.var
@@ -1421,7 +1421,7 @@ def date_picker_modal():
         open=SO.show_date_picker,
     )
 ```
-> Phone uses `bottom_sheet(SO.show_date_picker, calendar())` (wired in Task 12). Tablet uses `date_picker_modal()`. Verify `rx.dialog` API in reflex-docs. The weekday header row (Sun…Sat) can be added as a static `rx.hstack` of labels above the weeks.
+> Phone uses `bottom_sheet(SO.show_date_picker, calendar())` (wired in Task 12). Tablet uses `date_picker_modal()`. Verify `rx.dialog` API in reflex-docs. Weekday header row (Sun…Sat) can be added as static `rx.hstack` of labels above weeks.
 
 - [ ] **Step 5: Compile-check pages import**
 
@@ -1456,7 +1456,7 @@ git commit -m "feat: add menu, cart, and functional calendar pages"
 
 - [ ] **Step 1: Add packing display computed vars (backend-only) to `CustomerPackingState`**
 
-The containers screen needs display-ready per-container and per-item data. Add:
+Containers screen needs display-ready per-container and per-item data. Add:
 ```python
     @rx.var
     def container_cards(self) -> list[dict]:
@@ -1488,7 +1488,7 @@ The containers screen needs display-ready per-container and per-item data. Add:
             })
         return chips
 ```
-Add `deps=[CustomerOrderSelectionState.cart, containers, selected_item_to_pack]` on the async `pack_chips` if needed; verify import.
+Add `deps=[CustomerOrderSelectionState.cart, containers, selected_item_to_pack]` on async `pack_chips` if needed; verify import.
 
 - [ ] **Step 2: Write `containers.py`**
 
@@ -1629,7 +1629,7 @@ def profile_drawer():
             open=SO.show_profile, direction="left")),
     )
 ```
-> Verify the `rx.drawer` composition (`root/overlay/portal/content`, `open`, `direction`) against reflex-docs before finalizing; adjust to the real API and note it. Backdrop must NOT auto-close beyond the X (#14) — if drawer closes on overlay click by default, wire `on_open_change` to keep it controlled, or accept drawer's standard behavior and document the deviation in the task report for the user to decide.
+> Verify `rx.drawer` composition (`root/overlay/portal/content`, `open`, `direction`) against reflex-docs before finalizing; adjust to real API, note it. Backdrop must NOT auto-close beyond X (#14) — if drawer closes on overlay click by default, wire `on_open_change` to keep controlled, or accept drawer's standard behavior and document deviation in task report for user decision.
 
 - [ ] **Step 5: Compile-check**
 
@@ -1654,7 +1654,7 @@ git commit -m "feat: add profile drawer, containers, and success pages"
 - Modify: `cateringv3/cateringv3.py`
 
 **Interfaces:**
-- Consumes: everything. Produces the `rx.App` page.
+- Consumes: everything. Produces `rx.App` page.
 
 - [ ] **Step 1: Rewrite `cateringv3.py`**
 
@@ -1703,30 +1703,30 @@ def index() -> rx.Component:
 app = rx.App()
 app.add_page(index, route="/", on_load=OS.init_date)
 ```
-> Verify `rx.match` for stage switching (or use nested `rx.cond`). Confirm `on_load` accepts an event handler. Adjust per reflex-docs.
+> Verify `rx.match` for stage switching (or use nested `rx.cond`). Confirm `on_load` accepts event handler. Adjust per reflex-docs.
 
 - [ ] **Step 2: Compile the app**
 
-Follow the reflex-process-management skill. Start the app:
+Follow reflex-process-management skill. Start app:
 ```bash
 reflex run
 ```
-Expected: compiles with no Python/Reflex errors and serves on `localhost:3000`. If it errors, fix per the skill's investigation steps (most likely: a Var API mismatch flagged in an earlier task's verify note).
+Expected: compiles w/ no Python/Reflex errors, serves on `localhost:3000`. If errors, fix per skill's investigation steps (most likely: Var API mismatch flagged in earlier task's verify note).
 
 - [ ] **Step 3: Click-through smoke test (per spec Verification, #4)**
 
-Using the Playwright MCP browser, visit `http://localhost:3000` and confirm each without crashing:
-1. Menu renders; category chips switch items; "Add" adds → stepper appears; − at qty 1 removes the line.
-2. Header date opens the date picker; pick a date; past dates disabled; month nav works; Done closes.
-3. Profile icon opens the drawer; close works.
-4. Cart (phone: Cart button; tablet: right pane) shows lines + items total; "Choose containers" goes to the containers stage.
-5. Containers: add S/M/L; select an item chip; tap a container to pack one unit; Auto-pack fills; progress + "space used" update; Pay disabled until fully packed.
+Using Playwright MCP browser, visit `http://localhost:3000` and confirm each w/o crashing:
+1. Menu renders; category chips switch items; "Add" adds → stepper appears; − at qty 1 removes line.
+2. Header date opens date picker; pick date; past dates disabled; month nav works; Done closes.
+3. Profile icon opens drawer; close works.
+4. Cart (phone: Cart button; tablet: right pane) shows lines + items total; "Choose containers" goes to containers stage.
+5. Containers: add S/M/L; select item chip; tap container to pack one unit; Auto-pack fills; progress + "space used" update; Pay disabled until fully packed.
 6. Pay → success screen shows order number `SAR-####`, total, container count; "Back to menu" returns and resets (cart empty, date back to today).
-7. Resize the browser to tablet width (≥ 768px) and confirm the two-pane layout appears and the cart is a persistent right pane.
+7. Resize browser to tablet width (≥ 768px), confirm two-pane layout appears, cart is persistent right pane.
 
-Record any visual gaps vs `assets/01`–`07`; fix obvious ones (spacing, color, font). Do NOT do a screenshot-diff pass.
+Record any visual gaps vs `assets/01`–`07`; fix obvious ones (spacing, color, font). Do NOT do screenshot-diff pass.
 
-- [ ] **Step 4: Stop the app and run the full test suite**
+- [ ] **Step 4: Stop app, run full test suite**
 
 Run: `python -m pytest -v`
 Expected: all logic tests pass.
@@ -1750,8 +1750,8 @@ git commit -m "feat: assemble Sarthi single-page app with stage/overlay routing"
 - Data: real breads + invented veg, container specs (Task 2). ✓
 - Theme tokens + fonts (Task 1). ✓
 
-**Placeholder scan:** No "TBD/TODO-in-final-code" — the only `# TODO(Task 7)` markers are explicitly created in Task 5 and explicitly removed in Task 7. Every code step shows real code.
+**Placeholder scan:** No "TBD/TODO-in-final-code" — only `# TODO(Task 7)` markers explicitly created in Task 5, explicitly removed in Task 7. Every code step shows real code.
 
-**Type consistency:** container dict shape `{id,size,capacity,fee,items:{item_id:qty}}` is consistent across `packing.py`, `add_container`, `ffd_pack`, `container_cards`. `selected_item_to_pack` is `str` ("" = none) everywhere. `cart` is `dict[str,int]` throughout. Money always via `packing.money`. Order number `SAR-####` produced by `make_order_number`, consumed by `pay` → `order_number`.
+**Type consistency:** container dict shape `{id,size,capacity,fee,items:{item_id:qty}}` consistent across `packing.py`, `add_container`, `ffd_pack`, `container_cards`. `selected_item_to_pack` is `str` ("" = none) everywhere. `cart` is `dict[str,int]` throughout. Money always via `packing.money`. Order number `SAR-####` produced by `make_order_number`, consumed by `pay` → `order_number`.
 
-**Known verification points flagged for the implementer** (each has a fallback noted in its step): `rx.scroll_to`, `OS.quantities[item_id]` var-indexing, `rx.el.style` for `@font-face`, `@rx.var(deps=[...])` referencing a local var inside the class body, `rx.dialog` / `rx.drawer` composition and `direction`, `rx.match`, `on_load` accepting an event handler. These are Reflex-API confirmations to make against reflex-docs/source during implementation, not design gaps.
+**Known verification points flagged for implementer** (each has fallback noted in its step): `rx.scroll_to`, `OS.quantities[item_id]` var-indexing, `rx.el.style` for `@font-face`, `@rx.var(deps=[...])` referencing local var inside class body, `rx.dialog` / `rx.drawer` composition and `direction`, `rx.match`, `on_load` accepting event handler. These are Reflex-API confirmations to make against reflex-docs/source during implementation, not design gaps.
