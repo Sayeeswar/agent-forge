@@ -16,9 +16,8 @@ Replicate the Sarthi admin experience — Menu (view/edit/publish) and Orders (o
 | Menu data | Uses the customer app's real menu (`data.CATEGORIES` / `data.ITEMS` — 5 categories, 24 items). The artifact's own mock content (8 categories, 29 items, invented dish names) was mockup filler, not data to replicate, and is discarded. |
 | Edit → View → Publish | Edit tab works on a **draft** copy. View tab renders the **published** snapshot. Publish copies draft → published. This is an internal-to-admin simulation; it does not write back into the customer app's `data.py` or affect what customers see — that cross-app sync is deferred to the real-DB phase. |
 
-## Guard rail (added to CLAUDE.md)
-
-While building the admin app: never touch, read, or write the customer app's pages or states — `pages/{menu,cart,delivery_date,profile_drawer,containers,success}.py` and `state/{customerorderstate,customerpackingstate,stageoverlaystate}.py`. Shared primitives (`theme.py`, `components/{buttons,bottom_sheet,background}.py`) stay importable/reusable by the admin app but must not be modified.
+## Guard rail 
+Strictly follow claude.md guardrails never disobey the guardrails
 
 ## Architecture
 
@@ -96,3 +95,5 @@ Header: order id + placed time, customer name, phone, payment badge (`online`/`c
 - `tests/test_admin_logic.py`: TDD for every pure function above (stat counts, prep-list aggregation, partial-total recalculation, special-order filtering) — same pattern as `packing.py`/`test_packing_totals.py`.
 - No network/DB error handling needed (mock data, no auth). UI-level edge cases only: empty orders list, empty draft items, publish with 0 items (button stays enabled, no-ops — matching the customer app's Auto-pack no-op pattern).
 - Verification depth: compile + run + click-through smoke test per screen, checked against the Playwright captures taken during this design session (screenshots banned per project rule; these captures are the reference instead).
+## Codestructre 
+- Maintain good code structre so that it will be asy when i make a models.py
