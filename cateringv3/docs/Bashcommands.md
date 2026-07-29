@@ -67,3 +67,13 @@ Purpose: Task 5 Step 3 — verify AdminOrdersState imports and the AdminNavState
 python -m pytest -v
 ```
 Purpose: Task 5 Step 4 — full suite check before commit (35 passed).
+
+```bash
+python -c "from cateringv3.state.adminordersstate import AdminOrdersState; print('ok')"
+```
+Purpose: Task 6 Step 2 — verify AdminOrdersState imports after adding order-detail sheet logic.
+
+```bash
+python -m pytest -v
+```
+Purpose: Task 6 Step 3 — full suite check before commit (35 passed).

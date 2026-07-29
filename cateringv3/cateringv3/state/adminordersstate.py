@@ -105,3 +105,99 @@ class AdminOrdersState(rx.State):
                 "is_special": o["is_special"],
             })
         return out
+
+    def _find_order(self, order_id: str):
+        for o in self.orders:
+            if o["id"] == order_id:
+                return o
+        return None
+
+    @rx.var
+    def show_order_sheet(self) -> bool:
+        return self.active_order_id != ""
+
+    @rx.var
+    def active_order_lines(self) -> list[dict]:
+        order = self._find_order(self.active_order_id)
+        if order is None:
+            return []
+        return admin_logic.order_line_items(order)
+
+    @rx.var
+    def active_order_id_display(self) -> str:
+        order = self._find_order(self.active_order_id)
+        return order["id"] if order else ""
+
+    @rx.var
+    def active_order_placed_display(self) -> str:
+        order = self._find_order(self.active_order_id)
+        return order["placed_display"] if order else ""
+
+    @rx.var
+    def active_order_customer_name(self) -> str:
+        order = self._find_order(self.active_order_id)
+        return order["customer_name"] if order else ""
+
+    @rx.var
+    def active_order_phone(self) -> str:
+        order = self._find_order(self.active_order_id)
+        return order["phone"] if order else ""
+
+    @rx.var
+    def active_order_payment_method(self) -> str:
+        order = self._find_order(self.active_order_id)
+        return order["payment_method"] if order else ""
+
+    @rx.var
+    def active_order_original_total_display(self) -> str:
+        order = self._find_order(self.active_order_id)
+        return admin_logic.money(admin_logic.order_original_total(order)) if order else ""
+
+    @rx.var
+    def active_order_total_display(self) -> str:
+        order = self._find_order(self.active_order_id)
+        return admin_logic.money(admin_logic.order_total(order)) if order else ""
+
+    @rx.var
+    def active_order_has_strikes(self) -> bool:
+        order = self._find_order(self.active_order_id)
+        return bool(order and order["struck_item_ids"])
+
+    @rx.event
+    def open_order(self, order_id: str):
+        self.active_order_id = order_id
+
+    @rx.event
+    def close_order(self):
+        self.active_order_id = ""
+
+    @rx.event
+    def toggle_strike(self, item_id: str):
+        order = self._find_order(self.active_order_id)
+        if order is None:
+            return
+        if item_id in order["struck_item_ids"]:
+            order["struck_item_ids"].remove(item_id)
+        else:
+            order["struck_item_ids"].append(item_id)
+
+    @rx.event
+    def save_partial(self):
+        order = self._find_order(self.active_order_id)
+        if order is not None:
+            order["status"] = "partial" if order["struck_item_ids"] else "open"
+        self.close_order()
+
+    @rx.event
+    def mark_completed(self):
+        order = self._find_order(self.active_order_id)
+        if order is not None:
+            order["status"] = "completed"
+        self.close_order()
+
+    @rx.event
+    def cancel_order(self):
+        order = self._find_order(self.active_order_id)
+        if order is not None:
+            order["status"] = "cancelled"
+        self.close_order()
