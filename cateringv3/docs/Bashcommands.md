@@ -77,3 +77,8 @@ Purpose: Task 6 Step 2 — verify AdminOrdersState imports after adding order-de
 python -m pytest -v
 ```
 Purpose: Task 6 Step 3 — full suite check before commit (35 passed).
+
+```bash
+python -c "from cateringv3.components.admin import stat_tile, nav_dropdown; print('ok')"
+```
+Purpose: Task 7 Step 3 — compile-check stat_tile and nav_dropdown components.
