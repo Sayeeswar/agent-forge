@@ -57,3 +57,13 @@ Purpose: Task 3 Step 2 — verify AdminNavState imports.
 python -c "import cateringv3.state.adminmenustate as m; print('ok', m.AdminMenuState.__name__)"
 ```
 Purpose: Task 4 Step 2 — verify AdminMenuState imports (including the underscore-prefixed `_active_source` computed var).
+
+```bash
+python -c "from cateringv3.state.adminnavstate import AdminNavState; from cateringv3.state.adminordersstate import AdminOrdersState; print('ok')"
+```
+Purpose: Task 5 Step 3 — verify AdminOrdersState imports and the AdminNavState<->AdminOrdersState local-import wiring has no circular-import error.
+
+```bash
+python -m pytest -v
+```
+Purpose: Task 5 Step 4 — full suite check before commit (35 passed).

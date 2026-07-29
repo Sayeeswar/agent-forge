@@ -21,4 +21,9 @@ class AdminNavState(rx.State):
 
     @rx.event
     async def load_admin_data(self):
-        pass  # TODO(Task 5): call AdminOrdersState.load_mock_orders + AdminMenuState.load_menu
+        from cateringv3.state.adminordersstate import AdminOrdersState
+        from cateringv3.state.adminmenustate import AdminMenuState
+        orders_state = await self.get_state(AdminOrdersState)
+        orders_state.load_mock_orders()
+        menu_state = await self.get_state(AdminMenuState)
+        menu_state.load_menu()
