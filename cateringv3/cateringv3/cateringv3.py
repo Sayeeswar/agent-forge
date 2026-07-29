@@ -5,12 +5,12 @@ from cateringv3.state import CustomerOrderSelectionState as OS, StageOverlaysSta
 from cateringv3.components.background import page_shell
 from cateringv3.components.header import header
 from cateringv3.components.bottom_sheet import bottom_sheet
-from cateringv3.pages.menu import menu_list
-from cateringv3.pages.cart import cart_body
-from cateringv3.pages.delivery_date import date_picker_sheet, date_picker_modal
-from cateringv3.pages.profile_drawer import profile_drawer
-from cateringv3.pages.containers import containers_screen
-from cateringv3.pages.success import success_screen
+from cateringv3.customersec.menu import menu_list
+from cateringv3.customersec.cart import cart_body
+from cateringv3.customersec.delivery_date import date_picker_sheet, date_picker_modal
+from cateringv3.customersec.profile_drawer import profile_drawer
+from cateringv3.customersec.containers import containers_screen
+from cateringv3.customersec.success import success_screen
 
 
 def _cart_sheet() -> rx.Component:
