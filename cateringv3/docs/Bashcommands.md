@@ -102,3 +102,8 @@ Purpose: Task 10 Step 3 — compile-check order_card and order_detail_sheet (inc
 python -c "from cateringv3.pages.admin_menu import menu_page; print('ok')"
 ```
 Purpose: Task 11 Step 2 — compile-check admin_menu page; confirms rx.badge accepts an int Var (category_rows count).
+
+```bash
+python -c "from cateringv3.pages.admin_orders import orders_page; print('ok')"
+```
+Purpose: Task 12 Step 2 — compile-check admin_orders page (Orders/Kitchen tabs).
