@@ -87,3 +87,8 @@ Purpose: Task 7 Step 3 — compile-check stat_tile and nav_dropdown components.
 python -c "from cateringv3.components.base_page import base_page; print('ok')"
 ```
 Purpose: Task 8 Step 3 — compile-check base_page decorator (and admin_header via its import chain).
+
+```bash
+python -c "from cateringv3.components.admin.menu_item_row import menu_item_row; print('ok')"
+```
+Purpose: Task 9 Step 2 — compile-check menu_item_row (dual-mode view/edit row).
