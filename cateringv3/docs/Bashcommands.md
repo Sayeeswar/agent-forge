@@ -92,3 +92,8 @@ Purpose: Task 8 Step 3 — compile-check base_page decorator (and admin_header v
 python -c "from cateringv3.components.admin.menu_item_row import menu_item_row; print('ok')"
 ```
 Purpose: Task 9 Step 2 — compile-check menu_item_row (dual-mode view/edit row).
+
+```bash
+python -c "from cateringv3.components.admin.order_card import order_card; from cateringv3.components.admin.order_detail_sheet import order_detail_sheet; print('ok')"
+```
+Purpose: Task 10 Step 3 — compile-check order_card and order_detail_sheet (incl. bottom_sheet.py reuse).
