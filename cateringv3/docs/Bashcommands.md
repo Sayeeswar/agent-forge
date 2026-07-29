@@ -97,3 +97,8 @@ Purpose: Task 9 Step 2 — compile-check menu_item_row (dual-mode view/edit row)
 python -c "from cateringv3.components.admin.order_card import order_card; from cateringv3.components.admin.order_detail_sheet import order_detail_sheet; print('ok')"
 ```
 Purpose: Task 10 Step 3 — compile-check order_card and order_detail_sheet (incl. bottom_sheet.py reuse).
+
+```bash
+python -c "from cateringv3.pages.admin_menu import menu_page; print('ok')"
+```
+Purpose: Task 11 Step 2 — compile-check admin_menu page; confirms rx.badge accepts an int Var (category_rows count).
