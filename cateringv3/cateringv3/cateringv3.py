@@ -11,6 +11,8 @@ from cateringv3.customersec.delivery_date import date_picker_sheet, date_picker_
 from cateringv3.customersec.profile_drawer import profile_drawer
 from cateringv3.customersec.containers import containers_screen
 from cateringv3.customersec.success import success_screen
+from cateringv3.pages.admin import admin
+from cateringv3.state.adminnavstate import AdminNavState
 
 
 def _cart_sheet() -> rx.Component:
@@ -56,3 +58,4 @@ def index() -> rx.Component:
 
 app = rx.App()
 app.add_page(index, route="/", on_load=OS.init_date)
+app.add_page(admin, route="/admin", on_load=AdminNavState.load_admin_data)

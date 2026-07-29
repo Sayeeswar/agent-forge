@@ -107,3 +107,23 @@ Purpose: Task 11 Step 2 — compile-check admin_menu page; confirms rx.badge acc
 python -c "from cateringv3.pages.admin_orders import orders_page; print('ok')"
 ```
 Purpose: Task 12 Step 2 — compile-check admin_orders page (Orders/Kitchen tabs).
+
+```bash
+python -c "from cateringv3.cateringv3 import app; print('ok')"
+```
+Purpose: Task 13 Step 3 — compile-check the assembled app with the new /admin route.
+
+```bash
+reflex compile --dry
+```
+Purpose: Task 13 Step 4 — dry-compile check before running the server for the browser smoke test.
+
+```bash
+reflex run --env prod --single-port
+```
+Purpose: Task 13 Step 4 — run the production server on port 3000 for the Playwright browser smoke test.
+
+```bash
+python -m pytest -v
+```
+Purpose: Task 13 Step 5 — final full suite check before commit (35 passed).
