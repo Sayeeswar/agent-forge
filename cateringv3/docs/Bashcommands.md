@@ -82,3 +82,8 @@ Purpose: Task 6 Step 3 — full suite check before commit (35 passed).
 python -c "from cateringv3.components.admin import stat_tile, nav_dropdown; print('ok')"
 ```
 Purpose: Task 7 Step 3 — compile-check stat_tile and nav_dropdown components.
+
+```bash
+python -c "from cateringv3.components.base_page import base_page; print('ok')"
+```
+Purpose: Task 8 Step 3 — compile-check base_page decorator (and admin_header via its import chain).
