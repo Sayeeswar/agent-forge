@@ -17,7 +17,7 @@
 - **Data:** Mock hardcoded (no SQLModel/DB this round). Menu data is seeded from the customer app's real `data.ITEMS`/`data.CATEGORIES` — never the artifact's invented 8-category content.
 - **Auth:** None. No login gate on `/admin`.
 - **Responsive scope:** Phone-width only (~430px column). No tablet/desktop layout for the admin app.
-- **Guard rail:** Never touch/read/write `pages/{menu,cart,delivery_date,profile_drawer,containers,success}.py` or `state/{customerorderstate,customerpackingstate,stageoverlaystate}.py`. `theme.py` and `components/{buttons,bottom_sheet,background}.py` are import-only, never modified. `state/packing.py` is also left untouched — admin defines its own tiny `money()` helper in `admin_logic.py` rather than importing across, to keep the admin app fully decoupled.
+- **Guard rail:** Never touch/read/write `customersec/{menu,cart,delivery_date,profile_drawer,containers,success}.py` (the customer app's page folder — renamed from `pages/` to `customersec/` at some point before this execution pass; a fresh `pages/` directory now holds admin-only pages, no collision) or `state/{customerorderstate,customerpackingstate,stageoverlaystate}.py`. `theme.py` and `components/{buttons,bottom_sheet,background}.py` are import-only, never modified. `state/packing.py` is also left untouched — admin defines its own tiny `money()` helper in `admin_logic.py` rather than importing across, to keep the admin app fully decoupled.
 - **Git:** Work only on branch `sarthi-catering-app` (already checked out). Never commit to `main`/`master`. Commit after each task.
 - **Process:** Log every bash command run to `docs/Bashcommands.md`. Run the full `pytest` suite (not just the new file) before each commit. Update `TODO.md` as tasks complete.
 
