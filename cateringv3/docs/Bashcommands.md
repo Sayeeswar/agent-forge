@@ -47,3 +47,8 @@ Purpose: Task 2 Step 4 — confirm all admin_logic tests pass after adding aggre
 python -m pytest -v
 ```
 Purpose: Task 2 Step 5 — full suite check before commit (35 passed).
+
+```bash
+python -c "import cateringv3.state.adminnavstate as m; print('ok', m.AdminNavState.__name__)"
+```
+Purpose: Task 3 Step 2 — verify AdminNavState imports.
