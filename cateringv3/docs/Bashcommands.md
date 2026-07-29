@@ -32,3 +32,18 @@ Purpose: Task 1 Step 2 — confirm new admin tests fail before implementation ex
 python -m pytest tests/test_admin_logic.py tests/test_admin_orders_data.py -v
 ```
 Purpose: Task 1 Step 5 — confirm new admin tests pass after writing admin_data.py + state/admin_logic.py (8 passed).
+
+```bash
+python -m pytest tests/test_admin_logic.py -v
+```
+Purpose: Task 2 Step 2 — confirm new kitchen/stat aggregation tests fail before the functions exist (6 failed, 5 passed).
+
+```bash
+python -m pytest tests/test_admin_logic.py -v
+```
+Purpose: Task 2 Step 4 — confirm all admin_logic tests pass after adding aggregation functions (11 passed).
+
+```bash
+python -m pytest -v
+```
+Purpose: Task 2 Step 5 — full suite check before commit (35 passed).
