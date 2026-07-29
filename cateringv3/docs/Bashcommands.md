@@ -52,3 +52,8 @@ Purpose: Task 2 Step 5 — full suite check before commit (35 passed).
 python -c "import cateringv3.state.adminnavstate as m; print('ok', m.AdminNavState.__name__)"
 ```
 Purpose: Task 3 Step 2 — verify AdminNavState imports.
+
+```bash
+python -c "import cateringv3.state.adminmenustate as m; print('ok', m.AdminMenuState.__name__)"
+```
+Purpose: Task 4 Step 2 — verify AdminMenuState imports (including the underscore-prefixed `_active_source` computed var).
