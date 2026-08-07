@@ -14,7 +14,6 @@ to create/apply the tables. Make sure rxconfig.py has:
 """
 
 import enum
-import uuid
 from datetime import datetime
 from typing import List, Optional
 
