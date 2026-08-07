@@ -1,8 +1,8 @@
-"""empty message
+"""initial schema
 
-Revision ID: be9a6dc29da3
+Revision ID: 86936d25ff06
 Revises: 
-Create Date: 2026-08-07 21:53:25.093892
+Create Date: 2026-08-07 23:10:40.936649
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 import sqlmodel
 
 # revision identifiers, used by Alembic.
-revision: str = 'be9a6dc29da3'
+revision: str = '86936d25ff06'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -39,7 +39,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('order_number', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('customer_id', sa.Integer(), nullable=False),
-    sa.Column('status', sa.Enum('PENDING', 'CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', name='orderstatus'), nullable=False),
+    sa.Column('status', sa.Enum('pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled', name='orderstatus'), nullable=False),
     sa.Column('ordered_at', sa.DateTime(), nullable=False),
     sa.Column('delivery_date', sa.DateTime(), nullable=True),
     sa.Column('total_amount', sa.Float(), nullable=False),
@@ -71,7 +71,7 @@ def upgrade() -> None:
     sa.Column('razorpay_signature', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('amount', sa.Float(), nullable=False),
     sa.Column('currency', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('status', sa.Enum('CREATED', 'PAID', 'FAILED', 'REFUNDED', name='paymentstatus'), nullable=False),
+    sa.Column('status', sa.Enum('created', 'paid', 'failed', 'refunded', name='paymentstatus'), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('verified_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ),
