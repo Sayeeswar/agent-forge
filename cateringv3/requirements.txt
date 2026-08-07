@@ -1,3 +1,2 @@
-
-reflex==0.9.6.post1
-asyncpg
+reflex==0.9.6.post2
+asyncpg==0.31.0

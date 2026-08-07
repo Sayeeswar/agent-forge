@@ -26,7 +26,7 @@ needed (no `python-dotenv`), and `psycopg2` is already installed.
 
 New root `.env` (gitignored, not committed):
 ```
-REFLEX_DB_URL=postgresql+psycopg2://postgres:Sayeeswar@localhost:5432/catering_db
+REFLEX_DB_URL=postgresql+psycopg2://postgres:<PASSWORD>@localhost:5432/catering_db
 ```
 
 `.gitignore`: add `.env`.

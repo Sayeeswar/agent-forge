@@ -4,13 +4,17 @@ Database schema for the e-catering app (Reflex + PostgreSQL).
 Reflex's rx.Model is built on SQLModel, so every class below becomes
 a real Postgres table. Run:
 
+    reflex db init
     reflex db makemigrations --message "initial schema"
     reflex db migrate
 
-to create/apply the tables. Make sure rxconfig.py has:
+to create/apply the tables (some Reflex versions auto-generate and apply
+the first migration inside `db init` itself, making the next two steps
+no-ops — inspect alembic/versions/ to see what actually landed). Make
+sure rxconfig.py has env_file=".env" and .env has REFLEX_DB_URL set,
+e.g.:
 
-    db_url = "postgresql+psycopg2://user:password@host:5432/dbname"
-    # or your Neon connection string
+    REFLEX_DB_URL=postgresql+psycopg2://user:password@host:5432/dbname
 """
 
 import enum

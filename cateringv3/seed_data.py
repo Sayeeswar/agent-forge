@@ -13,7 +13,7 @@ Usage:
     pip install psycopg2-binary      # if not already installed
     python seed_data.py
 
-Set your connection string via env var or edit DATABASE_URL below.
+Set your connection string via the DATABASE_URL env var (required, no fallback).
 Match whatever's in rxconfig.py's db_url, just swap "+psycopg2" out
 since raw psycopg2.connect() doesn't use the SQLAlchemy-style prefix.
 """
@@ -103,7 +103,6 @@ def main():
             """
             INSERT INTO customers (name, email, phone, password_hash, address, created_at)
             VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING id
             """,
             customer_rows,
         )
