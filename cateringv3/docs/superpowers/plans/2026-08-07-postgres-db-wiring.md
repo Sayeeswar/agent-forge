@@ -1,0 +1,303 @@
+# Postgres DB Wiring Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Attach the local Postgres instance to the Reflex app, create the 4 tables from `cateringv3/models.py` via migration, and seed 500 rows per table.
+
+**Architecture:** Config-driven — `rxconfig.py` reads `db_url` from a gitignored `.env` via Reflex's built-in `env_file` mechanism (prefix `REFLEX_`). `models.py` gets imported once (in `__init__.py`) so SQLModel's metadata sees the 4 tables before `reflex db makemigrations` runs. Migration via Reflex's built-in alembic wrapper (`reflex db init/makemigrations/migrate`). Seed via the pre-existing `seed_data.py` (raw psycopg2, one placeholder fix).
+
+**Tech Stack:** Reflex 0.9.6.post1, SQLModel, psycopg2 (already installed), Postgres (local, `catering_db`), alembic (bundled via `reflex db`).
+
+## Global Constraints
+
+- Never commit to `main` — this plan executes on branch `feature/postgres-db-wiring` (already created).
+- No new pip dependencies (verified: `python-dotenv` not needed, `psycopg2` already installed).
+- Only `cateringv3/` app source + explicitly-approved root files (`rxconfig.py`, `seed_data.py`, `.gitignore`, `.env`) get touched — no other guard-railed files.
+- No try/except added unless asked — none of these steps need it.
+- Never commit real DB credentials to a tracked file. `.env` holds the real value; every other file uses a placeholder.
+- Max file 300 lines / function 40 lines — not a concern for this plan's tiny diffs.
+
+---
+
+### Task 1: Config + secrets wiring
+
+**Files:**
+- Modify: `rxconfig.py`
+- Create: `.env` (root, gitignored — not committed)
+- Modify: `.gitignore`
+
+**Interfaces:**
+- Produces: `config.db_url` (str) resolved at import time of `rxconfig`, consumed by `reflex db` CLI commands in Task 3 and implicitly by the running app later.
+
+- [ ] **Step 1: Add `.env` to `.gitignore`**
+
+Current `.gitignore`:
+```
+*.py[cod]
+assets/external/
+.web
+__pycache__/
+.states
+*.db
+```
+
+New line appended:
+```
+.env
+```
+
+- [ ] **Step 2: Create `.env` with the real connection string**
+
+Create `.env` at repo root (`C:\Users\sayee\cateringv3\.env`) with exactly (substitute the real local Postgres password, already shared in chat, for `<PASSWORD>` — never write the real value into any tracked file):
+```
+REFLEX_DB_URL=postgresql+psycopg2://postgres:<PASSWORD>@localhost:5432/catering_db
+```
+
+- [ ] **Step 3: Add `env_file` to `rxconfig.py`**
+
+Current `rxconfig.py`:
+```python
+import reflex as rx
+
+config = rx.Config(
+    app_name="cateringv3",
+    plugins=[
+        rx.plugins.SitemapPlugin(),
+        rx.plugins.TailwindV4Plugin(),
+    ]
+)
+```
+
+New `rxconfig.py`:
+```python
+import reflex as rx
+
+config = rx.Config(
+    app_name="cateringv3",
+    env_file=".env",
+    plugins=[
+        rx.plugins.SitemapPlugin(),
+        rx.plugins.TailwindV4Plugin(),
+    ]
+)
+```
+
+- [ ] **Step 4: Verify config resolves db_url (without printing the secret)**
+
+Run:
+```bash
+python -c "from rxconfig import config; assert config.db_url and 'catering_db' in config.db_url; print('db_url resolved OK, host+db match expected')"
+```
+Expected: `db_url resolved OK, host+db match expected`
+
+- [ ] **Step 5: Verify `.env` is actually ignored by git**
+
+Run:
+```bash
+git check-ignore -v .env
+```
+Expected: prints a line showing `.gitignore:<N>:.env	.env` (confirms it's ignored, won't be committed).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add rxconfig.py .gitignore
+git commit -m "feat: wire Postgres db_url via gitignored .env"
+```
+
+Note: `.env` itself is never staged (it's gitignored) — only `rxconfig.py` and `.gitignore` are committed.
+
+---
+
+### Task 2: Model registration
+
+**Files:**
+- Modify: `cateringv3/__init__.py`
+
+**Interfaces:**
+- Consumes: `cateringv3/models.py` (already exists — `Customer`, `Order`, `OrderItem`, `Payment`, all `rx.Model, table=True`).
+- Produces: SQLModel metadata populated with all 4 tables as soon as `cateringv3` package is imported — required by `reflex db makemigrations` in Task 3.
+
+- [ ] **Step 1: Import models in `__init__.py`**
+
+Current `cateringv3/__init__.py` is empty (0 lines).
+
+New `cateringv3/__init__.py`:
+```python
+from cateringv3 import models
+```
+
+- [ ] **Step 2: Verify SQLModel metadata sees all 4 tables**
+
+Run:
+```bash
+python -c "from sqlmodel import SQLModel; import cateringv3; print(sorted(SQLModel.metadata.tables.keys()))"
+```
+Expected: `['customers', 'order_items', 'orders', 'payments']`
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add cateringv3/__init__.py
+git commit -m "feat: register models with SQLModel metadata on package import"
+```
+
+---
+
+### Task 3: Migration (init, makemigrations, migrate)
+
+**Files:**
+- Create: `alembic/` directory tree (generated by `reflex db init`)
+- Create: `alembic/versions/<hash>_initial_schema.py` (generated by `reflex db makemigrations`)
+
+**Interfaces:**
+- Consumes: `config.db_url` from Task 1, SQLModel metadata from Task 2.
+- Produces: 4 live tables (`customers`, `orders`, `order_items`, `payments`) in `catering_db`, consumed by Task 4's seed script.
+
+- [ ] **Step 1: Initialize alembic**
+
+Run:
+```bash
+reflex db init
+```
+Expected: creates `alembic/` directory with `alembic.ini`, `alembic/env.py`, `alembic/versions/` (empty). No error output.
+
+- [ ] **Step 2: Generate the initial migration**
+
+Run:
+```bash
+reflex db makemigrations --message "initial schema"
+```
+Expected: creates one file under `alembic/versions/` (e.g. `<hash>_initial_schema.py`).
+
+- [ ] **Step 3: Inspect the generated migration before applying**
+
+Open the new file under `alembic/versions/`. Confirm `upgrade()` contains `op.create_table(...)` calls for all 4 tables: `customers`, `orders`, `order_items`, `payments`, with columns matching `cateringv3/models.py` (including the FKs: `orders.customer_id -> customers.id`, `order_items.order_id -> orders.id`, `payments.order_id -> orders.id` unique).
+
+If anything is missing or wrong, stop and fix `models.py` first, delete the bad migration file, and redo Step 2 — do not apply an incorrect migration.
+
+- [ ] **Step 4: Apply the migration**
+
+Run:
+```bash
+reflex db migrate
+```
+Expected: no errors, ends with alembic reporting the upgrade applied (e.g. `Running upgrade -> <hash>, initial schema`).
+
+- [ ] **Step 5: Verify the 4 tables exist in Postgres**
+
+Run (substitute the real local Postgres password for `<PASSWORD>` when typing this at the shell — do not paste the real value back into any file):
+```bash
+python -c "
+import psycopg2
+conn = psycopg2.connect('postgresql://postgres:<PASSWORD>@localhost:5432/catering_db')
+cur = conn.cursor()
+cur.execute(\"SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name\")
+print([r[0] for r in cur.fetchall()])
+conn.close()
+"
+```
+Expected: list includes `customers`, `orders`, `order_items`, `payments` (plus possibly `alembic_version`).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add alembic/
+git commit -m "feat: add initial Postgres migration for Customer/Order/OrderItem/Payment"
+```
+
+---
+
+### Task 4: Seed data
+
+**Files:**
+- Modify: `seed_data.py:30`
+
+**Interfaces:**
+- Consumes: the 4 tables created in Task 3.
+- Produces: 500 rows in each of `customers`, `orders`, `order_items`, `payments` — no other task depends on this output; it's the terminal deliverable of this plan.
+
+- [ ] **Step 1: Remove the hardcoded password fallback in `seed_data.py`**
+
+`seed_data.py` gets committed to git (Step 5 below), so it must never contain the
+real password — even as a "fallback default". Current `seed_data.py:28-31` bakes it
+in as a placeholder-host fallback (password redacted here as `<PASSWORD>`; the actual
+file on disk currently has the real value):
+```python
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "postgresql://postgres:<PASSWORD>@host:5432/catering_db",  # <-- edit this
+)
+```
+
+New — require the env var explicitly, no hardcoded credential of any kind:
+```python
+DATABASE_URL = os.environ["DATABASE_URL"]  # postgresql://user:password@host:port/dbname
+```
+
+- [ ] **Step 2: Run the seed script with the connection string passed via env var**
+
+Run (substitute the real local Postgres password for `<PASSWORD>` at the shell — do not write the real value into any file):
+```bash
+DATABASE_URL="postgresql://postgres:<PASSWORD>@localhost:5432/catering_db" python seed_data.py
+```
+Expected: ends with `Inserted 500 customers, 500 orders, 500 order_items, 500 payments.`
+
+- [ ] **Step 3: Verify row counts**
+
+Run (same `<PASSWORD>` substitution rule):
+```bash
+python -c "
+import psycopg2
+conn = psycopg2.connect('postgresql://postgres:<PASSWORD>@localhost:5432/catering_db')
+cur = conn.cursor()
+for t in ('customers', 'orders', 'order_items', 'payments'):
+    cur.execute(f'SELECT COUNT(*) FROM {t}')
+    print(t, cur.fetchone()[0])
+conn.close()
+"
+```
+Expected:
+```
+customers 500
+orders 500
+order_items 500
+payments 500
+```
+
+- [ ] **Step 4: Sanity-check FK join (order -> items -> payment)**
+
+Run (same `<PASSWORD>` substitution rule):
+```bash
+python -c "
+import psycopg2
+conn = psycopg2.connect('postgresql://postgres:<PASSWORD>@localhost:5432/catering_db')
+cur = conn.cursor()
+cur.execute('''
+    SELECT o.id, o.order_number, o.total_amount, COUNT(oi.id) AS item_count, p.status
+    FROM orders o
+    JOIN order_items oi ON oi.order_id = o.id
+    JOIN payments p ON p.order_id = o.id
+    GROUP BY o.id, o.order_number, o.total_amount, p.status
+    ORDER BY o.id
+    LIMIT 3
+''')
+for row in cur.fetchall():
+    print(row)
+conn.close()
+"
+```
+Expected: 3 rows printed, each with a non-null `order_number`, positive `total_amount`, `item_count >= 1`, and a valid `status` (`created`/`paid`/`failed`/`refunded`). No errors.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add seed_data.py
+git commit -m "fix: require DATABASE_URL env var in seed_data.py, drop hardcoded credential fallback"
+```
+
+---
+
+## Post-plan state
+
+After all 4 tasks: `catering_db` has 4 tables matching `models.py`, each with 500 rows, reachable via `config.db_url` (from gitignored `.env`) at runtime. `AdminMenuState`/`AdminOrdersState`/customer states still run on mock data — untouched, per spec's "out of scope this round."
