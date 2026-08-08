@@ -4,8 +4,8 @@ Seed script — populates categories/menu_items from cateringv3/data.py.
 Usage:
     python seed_menu_data.py
 
-Set DATABASE_URL the same way as seed_data.py (plain postgresql://, no +psycopg2).
-If DATABASE_URL is not set, it will be derived from .env's REFLEX_DB_URL.
+Set DATABASE_URL env var (required, no fallback). Match seed_data.py pattern:
+plain postgresql://, no +psycopg2 suffix.
 """
 
 import os
@@ -14,18 +14,7 @@ import psycopg2
 
 from cateringv3 import data
 
-# Get DATABASE_URL from environment or derive from .env
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if not DATABASE_URL:
-    # Load from .env and strip +psycopg2
-    with open(".env", "r") as f:
-        for line in f:
-            if line.startswith("REFLEX_DB_URL="):
-                reflex_url = line.split("=", 1)[1].strip()
-                DATABASE_URL = reflex_url.replace("+psycopg2", "")
-                break
-    if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL not set and REFLEX_DB_URL not found in .env")
+DATABASE_URL = os.environ["DATABASE_URL"]  # postgresql://user:password@host:port/dbname
 
 
 def main():
