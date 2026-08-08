@@ -1,7 +1,9 @@
 """Admin menu: draft (Edit) vs published (View) snapshot, Publish copies draft -> published."""
 import copy
 import reflex as rx
-from cateringv3 import data
+from sqlalchemy.orm import selectinload
+
+from cateringv3.models import Category, MenuItem
 
 
 class AdminMenuState(rx.State):
@@ -14,10 +16,20 @@ class AdminMenuState(rx.State):
     def load_menu(self):
         if self.published_items:
             return
-        seeded = [dict(item, available=True) for item in data.ITEMS]
+        with rx.session() as session:
+            categories = session.exec(Category.select().order_by(Category.sort_order)).all()
+            rows = session.exec(MenuItem.select().options(selectinload(MenuItem.category))).all()
+        seeded = [
+            {
+                "db_id": r.id, "id": str(r.id), "category": r.category.name,
+                "name": r.name, "desc": r.desc, "price": r.price,
+                "unit": r.unit, "veg": r.veg, "available": r.available,
+            }
+            for r in rows
+        ]
         self.published_items = copy.deepcopy(seeded)
         self.draft_items = copy.deepcopy(seeded)
-        self.active_category = data.CATEGORIES[0]
+        self.active_category = categories[0].name if categories else ""
 
     @rx.var
     def _active_source(self) -> list[dict]:
@@ -30,9 +42,13 @@ class AdminMenuState(rx.State):
     @rx.var
     def category_rows(self) -> list[dict]:
         source = self._active_source
+        seen = []
+        for i in source:
+            if i["category"] not in seen:
+                seen.append(i["category"])
         return [
             {"name": cat, "count": sum(1 for i in source if i["category"] == cat)}
-            for cat in data.CATEGORIES
+            for cat in seen
         ]
 
     @rx.var
@@ -91,10 +107,31 @@ class AdminMenuState(rx.State):
     def add_item(self, category: str):
         new_id = f"draft-item-{len(self.draft_items) + 1}"
         self.draft_items.append({
-            "id": new_id, "category": category, "name": "New item",
+            "db_id": None, "id": new_id, "category": category, "name": "New item",
             "desc": "", "price": 0, "unit": "per pc", "veg": True, "available": True,
         })
 
     @rx.event
     def publish(self):
+        with rx.session() as session:
+            categories = {c.name: c.id for c in session.exec(Category.select()).all()}
+            for item in self.draft_items:
+                if item["db_id"] is not None:
+                    row = session.get(MenuItem, item["db_id"])
+                    row.name = item["name"]
+                    row.desc = item["desc"]
+                    row.price = item["price"]
+                    row.unit = item["unit"]
+                    row.veg = item["veg"]
+                    row.available = item["available"]
+                else:
+                    row = MenuItem(
+                        category_id=categories[item["category"]],
+                        name=item["name"], desc=item["desc"], price=item["price"],
+                        unit=item["unit"], veg=item["veg"], available=item["available"],
+                    )
+                    session.add(row)
+                session.commit()
+                item["db_id"] = row.id
+                item["id"] = str(row.id)
         self.published_items = copy.deepcopy(self.draft_items)
