@@ -24,6 +24,6 @@ class AdminNavState(rx.State):
         from cateringv3.state.adminordersstate import AdminOrdersState
         from cateringv3.state.adminmenustate import AdminMenuState
         orders_state = await self.get_state(AdminOrdersState)
-        orders_state.load_mock_orders()
+        orders_state.load_orders()
         menu_state = await self.get_state(AdminMenuState)
         menu_state.load_menu()

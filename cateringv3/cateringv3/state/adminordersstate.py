@@ -1,7 +1,8 @@
 """Admin orders list, filters, and Kitchen-tab aggregates. Order-detail sheet logic lives in Task 6."""
-import copy
 import reflex as rx
-from cateringv3 import admin_data
+from sqlalchemy.orm import selectinload
+
+from cateringv3.models import Order
 from cateringv3.state import admin_logic
 
 
@@ -12,9 +13,18 @@ class AdminOrdersState(rx.State):
     active_order_id: str = ""
 
     @rx.event
-    def load_mock_orders(self):
-        if not self.orders:
-            self.orders = copy.deepcopy(admin_data.MOCK_ORDERS)
+    def load_orders(self):
+        if self.orders:
+            return
+        with rx.session() as session:
+            rows = session.exec(
+                Order.select().options(
+                    selectinload(Order.customer),
+                    selectinload(Order.items),
+                    selectinload(Order.payment),
+                )
+            ).all()
+            self.orders = [admin_logic.order_to_dict(o) for o in rows]
 
     @rx.event
     def set_tab(self, tab: str):
@@ -71,7 +81,6 @@ class AdminOrdersState(rx.State):
         for r in rows:
             plural = "s" if r["order_count"] != 1 else ""
             out.append({
-                "item_id": r["item_id"],
                 "name": r["name"],
                 "meta": f"across {r['order_count']} order{plural} · {admin_logic.money(r['price'])} each",
                 "qty_display": f"×{r['total_qty']}",
@@ -161,7 +170,7 @@ class AdminOrdersState(rx.State):
     @rx.var
     def active_order_has_strikes(self) -> bool:
         order = self._find_order(self.active_order_id)
-        return bool(order and order["struck_item_ids"])
+        return bool(order and any(line["struck"] for line in order["items"]))
 
     @rx.event
     def open_order(self, order_id: str):
@@ -176,16 +185,16 @@ class AdminOrdersState(rx.State):
         order = self._find_order(self.active_order_id)
         if order is None:
             return
-        if item_id in order["struck_item_ids"]:
-            order["struck_item_ids"].remove(item_id)
-        else:
-            order["struck_item_ids"].append(item_id)
+        for line in order["items"]:
+            if line["item_id"] == item_id:
+                line["struck"] = not line["struck"]
 
     @rx.event
     def save_partial(self):
         order = self._find_order(self.active_order_id)
         if order is not None:
-            order["status"] = "partial" if order["struck_item_ids"] else "open"
+            has_struck = any(line["struck"] for line in order["items"])
+            order["status"] = "partial" if has_struck else "open"
         self.close_order()
 
     @rx.event
