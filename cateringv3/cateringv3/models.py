@@ -101,6 +101,7 @@ class OrderItem(rx.Model, table=True):
     product_name: str
     quantity: int
     unit_price: float
+    struck: bool = Field(default=False)
 
     order: Order = Relationship(back_populates="items")
 
@@ -119,7 +120,8 @@ class Payment(rx.Model, table=True):
     __tablename__ = "payments"
 
     order_id: int = Field(foreign_key="orders.id", unique=True, index=True)
-    razorpay_order_id: str = Field(unique=True, index=True)
+    method: str = Field(default="online")  # "cash" or "online"
+    razorpay_order_id: Optional[str] = Field(default=None, unique=True, index=True)
     razorpay_payment_id: Optional[str] = None
     razorpay_signature: Optional[str] = None
     amount: float
@@ -139,3 +141,30 @@ class Payment(rx.Model, table=True):
     verified_at: Optional[datetime] = None
 
     order: Order = Relationship(back_populates="payment")
+
+
+# ---------------------------------------------------------------------------
+# Menu catalog (admin-managed, published snapshot only — drafts stay in-state)
+# ---------------------------------------------------------------------------
+
+class Category(rx.Model, table=True):
+    __tablename__ = "categories"
+
+    name: str = Field(unique=True, index=True)
+    sort_order: int
+
+    items: List["MenuItem"] = Relationship(back_populates="category")
+
+
+class MenuItem(rx.Model, table=True):
+    __tablename__ = "menu_items"
+
+    category_id: int = Field(foreign_key="categories.id", index=True)
+    name: str
+    desc: str
+    price: int
+    unit: str
+    veg: bool = Field(default=True)
+    available: bool = Field(default=True)
+
+    category: Category = Relationship(back_populates="items")
