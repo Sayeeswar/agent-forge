@@ -1,5 +1,5 @@
 """Pure logic for admin orders: totals, summaries, kitchen aggregation. No Reflex imports."""
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def money(n):
@@ -111,7 +111,7 @@ def derived_status(status: str, has_struck: bool) -> str:
 
 
 def _placed_display(ordered_at: datetime) -> str:
-    delta_days = (datetime.utcnow().date() - ordered_at.date()).days
+    delta_days = (datetime.now(timezone.utc).date() - ordered_at.date()).days
     time_str = ordered_at.strftime("%I:%M %p").lstrip("0")
     if delta_days == 0:
         return f"Placed {time_str} today"
@@ -136,7 +136,7 @@ def order_to_dict(order) -> dict:
         "items": items,
         "payment_method": order.payment.method if order.payment else "cash",
         "placed_display": _placed_display(order.ordered_at),
-        "is_same_day": order.ordered_at.date() == datetime.utcnow().date(),
+        "is_same_day": order.ordered_at.date() == datetime.now(timezone.utc).date(),
         "status": derived_status(order.status, has_struck),
         "is_special": bool(order.notes),
         "special_note": order.notes or "",

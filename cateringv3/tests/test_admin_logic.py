@@ -1,5 +1,5 @@
 # tests/test_admin_logic.py
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from cateringv3.state import admin_logic
 
@@ -149,7 +149,7 @@ class _FakeOrder:
         self.items = kw.get("items", [_FakeItem(1, "Paneer Paratha", 2, 80.0, False)])
         self.payment = kw.get("payment", _FakePayment("online"))
         self.notes = kw.get("notes", None)
-        self.ordered_at = kw.get("ordered_at", datetime.utcnow())
+        self.ordered_at = kw.get("ordered_at", datetime.now(timezone.utc))
         self.status = kw.get("status", "pending")
 
 
@@ -166,7 +166,7 @@ def test_order_to_dict_maps_fields():
 
 
 def test_order_to_dict_is_same_day():
-    today_order = _FakeOrder(ordered_at=datetime.utcnow())
-    old_order = _FakeOrder(ordered_at=datetime.utcnow() - timedelta(days=3))
+    today_order = _FakeOrder(ordered_at=datetime.now(timezone.utc))
+    old_order = _FakeOrder(ordered_at=datetime.now(timezone.utc) - timedelta(days=3))
     assert admin_logic.order_to_dict(today_order)["is_same_day"] is True
     assert admin_logic.order_to_dict(old_order)["is_same_day"] is False
