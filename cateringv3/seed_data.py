@@ -67,6 +67,18 @@ ORDER_STATUSES = ["pending", "confirmed", "preparing", "out_for_delivery", "deli
 # weight "delivered" and "confirmed" more heavily -- more sensible distribution
 ORDER_STATUS_WEIGHTS = [0.08, 0.15, 0.12, 0.10, 0.50, 0.05]
 
+# only a minority of orders should carry a real customer note -- admin_logic.py derives
+# is_special = bool(order.notes), so notes should be sparse and varied, not on every row
+SPECIAL_NOTE_CHANCE = 0.12
+SPECIAL_NOTES = [
+    "Please pack the dal separately",
+    "Extra spicy please",
+    "Ring the bell twice, no doorbell",
+    "Deliver after 6pm only",
+    "No onions in any dish",
+    "Include serving spoons",
+]
+
 
 def random_string(n=14, chars=string.ascii_letters + string.digits):
     return "".join(random.choices(chars, k=n))
@@ -123,7 +135,8 @@ def main():
             delivery_date = ordered_at + timedelta(days=random.randint(1, 14))
             status = random.choices(ORDER_STATUSES, weights=ORDER_STATUS_WEIGHTS, k=1)[0]
             order_number = f"ZS-{ordered_at.strftime('%Y%m%d')}-{i + 1:04d}"
-            order_rows.append((order_number, customer_id, status, ordered_at, delivery_date, 0.0, "Seeded test order"))
+            notes = random.choice(SPECIAL_NOTES) if random.random() < SPECIAL_NOTE_CHANCE else None
+            order_rows.append((order_number, customer_id, status, ordered_at, delivery_date, 0.0, notes))
             order_dates.append(ordered_at)
 
         cur.executemany(

@@ -9,6 +9,7 @@ from cateringv3.models import Category, MenuItem
 class AdminMenuState(rx.State):
     published_items: list[dict] = []
     draft_items: list[dict] = []
+    category_order: list[str] = []
     active_tab: str = "view"
     active_category: str = ""
 
@@ -29,6 +30,7 @@ class AdminMenuState(rx.State):
         ]
         self.published_items = copy.deepcopy(seeded)
         self.draft_items = copy.deepcopy(seeded)
+        self.category_order = [c.name for c in categories]
         self.active_category = categories[0].name if categories else ""
 
     @rx.var
@@ -42,13 +44,13 @@ class AdminMenuState(rx.State):
     @rx.var
     def category_rows(self) -> list[dict]:
         source = self._active_source
-        seen = []
+        counts: dict[str, int] = {}
         for i in source:
-            if i["category"] not in seen:
-                seen.append(i["category"])
+            counts[i["category"]] = counts.get(i["category"], 0) + 1
         return [
-            {"name": cat, "count": sum(1 for i in source if i["category"] == cat)}
-            for cat in seen
+            {"name": cat, "count": counts[cat]}
+            for cat in self.category_order
+            if cat in counts
         ]
 
     @rx.var
@@ -115,6 +117,7 @@ class AdminMenuState(rx.State):
     def publish(self):
         with rx.session() as session:
             categories = {c.name: c.id for c in session.exec(Category.select()).all()}
+            pending = []
             for item in self.draft_items:
                 if item["db_id"] is not None:
                     row = session.get(MenuItem, item["db_id"])
@@ -131,7 +134,9 @@ class AdminMenuState(rx.State):
                         unit=item["unit"], veg=item["veg"], available=item["available"],
                     )
                     session.add(row)
-                session.commit()
+                pending.append((item, row))
+            session.commit()
+            for item, row in pending:
                 item["db_id"] = row.id
                 item["id"] = str(row.id)
         self.published_items = copy.deepcopy(self.draft_items)
