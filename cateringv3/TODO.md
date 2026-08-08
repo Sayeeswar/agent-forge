@@ -21,9 +21,11 @@ Running task list — lighter than PLAN.md, good for "what's left."
 - [ ] Not yet done: Customers/Payments/Settings pages (nav rows are inert placeholders by design), tablet/desktop admin layout.
 - [x] Postgres DB foundation wired: `db_url`/`async_db_url` config, `models.py` (Customer/Order/OrderItem/Payment) migrated, 500 rows/table seeded. Branch `feature/postgres-db-wiring`, spec at `docs/superpowers/specs/2026-08-07-postgres-db-wiring-design.md`.
 
-## Next up: rewire state to real DB (not started)
+## State → DB rewire (branch: feature/postgres-db-wiring)
 
-- [ ] Swap state classes off mock/hardcoded data onto real queries against `models.py`, using the DB foundation above. Scope (which states, what order) still to be worked out — see DECISIONS.md once decided.
+- [x] `AdminOrdersState` and `AdminMenuState` swapped off mock data (`admin_data.py` deleted) onto real Postgres queries. Schema: `OrderItem.struck`, `Payment.method`/nullable `razorpay_order_id`, new `Category`/`MenuItem` tables — migrated. `admin_logic.py` reworked for line-item shape (TDD). Seed data fixed for a real cash/online split; menu catalog seeded from `data.py`. Design doc + grilling session: `docs/superpowers/specs/2026-08-08-state-db-rewire-grilling.md`, plan: `docs/superpowers/plans/2026-08-08-state-db-rewire.md`. 35/35 pytest passing.
+- [ ] Browser click-through of `/admin` (Orders/Kitchen tabs, Menu Edit→Publish→DB-persisted round-trip) not yet re-run against the DB-backed version — Playwright MCP was unreachable this session. DB-level upsert/query logic verified directly instead (script-level, not through the UI). Re-run the smoke test once Playwright's available.
+- [ ] Customer states (`customerorderstate.py`, `customerpackingstate.py`, `stageoverlaystate.py`) still on mock/hardcoded data — deliberately out of scope this round, guard rail intact.
 
 ## Not in scope this round
 
