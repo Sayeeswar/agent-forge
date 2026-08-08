@@ -1,5 +1,5 @@
 """Pure logic for admin orders: totals, summaries, kitchen aggregation. No Reflex imports."""
-from cateringv3 import data
+from datetime import datetime
 
 
 def money(n):
@@ -7,39 +7,22 @@ def money(n):
 
 
 def order_line_items(order):
-    lines = []
-    for item_id, qty in order["items"].items():
-        item = data.ITEMS_BY_ID[item_id]
-        lines.append({
-            "item_id": item_id,
-            "name": item["name"],
-            "qty": qty,
-            "price": item["price"],
-            "subtotal": item["price"] * qty,
-            "struck": item_id in order["struck_item_ids"],
-        })
-    return lines
+    return [
+        {**line, "subtotal": line["price"] * line["qty"]}
+        for line in order["items"]
+    ]
 
 
 def order_items_summary(order):
-    parts = []
-    for item_id, qty in order["items"].items():
-        name = data.ITEMS_BY_ID[item_id]["name"]
-        parts.append(f"{qty}× {name}")
-    return " · ".join(parts)
+    return " · ".join(f"{line['qty']}× {line['name']}" for line in order["items"])
 
 
 def order_original_total(order):
-    return sum(data.ITEMS_BY_ID[i]["price"] * q for i, q in order["items"].items())
+    return sum(line["price"] * line["qty"] for line in order["items"])
 
 
 def order_total(order):
-    struck = set(order["struck_item_ids"])
-    return sum(
-        data.ITEMS_BY_ID[i]["price"] * q
-        for i, q in order["items"].items()
-        if i not in struck
-    )
+    return sum(line["price"] * line["qty"] for line in order["items"] if not line["struck"])
 
 
 _ACTIVE_STATUSES = ("open", "partial")
@@ -85,12 +68,12 @@ def _active_orders(orders):
 
 
 def items_to_prepare(orders):
-    return sum(qty for o in _active_orders(orders) for qty in o["items"].values())
+    return sum(line["qty"] for o in _active_orders(orders) for line in o["items"])
 
 
 def unique_dishes(orders):
-    ids = {item_id for o in _active_orders(orders) for item_id in o["items"]}
-    return len(ids)
+    names = {line["name"] for o in _active_orders(orders) for line in o["items"]}
+    return len(names)
 
 
 def orders_delivering(orders):
@@ -100,19 +83,16 @@ def orders_delivering(orders):
 def prep_list(orders):
     totals = {}
     order_counts = {}
+    prices = {}
     for o in _active_orders(orders):
-        for item_id, qty in o["items"].items():
-            totals[item_id] = totals.get(item_id, 0) + qty
-            order_counts[item_id] = order_counts.get(item_id, 0) + 1
+        for line in o["items"]:
+            name = line["name"]
+            totals[name] = totals.get(name, 0) + line["qty"]
+            order_counts[name] = order_counts.get(name, 0) + 1
+            prices[name] = line["price"]
     rows = [
-        {
-            "item_id": item_id,
-            "name": data.ITEMS_BY_ID[item_id]["name"],
-            "price": data.ITEMS_BY_ID[item_id]["price"],
-            "total_qty": qty,
-            "order_count": order_counts[item_id],
-        }
-        for item_id, qty in totals.items()
+        {"name": name, "price": prices[name], "total_qty": qty, "order_count": order_counts[name]}
+        for name, qty in totals.items()
     ]
     rows.sort(key=lambda r: r["total_qty"], reverse=True)
     return rows
@@ -120,3 +100,44 @@ def prep_list(orders):
 
 def special_orders(orders):
     return [o for o in _active_orders(orders) if o["is_special"]]
+
+
+def derived_status(status: str, has_struck: bool) -> str:
+    if status == "cancelled":
+        return "cancelled"
+    if status == "delivered":
+        return "completed"
+    return "partial" if has_struck else "open"
+
+
+def _placed_display(ordered_at: datetime) -> str:
+    delta_days = (datetime.utcnow().date() - ordered_at.date()).days
+    time_str = ordered_at.strftime("%I:%M %p").lstrip("0")
+    if delta_days == 0:
+        return f"Placed {time_str} today"
+    if delta_days == 1:
+        return f"Placed Yesterday {time_str}"
+    return f"Placed {ordered_at.strftime('%b %d')} {time_str}"
+
+
+def order_to_dict(order) -> dict:
+    items = [
+        {
+            "item_id": str(oi.id), "name": oi.product_name,
+            "qty": oi.quantity, "price": oi.unit_price, "struck": oi.struck,
+        }
+        for oi in order.items
+    ]
+    has_struck = any(line["struck"] for line in items)
+    return {
+        "id": order.order_number,
+        "customer_name": order.customer.name,
+        "phone": order.customer.phone,
+        "items": items,
+        "payment_method": order.payment.method if order.payment else "cash",
+        "placed_display": _placed_display(order.ordered_at),
+        "is_same_day": order.ordered_at.date() == datetime.utcnow().date(),
+        "status": derived_status(order.status, has_struck),
+        "is_special": bool(order.notes),
+        "special_note": order.notes or "",
+    }
