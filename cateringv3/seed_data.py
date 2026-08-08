@@ -83,6 +83,8 @@ def main():
     conn.autocommit = False
     cur = conn.cursor()
 
+    cur.execute("TRUNCATE TABLE payments, order_items, orders, customers RESTART IDENTITY CASCADE")
+
     try:
         # -------------------------------------------------------------
         # 1) customers
@@ -185,39 +187,46 @@ def main():
         for oid in order_ids:
             ordered_at = order_id_to_date[oid]
             amount = round(order_totals[oid], 2)
-            razorpay_order_id = "order_" + random_string(14)
             created_at = ordered_at + timedelta(minutes=random.randint(1, 30))
+            method = random.choices(["online", "cash"], weights=[0.7, 0.3], k=1)[0]
 
-            status = random.choices(
-                ["created", "paid", "failed", "refunded"],
-                weights=[0.05, 0.80, 0.10, 0.05],
-                k=1,
-            )[0]
-
-            if status in ("paid", "refunded"):
-                razorpay_payment_id = "pay_" + random_string(14)
-                razorpay_signature = random_string(40, chars=string.hexdigits.lower())
-                verified_at = created_at + timedelta(minutes=random.randint(1, 10))
-            elif status == "failed":
-                razorpay_payment_id = "pay_" + random_string(14)
-                razorpay_signature = None
-                verified_at = None
-            else:  # created, never completed
+            if method == "cash":
+                razorpay_order_id = None
                 razorpay_payment_id = None
                 razorpay_signature = None
-                verified_at = None
+                status = "paid"
+                verified_at = created_at
+            else:
+                razorpay_order_id = "order_" + random_string(14)
+                status = random.choices(
+                    ["created", "paid", "failed", "refunded"],
+                    weights=[0.05, 0.80, 0.10, 0.05],
+                    k=1,
+                )[0]
+                if status in ("paid", "refunded"):
+                    razorpay_payment_id = "pay_" + random_string(14)
+                    razorpay_signature = random_string(40, chars=string.hexdigits.lower())
+                    verified_at = created_at + timedelta(minutes=random.randint(1, 10))
+                elif status == "failed":
+                    razorpay_payment_id = "pay_" + random_string(14)
+                    razorpay_signature = None
+                    verified_at = None
+                else:
+                    razorpay_payment_id = None
+                    razorpay_signature = None
+                    verified_at = None
 
             payment_rows.append((
                 oid, razorpay_order_id, razorpay_payment_id, razorpay_signature,
-                amount, "INR", status, created_at, verified_at,
+                amount, "INR", status, method, created_at, verified_at,
             ))
 
         cur.executemany(
             """
             INSERT INTO payments
                 (order_id, razorpay_order_id, razorpay_payment_id, razorpay_signature,
-                 amount, currency, status, created_at, verified_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 amount, currency, status, method, created_at, verified_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             payment_rows,
         )
