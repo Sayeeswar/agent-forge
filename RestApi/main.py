@@ -5,158 +5,10 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine, String, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-# SQLite database file.
-DATABASE_URL = "sqlite:///./catering.db"
-
-
-# SQLite needs this option when the same database is accessed
-# through different FastAPI request threads.
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    echo=True
-)
-
-
-class Base(DeclarativeBase):
-    pass
-class CustomerCreate(BaseModel):
-    name: str
-    email: str
-    phone: str
-    address: str | None = None
-class Customer(Base):
-    __tablename__ = "customers"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100))
-    email: Mapped[str] = mapped_column(String(100), unique=True)
-    phone : Mapped[str]= mapped_column(String(20),unique=True)
-    address: Mapped[str] = mapped_column(String(200), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 
-Base.metadata.create_all(engine)
-app = FastAPI()
 
-@app.get('/',response_class=HTMLResponse)
-def home():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Catering Management System</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                background: #f4f6f8;
-            }
-
-            header {
-                background: #222;
-                color: white;
-                padding: 20px;
-                text-align: center;
-            }
-
-            main {
-                max-width: 1000px;
-                margin: 40px auto;
-                padding: 20px;
-            }
-
-            .card-container {
-                display: flex;
-                gap: 20px;
-            }
-
-            .card {
-                background: white;
-                padding: 25px;
-                border-radius: 10px;
-                flex: 1;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            }
-
-            .card h2 {
-                margin-top: 0;
-            }
-
-            a {
-                display: inline-block;
-                margin-top: 10px;
-                padding: 10px 15px;
-                background: #007bff;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-            }
-
-            footer {
-                text-align: center;
-                margin-top: 50px;
-                color: #666;
-            }
-        </style>
-    </head>
-
-    <body>
-
-         
-        <main>
-
-            <header>
-                <h1>Welcome to the Catering Management System</h1>
-            </header>
-
-            <p>
-                Manage customers and catering operations through
-                the REST API.
-            </p>
-
-            <div class="card-container">
-
-                <div class="card">
-                    <h2>Customers</h2>
-                    <p>Create and retrieve customer information.</p>
-
-                    <a href="/docs">
-                        Open Rest API 
-                    </a>
-                </div>
-
-                <div class="card">
-                    <h2>Database</h2>
-                    <p>SQLite database connected through SQLAlchemy.</p>
-
-                    <a href="/docs">
-                        API Documentation
-                    </a>
-                </div>
-
-            </div>
-
-        </main>
-
-        <footer>
-            Catering Management System
-        </footer>
-
-    </body>
-    </html>
-    """
-
-
-
-from datetime import datetime
-
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-from sqlalchemy import create_engine, String, DateTime
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 
 # ============================================================
@@ -379,8 +231,24 @@ def home():
 
     </html>
     """
+@app.get("/customers")
+def get_all_customers():
 
+    with Session(engine) as session:
 
+        customers = session.query(Customer).all()
+
+        return [
+            {
+                "id": customer.id,
+                "name": customer.name,
+                "email": customer.email,
+                "phone": customer.phone,
+                "address": customer.address,
+                "created_at": customer.created_at
+            }
+            for customer in customers
+        ]  
 # ============================================================
 # CREATE CUSTOMER
 # POST /customers
@@ -442,32 +310,6 @@ def add_customer(customer_data: CustomerCreate):
                 "created_at": new_customer.created_at
             }
         }
-
-
-# ============================================================
-# GET ALL CUSTOMERS
-# GET /customers
-# ============================================================
-
-@app.get("/customers")
-def get_customers():
-
-    with Session(engine) as session:
-
-        customers = session.query(Customer).all()
-
-        return [
-            {
-                "id": customer.id,
-                "name": customer.name,
-                "email": customer.email,
-                "phone": customer.phone,
-                "address": customer.address,
-                "created_at": customer.created_at
-            }
-            for customer in customers
-        ]
-
 
 # ============================================================
 # GET ONE CUSTOMER
@@ -562,7 +404,7 @@ def update_customer(
         session.refresh(customer)
 
         return {
-            "message": "Customer updated successfully.",
+            "message": "Customer {customer.name} updated successfully.",
             "customer": {
                 "id": customer.id,
                 "name": customer.name,
@@ -596,7 +438,7 @@ def delete_customer(customer_id: int):
         session.commit()
 
         return {
-            "message": "Customer deleted successfully."
+            "message": "Customer {customer.name} , {customer.id} deleted successfully."
         }
 @app.patch("/customers/{customer_id}")
 def patch_customer(
