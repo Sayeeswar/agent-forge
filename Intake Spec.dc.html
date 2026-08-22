@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" />
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: #FFFFFF; color: #1A1A1A; font-family: 'DM Sans', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #3D3D3D; text-underline-offset: 3px; }
+  a:hover { color: #1A1A1A; }
+  ::selection { background: #FFD6E0; }
+  p { text-wrap: pretty; }
+</style>
+</helmet>
+
+<div style="max-width: 1080px; margin: 0 auto; padding: 0 32px 96px">
+
+  <header style="padding: 72px 0 40px">
+    <div style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #ABABAB; margin-bottom: 18px">Self learning · design spec · v2</div>
+    <h1 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 60px; line-height: 1.02; letter-spacing: -0.03em; margin: 0 0 20px; max-width: 20em">Intake Before Every Session</h1>
+    <p style="font-size: 20px; line-height: 1.5; color: #3D3D3D; max-width: 34em; margin: 0 0 32px">Settings stop being a screen you visit and become the way a session opens. Eight steps, branching on who is learning, ending with the AI already knowing enough to be useful on its first sentence.</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px">
+      <div style="background: #F5E8D4; border-radius: 999px; padding: 7px 15px; font-size: 12.5px">supersedes the static Settings screen in v1</div>
+      <div style="background: #C8EDCD; border-radius: 999px; padding: 7px 15px; font-size: 12.5px">school · university · none of these</div>
+      <div style="background: #FFD6E0; border-radius: 999px; padding: 7px 15px; font-size: 12.5px">document first, prototype on approval</div>
+    </div>
+  </header>
+
+  <section style="padding: 32px 0; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">Decisions Locked</h2>
+    <p style="color: #737373; max-width: 40em; margin: 0 0 26px">Settled in review. Everything downstream in this document follows from these; nothing here is still being weighed.</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px">
+      <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">order</div>
+        <div style="font-size: 15px">Learner type → level detail → institution → degree → specialisation → topic → subtopic → reference material.</div>
+      </div>
+      <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">form</div>
+        <div style="font-size: 15px">A vertical stepper. Answers stay on screen as you descend, so the student can see the context being assembled.</div>
+      </div>
+      <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">editing</div>
+        <div style="font-size: 15px">Any answered step is editable. Changing one keeps later answers that are still valid, and clears only those that aren't.</div>
+      </div>
+      <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">school range</div>
+        <div style="font-size: 15px">Classes 1 – 12, with one extra stream row at 11 and 12 only — science PCM, science PCB, commerce, arts.</div>
+      </div>
+      <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">everyone else</div>
+        <div style="font-size: 15px">A “none of these” path — no third identity to maintain. It skips to topic and material.</div>
+      </div>
+      <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">returning</div>
+        <div style="font-size: 15px">The full stepper runs again, pre-filled. The student confirms by tapping down the list — eight steps every session, no shortcut.</div>
+      </div>
+      <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">material</div>
+        <div style="font-size: 15px">Asked, never enforced. No book, syllabus or slides is a valid answer, and the session says it is teaching unsourced.</div>
+      </div>
+      <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">doctoral</div>
+        <div style="font-size: 15px">Step 6 asks for the paper, its topic is read off it, step 7 is skipped, and the session opens straight into chat.</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 44px 0 32px; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">The Intake Tree</h2>
+    <p style="color: #737373; max-width: 40em; margin: 0 0 30px">One question splits the flow three ways; the three paths converge on a shared tail. Steps 2 – 5 are the only ones that differ.</p>
+
+    <div style="background: #FAF8F5; border-radius: 20px; padding: 30px 26px">
+      <div style="display: flex; flex-direction: column; align-items: center">
+        <div style="background: #1A1A1A; color: #FFFFFF; border-radius: 12px; padding: 13px 22px; font-size: 15px; font-weight: 600">Step 1 · Who’s doing the learning?</div>
+        <div style="width: 1.5px; height: 22px; background: #D8D2C8"></div>
+        <div style="width: 100%; height: 1.5px; background: #D8D2C8"></div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start">
+        <div style="display: flex; flex-direction: column; align-items: center">
+          <div style="width: 1.5px; height: 20px; background: #D8D2C8"></div>
+          <div style="width: 100%; background: #F5E8D4; border-radius: 14px; padding: 14px 16px">
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 10px">At school</div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <div style="background: #FFFFFF; border-radius: 9px; padding: 9px 12px; font-size: 13.5px"><span style="color: #ABABAB">2 ·</span> Which class? <span style="color: #8B6A44">1 – 12</span></div>
+              <div style="background: #FFFFFF; border-radius: 9px; padding: 9px 12px; font-size: 13.5px"><span style="color: #ABABAB">2b ·</span> Stream? <span style="color: #8B6A44">classes 11 – 12 only</span></div>
+              <div style="background: #FFFFFF; border-radius: 9px; padding: 9px 12px; font-size: 13.5px"><span style="color: #ABABAB">3 ·</span> Which board? <span style="color: #8B6A44">CBSE, ICSE, IB…</span></div>
+              <div style="background: rgba(255,255,255,0.45); border-radius: 9px; padding: 9px 12px; font-size: 13px; color: #8B6A44">4 – 5 · not asked</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center">
+          <div style="width: 1.5px; height: 20px; background: #D8D2C8"></div>
+          <div style="width: 100%; background: #C8EDCD; border-radius: 14px; padding: 14px 16px">
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 10px">At university</div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <div style="background: #FFFFFF; border-radius: 9px; padding: 9px 12px; font-size: 13.5px"><span style="color: #ABABAB">2 ·</span> Where in the degree? <span style="color: #2D6A4F">UG, PG, doctoral</span></div>
+              <div style="background: #FFFFFF; border-radius: 9px; padding: 9px 12px; font-size: 13.5px"><span style="color: #ABABAB">3 ·</span> Which university?</div>
+              <div style="background: #FFFFFF; border-radius: 9px; padding: 9px 12px; font-size: 13.5px"><span style="color: #ABABAB">4 ·</span> Which degree? <span style="color: #2D6A4F">B.Tech, M.Sc, M.Tech…</span></div>
+              <div style="background: #FFFFFF; border-radius: 9px; padding: 9px 12px; font-size: 13.5px"><span style="color: #ABABAB">5 ·</span> In what? <span style="color: #2D6A4F">M.Tech in Physics…</span></div>
+              <div style="background: rgba(255,255,255,0.55); border-radius: 9px; padding: 9px 12px; font-size: 13px; color: #1A5228">doctoral · step 6 asks for the paper, step 7 is skipped</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center">
+          <div style="width: 1.5px; height: 20px; background: #D8D2C8"></div>
+          <div style="width: 100%; background: #FFD6E0; border-radius: 14px; padding: 14px 16px">
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 10px">None of these</div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <div style="background: rgba(255,255,255,0.45); border-radius: 9px; padding: 9px 12px; font-size: 13px; color: #A0294E">2 – 5 · skipped entirely</div>
+              <div style="background: #FFFFFF; border-radius: 9px; padding: 9px 12px; font-size: 13.5px">Straight to the shared tail. Depth is calibrated from the topic and the material instead.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; margin-top: 4px">
+        <div style="width: 100%; height: 1.5px; background: #D8D2C8"></div>
+        <div style="width: 1.5px; height: 22px; background: #D8D2C8"></div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; gap: 10px">
+        <div style="background: #FFFFFF; border-radius: 12px; padding: 12px 16px; font-size: 14px; font-weight: 600">6 · Topic</div>
+        <div style="display: flex; align-items: center; color: #ABABAB">→</div>
+        <div style="background: #FFFFFF; border-radius: 12px; padding: 12px 16px; font-size: 14px; font-weight: 600">7 · Subtopic <span style="font-weight: 400; color: #ABABAB">· skippable</span></div>
+        <div style="display: flex; align-items: center; color: #ABABAB">→</div>
+        <div style="background: #FFFFFF; border-radius: 12px; padding: 12px 16px; font-size: 14px; font-weight: 600">8 · Reference material</div>
+        <div style="display: flex; align-items: center; color: #ABABAB">→</div>
+        <div style="background: #1A1A1A; color: #FFFFFF; border-radius: 12px; padding: 12px 16px; font-size: 14px; font-weight: 600">Session opens</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 44px 0 12px; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">Screen by Screen</h2>
+    <p style="color: #737373; max-width: 40em; margin: 0 0 8px">On-screen copy is verbatim. Each step is one question, one line of help at most, and a visible record of what it saved.</p>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 18px; padding-bottom: 20px">
+
+    <article style="border: 1px solid #F0ECE6; border-radius: 18px; overflow: hidden">
+      <div style="background: #FAF8F5; padding: 14px 20px; display: flex; align-items: baseline; justify-content: space-between; gap: 14px">
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">step 1</span>
+          <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 22px">Learner type</span>
+        </div>
+        <span style="font-size: 12px; color: #737373">required · no default</span>
+      </div>
+      <div style="padding: 18px 20px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px">
+        <div>
+          <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">on screen</div>
+          <div style="font-size: 21px; font-weight: 600; margin-bottom: 4px">Who’s doing the learning?</div>
+          <div style="color: #737373; font-size: 14.5px; margin-bottom: 14px">This decides what I ask next — and what I never ask.</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <span style="background: #F5E8D4; border-radius: 999px; padding: 8px 15px; font-size: 13.5px">I’m at school</span>
+            <span style="background: #C8EDCD; border-radius: 999px; padding: 8px 15px; font-size: 13.5px">I’m at university</span>
+            <span style="background: #FFD6E0; border-radius: 999px; padding: 8px 15px; font-size: 13.5px">None of these</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">saves</div>
+            <div style="font-size: 14px">learnerType</div>
+          </div>
+          <sc-if value="{{ showWhy }}" hint-placeholder-val="{{ true }}">
+            <div style="background: #FAF8F5; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: #3D3D3D">Asked first because it is the only branch point. Every later question is either meaningless or differently worded depending on this answer, so guessing it would cost more than asking.</div>
+          </sc-if>
+        </div>
+      </div>
+    </article>
+
+    <article style="border: 1px solid #F0ECE6; border-radius: 18px; overflow: hidden">
+      <div style="background: #FAF8F5; padding: 14px 20px; display: flex; align-items: baseline; justify-content: space-between; gap: 14px">
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">step 2</span>
+          <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 22px">Level detail</span>
+        </div>
+        <span style="font-size: 12px; color: #737373">branches · skipped for “none of these”</span>
+      </div>
+      <div style="padding: 18px 20px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8B6A44; margin-bottom: 8px">school</div>
+            <div style="font-size: 19px; font-weight: 600; margin-bottom: 4px">Which class are you in?</div>
+            <div style="color: #737373; font-size: 14px; margin-bottom: 12px">I’ll stay inside what your class has covered.</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <span style="background: #F5E8D4; border-radius: 8px; padding: 6px 12px; font-size: 13px">1</span>
+              <span style="background: #F5E8D4; border-radius: 8px; padding: 6px 12px; font-size: 13px">2</span>
+              <span style="background: #F5E8D4; border-radius: 8px; padding: 6px 12px; font-size: 13px">3</span>
+              <span style="color: #ABABAB; padding: 6px 4px; font-size: 13px">…</span>
+              <span style="background: #F5E8D4; border-radius: 8px; padding: 6px 12px; font-size: 13px">10</span>
+              <span style="background: #F5E8D4; border-radius: 8px; padding: 6px 12px; font-size: 13px">11</span>
+              <span style="background: #F5E8D4; border-radius: 8px; padding: 6px 12px; font-size: 13px">12</span>
+            </div>
+            <div style="margin-top: 12px; background: #FAF8F5; border-radius: 12px; padding: 13px 15px">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8B6A44; margin-bottom: 6px">at 11 and 12 only · one more row</div>
+              <div style="font-size: 14.5px; font-weight: 600; margin-bottom: 8px">Which stream?</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                <span style="background: #F5E8D4; border-radius: 999px; padding: 7px 14px; font-size: 13px">Science · PCM</span>
+                <span style="background: #F5E8D4; border-radius: 999px; padding: 7px 14px; font-size: 13px">Science · PCB</span>
+                <span style="background: #F5E8D4; border-radius: 999px; padding: 7px 14px; font-size: 13px">Commerce</span>
+                <span style="background: #F5E8D4; border-radius: 999px; padding: 7px 14px; font-size: 13px">Arts / Humanities</span>
+              </div>
+              <div style="font-size: 13px; color: #737373; margin-top: 9px">Classes 1 – 10 never see this row. From 11 the textbook list can’t narrow without it, and the same topic name means different scope in each stream.</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #2D6A4F; margin-bottom: 8px">university</div>
+            <div style="font-size: 19px; font-weight: 600; margin-bottom: 4px">Where are you in the degree?</div>
+            <div style="color: #737373; font-size: 14px; margin-bottom: 12px">This sets how much I take for granted.</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Undergraduate</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Postgraduate</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Doctoral</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Diploma</span>
+            </div>
+            <div style="margin-top: 12px; background: #FAF8F5; border-radius: 12px; padding: 13px 15px">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #2D6A4F; margin-bottom: 6px">doctoral · the path bends here</div>
+              <div style="font-size: 14px">Steps 3 – 5 still run — university, PhD, field. Step 6 then asks for <span style="font-weight: 600">the paper</span> rather than a topic: a title, a DOI, or the PDF. Its topic is read off the paper, step 7 is skipped, and the session opens straight into chat. A thesis has no syllabus to narrow against, so nothing is gained by making them name a subtopic.</div>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">saves</div>
+            <div style="font-size: 14px">schoolClass · or · degreeLevel</div>
+          </div>
+          <sc-if value="{{ showWhy }}">
+            <div style="background: #FAF8F5; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: #3D3D3D">Level comes before institution because it is the cheaper question and it narrows the catalogue that step 3 has to search. A student who taps “Postgraduate” has already halved the degree list.</div>
+          </sc-if>
+        </div>
+      </div>
+    </article>
+
+    <article style="border: 1px solid #F0ECE6; border-radius: 18px; overflow: hidden">
+      <div style="background: #FAF8F5; padding: 14px 20px; display: flex; align-items: baseline; justify-content: space-between; gap: 14px">
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">step 3</span>
+          <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 22px">Institution</span>
+        </div>
+        <span style="font-size: 12px; color: #737373">branches · free text accepted</span>
+      </div>
+      <div style="padding: 18px 20px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8B6A44; margin-bottom: 8px">school</div>
+            <div style="font-size: 19px; font-weight: 600; margin-bottom: 4px">Which board or curriculum?</div>
+            <div style="color: #737373; font-size: 14px; margin-bottom: 12px">It decides notation and which textbook list I show you.</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <span style="background: #F5E8D4; border-radius: 999px; padding: 7px 14px; font-size: 13px">CBSE</span>
+              <span style="background: #F5E8D4; border-radius: 999px; padding: 7px 14px; font-size: 13px">ICSE</span>
+              <span style="background: #F5E8D4; border-radius: 999px; padding: 7px 14px; font-size: 13px">State board</span>
+              <span style="background: #F5E8D4; border-radius: 999px; padding: 7px 14px; font-size: 13px">IB</span>
+              <span style="background: #F5E8D4; border-radius: 999px; padding: 7px 14px; font-size: 13px">Cambridge</span>
+              <span style="border: 1px solid #E8E8E8; border-radius: 999px; padding: 7px 14px; font-size: 13px">Other…</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #2D6A4F; margin-bottom: 8px">university</div>
+            <div style="font-size: 19px; font-weight: 600; margin-bottom: 4px">Which university?</div>
+            <div style="color: #737373; font-size: 14px; margin-bottom: 12px">Start typing — or tell me it isn’t listed and we’ll carry on.</div>
+            <div style="border: 1px solid #E8E8E8; border-radius: 10px; padding: 11px 14px; font-size: 14px; color: #ABABAB; max-width: 26em">e.g. IIT Bombay</div>
+            <div style="margin-top: 10px; background: #FFF0F3; border-radius: 12px; padding: 11px 13px; font-size: 13.5px">Unlisted entries are accepted and carried as <span style="font-weight: 600">unverified</span>. The degree list then falls back to the national catalogue, and the session says so once rather than nagging.</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">saves</div>
+            <div style="font-size: 14px">board · or · university + verified flag</div>
+          </div>
+          <sc-if value="{{ showWhy }}">
+            <div style="background: #FAF8F5; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: #3D3D3D">The institution is asked before the degree because a degree name only means something inside a catalogue. “M.Tech in Physics” is a different two years at two universities, and the reading list is where that difference shows up.</div>
+          </sc-if>
+        </div>
+      </div>
+    </article>
+
+    <article style="border: 1px solid #F0ECE6; border-radius: 18px; overflow: hidden">
+      <div style="background: #FAF8F5; padding: 14px 20px; display: flex; align-items: baseline; justify-content: space-between; gap: 14px">
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">steps 4 – 5</span>
+          <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 22px">Degree, then specialisation</span>
+        </div>
+        <span style="font-size: 12px; color: #737373">university only</span>
+      </div>
+      <div style="padding: 18px 20px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">step 4 · on screen</div>
+            <div style="font-size: 19px; font-weight: 600; margin-bottom: 4px">Which degree?</div>
+            <div style="color: #737373; font-size: 14px; margin-bottom: 12px">Filtered to postgraduate programmes at IIT Bombay.</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">M.Tech</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">M.Sc</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">M.A</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">MBA</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">PhD</span>
+              <span style="border: 1px solid #E8E8E8; border-radius: 999px; padding: 7px 14px; font-size: 13px">Not listed…</span>
+            </div>
+          </div>
+          <div style="padding-top: 16px; border-top: 1px solid #F0ECE6">
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">step 5 · on screen</div>
+            <div style="font-size: 19px; font-weight: 600; margin-bottom: 4px">M.Tech in what?</div>
+            <div style="color: #737373; font-size: 14px; margin-bottom: 12px">The specialisation, not the department you sit in.</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Physics</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Chemistry</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Computer Science</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Mechanical</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Mathematics</span>
+              <span style="border: 1px solid #E8E8E8; border-radius: 999px; padding: 7px 14px; font-size: 13px">Not listed…</span>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">saves</div>
+            <div style="font-size: 14px">degree · specialisation</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">reads back as</div>
+            <div style="font-size: 14px">Postgraduate · IIT Bombay · M.Tech in Physics</div>
+          </div>
+          <sc-if value="{{ showWhy }}">
+            <div style="background: #FAF8F5; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: #3D3D3D">Two steps rather than one long list: “M.Tech in Physics” as a single option multiplies the catalogue by every specialisation, and most of it would be wrong for any given student.</div>
+          </sc-if>
+        </div>
+      </div>
+    </article>
+
+    <article style="border: 1px solid #F0ECE6; border-radius: 18px; overflow: hidden">
+      <div style="background: #FAF8F5; padding: 14px 20px; display: flex; align-items: baseline; justify-content: space-between; gap: 14px">
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">steps 6 – 7</span>
+          <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 22px">Topic, then subtopic</span>
+        </div>
+        <span style="font-size: 12px; color: #737373">every path · subtopic skippable</span>
+      </div>
+      <div style="padding: 18px 20px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">step 6 · on screen</div>
+            <div style="font-size: 19px; font-weight: 600; margin-bottom: 4px">What are we working on?</div>
+            <div style="color: #737373; font-size: 14px; margin-bottom: 12px">A topic name, or paste the question itself.</div>
+            <div style="border: 1px solid #E8E8E8; border-radius: 10px; padding: 11px 14px; font-size: 14px; color: #ABABAB; max-width: 26em">e.g. differential geometry — or question 4 from problem set 3</div>
+          </div>
+          <div style="padding-top: 16px; border-top: 1px solid #F0ECE6">
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">step 7 · on screen</div>
+            <div style="font-size: 19px; font-weight: 600; margin-bottom: 4px">Anything narrower?</div>
+            <div style="color: #737373; font-size: 14px; margin-bottom: 12px">Suggestions come from your specialisation’s syllabus.</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px">
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Curvature of surfaces</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Geodesics</span>
+              <span style="background: #C8EDCD; border-radius: 999px; padding: 7px 14px; font-size: 13px">Fundamental forms</span>
+              <span style="background: #1A1A1A; color: #FFFFFF; border-radius: 999px; padding: 7px 14px; font-size: 13px">I’m not sure — work it out with me</span>
+            </div>
+            <div style="background: #FFF0F3; border-radius: 12px; padding: 13px 15px">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #A0294E; margin-bottom: 5px">the skip path</div>
+              <div style="font-size: 14px">Skipping opens the session immediately with the subtopic held empty. The AI infers it from the first exchange and confirms inline, once: <span style="font-style: italic">“I’m reading this as Gaussian curvature of a sphere — say so if that’s not it.”</span> Confirmed, it is written back into the intake record like any tapped answer.</div>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">saves</div>
+            <div style="font-size: 14px">topic · subtopic (nullable) · inferredBy</div>
+          </div>
+          <sc-if value="{{ showWhy }}">
+            <div style="background: #FAF8F5; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: #3D3D3D">The subtopic is the one step where not knowing the answer is the normal case, so it is the only one with an explicit way out. Everything above it is a fact the student holds; this is the first question that asks them to diagnose themselves.</div>
+          </sc-if>
+        </div>
+      </div>
+    </article>
+
+    <article style="border: 1px solid #F0ECE6; border-radius: 18px; overflow: hidden">
+      <div style="background: #FAF8F5; padding: 14px 20px; display: flex; align-items: baseline; justify-content: space-between; gap: 14px">
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">step 8</span>
+          <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 22px">Reference material</span>
+        </div>
+        <span style="font-size: 12px; color: #737373">skippable · asked, never enforced</span>
+      </div>
+      <div style="padding: 18px 20px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px">
+        <div>
+          <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">on screen</div>
+          <div style="font-size: 19px; font-weight: 600; margin-bottom: 4px">What should I teach from?</div>
+          <div style="color: #737373; font-size: 14px; margin-bottom: 14px">Whatever you give me here is what I quote and cite.</div>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="background: #F5E8D4; border-radius: 12px; padding: 13px 15px">
+              <div style="font-size: 14.5px; font-weight: 600">Prescribed textbook</div>
+              <div style="font-size: 13.5px; color: #5C4028; margin-top: 3px">A list drawn from your board or your degree — do Carmo, Pressley, course reader. One tap, no typing.</div>
+            </div>
+            <div style="background: #C8EDCD; border-radius: 12px; padding: 13px 15px">
+              <div style="font-size: 14.5px; font-weight: 600">Paste a syllabus</div>
+              <div style="font-size: 13.5px; color: #1A5228; margin-top: 3px">The unit list settles scope — what is examinable and what is merely adjacent.</div>
+            </div>
+            <div style="background: #FFD6E0; border-radius: 12px; padding: 13px 15px">
+              <div style="font-size: 14.5px; font-weight: 600">Slides or a course page link</div>
+              <div style="font-size: 13.5px; color: #A0294E; margin-top: 3px">Your lecturer’s notation wins over the textbook’s when the two disagree.</div>
+            </div>
+            <div style="border: 1px solid #E8E8E8; border-radius: 12px; padding: 13px 15px">
+              <div style="font-size: 14.5px; font-weight: 600">I don’t have any of this</div>
+              <div style="font-size: 13.5px; color: #737373; margin-top: 3px">Accepted, and the session opens normally. It is recorded as unsourced, and the one place that shows is the “grounded in” line, which reads <span style="font-style: italic">“general knowledge — no material of yours to cite”</span> instead of listing a book.</div>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">saves</div>
+            <div style="font-size: 14px">materials[] · possibly empty · each with a source label the session cites by name</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">where the list comes from</div>
+            <div style="font-size: 14px">Fetched per university or board, and editable by the student — a wrong or missing book is corrected in place, and the correction is what the session uses.</div>
+          </div>
+          <sc-if value="{{ showWhy }}">
+            <div style="background: #FAF8F5; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: #3D3D3D">Last, because it is the step most worth pre-filling on the second visit and the one a student is least likely to have to hand. Asked but never enforced: a locked door here would only teach students to type something false to get past it.</div>
+          </sc-if>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section style="padding: 44px 0 32px; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">Editing an Answer</h2>
+    <p style="color: #737373; max-width: 42em; margin: 0 0 24px">Every answered step stays tappable. Changing one keeps whatever below it is still valid — so correcting a typo in the university name doesn’t cost the student their topic.</p>
+    <div style="border: 1px solid #F0ECE6; border-radius: 16px; overflow: hidden">
+      <div style="display: grid; grid-template-columns: 1fr 1.15fr 1.15fr; gap: 0; background: #FAF8F5; padding: 11px 18px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373">
+        <div>changed step</div><div>survives</div><div>clears</div>
+      </div>
+      <sc-for list="{{ rules }}" as="r" hint-placeholder-count="7">
+        <div style="display: grid; grid-template-columns: 1fr 1.15fr 1.15fr; gap: 0; padding: 13px 18px; border-top: 1px solid #F0ECE6; font-size: 14px">
+          <div style="font-weight: 600; padding-right: 12px">{{ r.step }}</div>
+          <div style="color: #3D3D3D; padding-right: 12px">{{ r.keeps }}</div>
+          <div style="color: #A0294E">{{ r.clears }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <p style="font-size: 13.5px; color: #ABABAB; margin-top: 14px; max-width: 42em">The test for “still valid” is membership: an answer survives if it exists in the catalogue the new answer opens. Anything cleared is re-asked in place, with the steps below it left alone until it’s answered.</p>
+  </section>
+
+  <section style="padding: 44px 0 32px; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">The Second Session</h2>
+    <p style="color: #737373; max-width: 42em; margin: 0 0 24px">The stepper runs in full, pre-filled from last time. The student confirms by tapping down the list — which is faster than reading a summary and deciding whether to trust it.</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px">
+      <div style="background: #C8EDCD; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #1A5228; margin-bottom: 6px">pre-filled</div>
+        <div style="font-size: 15px">Steps 1 – 5 and step 8 arrive filled and ticked. Tapping a tick confirms; tapping the answer reopens it.</div>
+      </div>
+      <div style="background: #F5E8D4; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C4028; margin-bottom: 6px">never pre-filled</div>
+        <div style="font-size: 15px">Topic and subtopic. A new session means new work, and inheriting last week’s topic is how a student ends up in the wrong one.</div>
+      </div>
+      <div style="background: #FFD6E0; border-radius: 14px; padding: 16px 18px">
+        <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #A0294E; margin-bottom: 6px">no shortcut</div>
+        <div style="font-size: 15px">Eight steps, every session, however recently the last one ran. Confirming is the point: it is the moment a student notices they’ve moved on from what the record says.</div>
+      </div>
+    </div>
+  </section>
+
+  <sc-if value="{{ showOpen }}" hint-placeholder-val="{{ true }}">
+    <section style="padding: 44px 0 0; border-top: 1px solid #F0ECE6">
+      <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">Resolved in Review</h2>
+      <p style="color: #737373; max-width: 42em; margin: 0 0 24px">The five open items, now decided. Each one is already reflected in the steps above.</p>
+      <div style="display: flex; flex-direction: column; gap: 0">
+        <sc-for list="{{ open }}" as="o" hint-placeholder-count="5">
+          <div style="display: grid; grid-template-columns: 1.5em 1fr; gap: 14px; padding: 15px 0; border-top: 1px solid #F0ECE6">
+            <div style="font-size: 13px; color: #ABABAB; padding-top: 2px">{{ o.n }}</div>
+            <div>
+              <div style="font-size: 16px; font-weight: 600; margin-bottom: 3px">{{ o.q }}</div>
+              <div style="font-size: 14px; color: #737373">{{ o.note }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1140},&quot;showRationale&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Document&quot;},&quot;showOpenItems&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Document&quot;}}">
+const RULES = [
+  { step: "Learner type", keeps: "Nothing — school and university answers aren’t comparable", clears: "Steps 2 – 8, the whole tail included" },
+  { step: "Class (school)", keeps: "Board, topic", clears: "Subtopic if it isn’t in the new class’s syllabus; textbook if the list is class-specific" },
+  { step: "Board (school)", keeps: "Class, stream, topic, subtopic", clears: "Prescribed textbook — the list is per board" },
+  { step: "Stream (11 – 12)", keeps: "Class, board, topic", clears: "Subtopic if it isn’t in the new stream’s syllabus; prescribed textbook" },
+  { step: "Degree level", keeps: "University; degree if the new level offers it", clears: "Degree and specialisation otherwise" },
+  { step: "University", keeps: "Level, topic, subtopic; degree if the new university offers it", clears: "Degree and specialisation if not offered; prescribed textbook" },
+  { step: "Degree", keeps: "Topic, subtopic; specialisation if the new degree lists it", clears: "Specialisation otherwise; prescribed textbook" },
+  { step: "Specialisation", keeps: "Topic", clears: "Subtopic if it isn’t in the new syllabus; prescribed textbook" },
+  { step: "Topic", keeps: "All identity steps, all material", clears: "Subtopic, always — it was chosen for the old topic" },
+];
+
+const OPEN = [
+  { q: "No reference material is allowed", note: "Step 8 is asked but never enforced. “I don’t have any of this” opens the session normally and is recorded as unsourced, which the “grounded in” line then states outright rather than hiding." },
+  { q: "The catalogue is fetched per university, and the student can curate it", note: "Lists come from the university or board, and the student edits them in place. Their correction is what the session teaches from — which also means a missing book costs one tap, not a support ticket." },
+  { q: "Classes 11 and 12 get a stream", note: "One extra row, at those two classes only: science PCM, science PCB, commerce, arts. Classes 1 – 10 never see it, and changing it clears the textbook and any subtopic outside the new syllabus." },
+  { q: "Doctoral points at a paper, then goes to chat", note: "Step 6 asks for a title, DOI or PDF instead of a topic; the topic is read off the paper and step 7 is skipped entirely. A thesis has no syllabus to narrow against, so the conversation is the only place the scope can be found." },
+  { q: "The intake never gets shorter than eight steps", note: "No trusted-record shortcut, no collapsed summary. The confirm-by-tapping run is the design, and the repetition is what catches a student whose context has quietly changed." },
+];
+
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showWhy: this.props.showRationale !== false,
+      showOpen: this.props.showOpenItems !== false,
+      rules: RULES,
+      open: OPEN.map((o, i) => ({ n: i + 1, q: o.q, note: o.note })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

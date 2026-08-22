@@ -1,0 +1,15 @@
+# Handle text files automatically and normalize to LF on check-in
+* text=auto
+
+# Explicitly declare text files you want to normalize
+*.html text
+*.css text
+*.js text
+*.json text
+
+# Ensure bash scripts always use LF (CRLF breaks them on Linux)
+*.sh text eol=lf
+
+# Denotative binary files (Git won't touch these)
+*.png binary
+*.jpg binary

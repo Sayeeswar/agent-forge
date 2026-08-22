@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&amp;family=DM+Sans:wght@300;400;500;600;700&amp;display=swap">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: #FFFFFF; color: #1A1A1A; font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #3D3D3D; text-underline-offset: 3px; }
+  a:hover { color: #1A1A1A; }
+  ::selection { background: #FFD6E0; }
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid #1A1A1A; outline-offset: 2px; }
+  button, input, textarea { font-family: inherit; }
+  @keyframes sl-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  @keyframes sl-step { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+</style>
+</helmet>
+
+<div style="height: 100vh; display: flex; background: #FFFFFF; overflow: hidden">
+
+  <aside style="flex: 0 0 208px; display: flex; flex-direction: column; background: #FFFFFF; border-right: 1px solid #F0ECE6">
+    <div style="padding: 22px 20px 16px">
+      <div style="font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 21px; letter-spacing: -0.02em; line-height: 1.1">Self learning</div>
+      <div style="font-size: 11px; color: #ABABAB; margin-top: 3px">study, not answers</div>
+    </div>
+    <div style="padding: 0 16px 16px">
+      <button onClick="{{ newSession }}" style="display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; padding: 10px 12px; background: #1A1A1A; color: #FFFFFF; border: 0; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600" style-hover="background: #3D3D3D">
+        <span style="font-size: 15px; line-height: 1">+</span>new session
+      </button>
+    </div>
+    <div style="flex: 1; min-height: 0; overflow-y: auto">
+    <nav style="flex: 0 0 auto; display: flex; flex-direction: column; gap: 2px; padding: 4px 0">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+        <button onClick="{{ n.go }}" style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; padding: 9px 20px; border: 0; background: transparent; cursor: pointer; font-size: 13px; font-weight: {{ n.weight }}; color: {{ n.color }}" style-hover="background: #FAF8F5">
+          <sc-if value="{{ n.active }}" hint-placeholder-val="{{ true }}">
+            <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 18px; background: #1A1A1A; border-radius: 0 3px 3px 0"></span>
+          </sc-if>
+          <span>{{ n.label }}</span>
+          <sc-if value="{{ n.hasMeta }}">
+            <span style="font-size: 10px; color: #ABABAB; font-weight: 400; white-space: nowrap">{{ n.meta }}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </nav>
+    <div style="border-top: 1px solid #F0ECE6">
+      <button onClick="{{ openPrev }}" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; padding: 13px 20px 4px; border: 0; background: transparent; cursor: pointer" style-hover="background: #FAF8F5">
+        <span style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #1A1A1A; font-weight: 600">previous sessions</span>
+        <sc-if value="{{ hasPrev }}" hint-placeholder-val="{{ true }}">
+          <span style="display: flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: #F5E8D4; font-size: 10.5px; font-weight: 600; color: #5C4028">{{ prevCount }}</span>
+        </sc-if>
+      </button>
+      <div style="padding: 0 20px 8px; font-size: 10.5px; color: #ABABAB">{{ prevHint }}</div>
+      <div style="padding: 0 12px 14px; display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{ prevLatest }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.resume }}" style="display: block; width: 100%; text-align: left; background: {{ p.band }}; border: 0; border-radius: 10px; padding: 9px 11px; cursor: pointer" style-hover="box-shadow: 0 0 0 1.5px #1A1A1A">
+            <span style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+              <span style="font-size: 12.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ p.topic }}</span>
+              <span style="font-size: 9.5px; color: #737373; white-space: nowrap">{{ p.when }}</span>
+            </span>
+            <span style="display: block; font-size: 10.5px; color: #5C4028; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ p.step }}</span>
+            <span style="display: block; margin-top: 7px; height: 3px; border-radius: 999px; background: rgba(26,26,26,0.12); overflow: hidden">
+              <span style="display: block; width: {{ p.pct }}; height: 100%; background: #1A1A1A"></span>
+            </span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ hasMorePrev }}">
+          <button onClick="{{ openPrev }}" style="padding: 2px 2px 0; border: 0; background: transparent; cursor: pointer; text-align: left; font-size: 11px; color: #ABABAB" style-hover="color: #1A1A1A">{{ morePrevLabel }}</button>
+        </sc-if>
+      </div>
+    </div>
+
+    </div>
+
+    <div style="flex: 0 0 auto; padding: 13px 20px 18px; border-top: 1px solid #F0ECE6; background: #FFFFFF">
+      <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">this session</div>
+      <sc-if value="{{ recordEmpty }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size: 12px; color: #ABABAB">Nothing set yet.</div>
+      </sc-if>
+      <div style="display: flex; flex-direction: column; gap: 5px">
+        <sc-for list="{{ recordShort }}" as="r" hint-placeholder-count="3">
+          <div style="font-size: 12px; color: #3D3D3D; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ r.v }}</div>
+        </sc-for>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden">
+
+    <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+      <div style="flex: 0 0 auto; display: flex; align-items: center; gap: 0; padding: 14px 32px; border-bottom: 1px solid #F0ECE6; overflow-x: auto">
+        <sc-for list="{{ rail }}" as="r" hint-placeholder-count="9">
+          <div style="display: flex; align-items: center; gap: 7px; flex: 0 0 auto">
+            <span style="display: flex; align-items: center; justify-content: center; width: 21px; height: 21px; border-radius: 50%; flex: 0 0 auto; font-size: 10.5px; font-weight: 600; background: {{ r.dotBg }}; color: {{ r.dotFg }}; border: 1.5px solid {{ r.dotBorder }}">{{ r.mark }}</span>
+            <span style="flex: 0 0 auto; font-size: 11.5px; font-weight: {{ r.weight }}; color: {{ r.fg }}; white-space: nowrap">{{ r.label }}</span>
+            <sc-if value="{{ r.hasLine }}" hint-placeholder-val="{{ true }}">
+              <span style="flex: 0 0 auto; width: 20px; height: 1.5px; background: {{ r.lineBg }}; margin-right: 7px"></span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isIntake }}" hint-placeholder-val="{{ true }}">
+      <div style="flex: 1; min-height: 0; overflow: auto; padding: 30px 32px 44px">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start">
+          <div>
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 36px; line-height: 1.08; letter-spacing: -0.025em; margin: 0 0 6px">{{ intakeTitle }}</h1>
+            <p style="color: #737373; max-width: 38em; margin: 0 0 20px">{{ intakeBlurb }}</p>
+
+            <div style="position: relative; max-width: 34em; margin-bottom: 26px; background: #FAF8F5; border-radius: 14px; padding: 15px 17px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 9px">
+                <span style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">before the eight steps · open-source model</span>
+                <span style="font-size: 11px; color: #ABABAB">{{ modelMeta }}</span>
+              </div>
+              <button onClick="{{ toggleModel }}" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left; padding: 12px 15px; background: #FFFFFF; border: 1.5px solid {{ modelBorder }}; border-radius: 10px; cursor: pointer" style-hover="border-color: #1A1A1A">
+                <span style="min-width: 0">
+                  <span style="display: block; font-size: 15.5px; font-weight: 600; color: {{ modelFg }}">{{ modelLabel }}</span>
+                  <span style="display: block; font-size: 12px; color: #737373; margin-top: 2px">{{ modelNote }}</span>
+                </span>
+                <span style="font-size: 11px; color: #737373; white-space: nowrap">{{ modelCaret }}</span>
+              </button>
+
+              <sc-if value="{{ modelOpen }}">
+                <div style="position: absolute; left: 17px; right: 17px; top: 100%; margin-top: -8px; z-index: 20; background: #FFFFFF; border: 1.5px solid #1A1A1A; border-radius: 12px; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 20px rgba(0,0,0,0.12)">
+                  <sc-for list="{{ models }}" as="m" hint-placeholder-count="5">
+                    <button onClick="{{ m.pick }}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; text-align: left; padding: 11px 15px; border: 0; border-bottom: 1px solid #F0ECE6; background: {{ m.bg }}; cursor: pointer" style-hover="background: #FAF8F5">
+                      <span style="min-width: 0">
+                        <span style="display: block; font-size: 14px; font-weight: 600">{{ m.name }}</span>
+                        <span style="display: block; font-size: 12px; color: #737373">{{ m.note }}</span>
+                      </span>
+                      <span style="font-size: 11px; color: #ABABAB; white-space: nowrap">{{ m.tag }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div style="font-size: 12px; color: #737373; margin-top: 10px">{{ modelHint }}</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0">
+              <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+                <div style="display: grid; grid-template-columns: 34px 1fr; gap: 14px">
+                  <div style="display: flex; flex-direction: column; align-items: center">
+                    <span style="display: flex; align-items: center; justify-content: center; width: 27px; height: 27px; border-radius: 50%; font-size: 12px; font-weight: 600; background: {{ s.dotBg }}; color: {{ s.dotFg }}; border: 1.5px solid {{ s.dotBorder }}">{{ s.mark }}</span>
+                    <sc-if value="{{ s.hasTail }}" hint-placeholder-val="{{ true }}">
+                      <span style="flex: 1; width: 1.5px; min-height: 22px; background: {{ s.tailBg }}; margin: 4px 0"></span>
+                    </sc-if>
+                  </div>
+
+                  <div style="padding-bottom: 20px; min-width: 0">
+                    <sc-if value="{{ s.isDone }}">
+                      <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-top: 3px">
+                        <span style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; flex: 0 0 7em">{{ s.label }}</span>
+                        <span style="font-size: 16px; font-weight: 600">{{ s.answer }}</span>
+                        <button onClick="{{ s.edit }}" style="padding: 0; border: 0; background: transparent; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #3D3D3D" style-hover="color: #1A1A1A">change</button>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{ s.isActive }}" hint-placeholder-val="{{ true }}">
+                      <div style="animation: sl-step 200ms ease-out">
+                        <div style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 5px">{{ s.label }}</div>
+                        <div style="font-size: 23px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2">{{ s.question }}</div>
+                        <div style="color: #737373; font-size: 14px; margin: 4px 0 14px">{{ s.help }}</div>
+
+                        <sc-if value="{{ s.needsConfirm }}">
+                          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #FAF8F5; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px">
+                            <span style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">from last session</span>
+                            <span style="font-size: 17px; font-weight: 600">{{ s.answer }}</span>
+                            <button onClick="{{ s.confirm }}" style="padding: 8px 15px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 12.5px; font-weight: 600" style-hover="background: #3D3D3D">still true</button>
+                          </div>
+                        </sc-if>
+
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                          <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="4">
+                            <button onClick="{{ o.pick }}" style="padding: 9px 15px; border: 1.5px solid {{ o.border }}; background: {{ o.bg }}; color: {{ o.fg }}; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 500" style-hover="border-color: #1A1A1A">{{ o.label }}</button>
+                          </sc-for>
+                        </div>
+
+                        <sc-if value="{{ s.hasInput }}">
+                          <div style="margin-top: 12px; max-width: 30em">
+                            <div style="display: flex; gap: 8px; align-items: center; border: 1.5px solid #E8E8E8; border-radius: 999px; padding: 4px 4px 4px 16px">
+                              <input value="{{ s.inputValue }}" onChange="{{ s.setInput }}" onKeyDown="{{ s.inputKey }}" placeholder="{{ s.inputPlaceholder }}" style="flex: 1; min-width: 0; padding: 8px 0; border: 0; background: transparent; font-size: 14px; color: #1A1A1A">
+                              <button onClick="{{ s.submitInput }}" style="padding: 9px 16px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 12.5px; font-weight: 600" style-hover="background: #3D3D3D">use this</button>
+                            </div>
+                            <div style="font-size: 12px; color: #ABABAB; margin-top: 8px">{{ s.inputNote }}</div>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ s.hasExtra }}">
+                          <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #F0ECE6">
+                            <div style="font-size: 18px; font-weight: 600; margin-bottom: 3px">{{ s.extraQuestion }}</div>
+                            <div style="color: #737373; font-size: 13.5px; margin-bottom: 12px">{{ s.extraHelp }}</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                              <sc-for list="{{ s.extraOptions }}" as="o" hint-placeholder-count="4">
+                                <button onClick="{{ o.pick }}" style="padding: 9px 15px; border: 1.5px solid {{ o.border }}; background: {{ o.bg }}; color: {{ o.fg }}; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 500" style-hover="border-color: #1A1A1A">{{ o.label }}</button>
+                              </sc-for>
+                            </div>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ s.hasCleared }}">
+                          <div style="margin-top: 14px; background: #FFF0F3; border-radius: 12px; padding: 11px 14px; font-size: 13px; max-width: 34em">{{ s.clearedNote }}</div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{ s.isTodo }}">
+                      <div style="padding-top: 4px; font-size: 15px; color: #C9C9C9">{{ s.label }}</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ intakeReady }}">
+              <div style="margin-top: 6px; margin-left: 48px">
+                <button onClick="{{ toTopic }}" style="padding: 13px 22px; background: #1A1A1A; color: #FFFFFF; border: 0; border-radius: 10px; cursor: pointer; font-size: 14.5px; font-weight: 600" style-hover="background: #3D3D3D">continue to the topic</button>
+                <div style="font-size: 12px; color: #ABABAB; margin-top: 10px">Steps 6 to 8 — topic, subtopic, material — come next, one screen each.</div>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <sc-if value="{{ hasResume }}" hint-placeholder-val="{{ true }}">
+              <div style="border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08)">
+                <div style="background: #FFF0F3; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px">
+                  <span style="font-size: 11px; font-style: italic; color: #A0294E">most recent unfinished</span>
+                  <span style="font-size: 10px; color: #C94065">{{ resumeWhen }}</span>
+                </div>
+                <div style="padding: 14px 15px">
+                  <div style="font-size: 17px; font-weight: 700; line-height: 1.2">{{ resumeTopic }}</div>
+                  <div style="font-size: 12.5px; color: #737373; margin-top: 3px">{{ resumeStep }}</div>
+                  <button onClick="{{ resume }}" style="margin-top: 12px; width: 100%; padding: 9px 14px; background: #FFFFFF; color: #1A1A1A; border: 1px solid #E8E8E8; border-radius: 8px; cursor: pointer; font-size: 12.5px; font-weight: 600" style-hover="background: #FAF8F5">resume — skips the intake</button>
+                  <div style="font-size: 11px; color: #ABABAB; margin-top: 8px">Same session, so its context still stands. Only a new session runs the eight steps.</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="background: #FAF8F5; border-radius: 14px; padding: 15px">
+              <div style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 10px">how this works</div>
+              <div style="font-size: 13px; color: #3D3D3D">Eight steps, every session. Any answer stays tappable — change one and I keep whatever below it is still valid, and re-ask only what isn’t.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isTopicScreen }}">
+      <div style="flex: 1; min-height: 0; overflow: auto; padding: 34px 32px 44px">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start">
+          <div style="max-width: 46em">
+            <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">step 6 of 8</div>
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 36px; line-height: 1.08; letter-spacing: -0.025em; margin: 0 0 6px">{{ topicTitle }}</h1>
+            <p style="color: #737373; margin: 0 0 22px">{{ topicHelp }}</p>
+            <textarea value="{{ topicText }}" onChange="{{ setTopicText }}" placeholder="{{ topicPlaceholder }}" rows="3" style="width: 100%; padding: 14px 16px; border: 1.5px solid #E8E8E8; border-radius: 14px; background: #FFFFFF; font-size: 16px; line-height: 1.5; resize: vertical; color: #1A1A1A"></textarea>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px">
+              <sc-for list="{{ topicSuggestions }}" as="t" hint-placeholder-count="3">
+                <button onClick="{{ t.pick }}" style="padding: 9px 15px; border: 1.5px solid #E8E8E8; background: #FFFFFF; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #1A1A1A" style-hover="background: #FAF8F5">{{ t.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px">
+              <button onClick="{{ submitTopic }}" style="padding: 13px 22px; background: #1A1A1A; color: #FFFFFF; border: 0; border-radius: 10px; cursor: pointer; font-size: 14.5px; font-weight: 600" style-hover="background: #3D3D3D">{{ topicCta }}</button>
+              <sc-if value="{{ photoable }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ photoTopic }}" style="padding: 13px 20px; background: #FFFFFF; border: 1.5px solid #E8E8E8; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #1A1A1A" style-hover="background: #FAF8F5">photograph the question</button>
+              </sc-if>
+              <button onClick="{{ backToIntake }}" style="padding: 13px 16px; background: transparent; border: 0; cursor: pointer; font-size: 14px; font-weight: 600; color: #737373" style-hover="color: #1A1A1A">back</button>
+            </div>
+            <sc-if value="{{ isDoctoral }}">
+              <div style="margin-top: 22px; background: #C8EDCD; border-radius: 14px; padding: 14px 16px; max-width: 34em">
+                <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #1A5228; margin-bottom: 5px">doctoral path</div>
+                <div style="font-size: 14px">The topic is read off the paper, so step 7 is skipped — you land straight in the chat and we find the scope there.</div>
+              </div>
+            </sc-if>
+          </div>
+          <div style="background: #FAF8F5; border-radius: 14px; padding: 15px">
+            <div style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 10px">your context</div>
+            <div style="display: flex; flex-direction: column; gap: 9px">
+              <sc-for list="{{ record }}" as="r" hint-placeholder-count="3">
+                <div>
+                  <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">{{ r.k }}</div>
+                  <div style="font-size: 13.5px">{{ r.v }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <button onClick="{{ backToIntake }}" style="margin-top: 14px; padding: 0; border: 0; background: transparent; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #3D3D3D" style-hover="color: #1A1A1A">change any of this</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSubtopicScreen }}">
+      <div style="flex: 1; min-height: 0; overflow: auto; padding: 34px 32px 44px">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start">
+          <div style="max-width: 46em">
+            <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">step 7 of 8</div>
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 36px; line-height: 1.08; letter-spacing: -0.025em; margin: 0 0 6px">Anything narrower?</h1>
+            <p style="color: #737373; margin: 0 0 22px">{{ subtopicHelp }}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{ subtopicOptions }}" as="o" hint-placeholder-count="3">
+                <button onClick="{{ o.pick }}" style="padding: 11px 17px; border: 1.5px solid {{ o.border }}; background: {{ o.bg }}; color: {{ o.fg }}; border-radius: 999px; cursor: pointer; font-size: 14px; font-weight: 500" style-hover="border-color: #1A1A1A">{{ o.label }}</button>
+              </sc-for>
+            </div>
+            <div style="margin-top: 26px; background: #FFF0F3; border-radius: 14px; padding: 15px 17px; max-width: 36em">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #A0294E; margin-bottom: 6px">not sure?</div>
+              <div style="font-size: 14px; margin-bottom: 12px">Skip it. The subtopic stays empty, the AI infers it from your first few messages and confirms once, inline — then writes it back here like any tapped answer.</div>
+              <button onClick="{{ skipSubtopic }}" style="padding: 11px 17px; background: #1A1A1A; color: #FFFFFF; border: 0; border-radius: 10px; cursor: pointer; font-size: 13.5px; font-weight: 600" style-hover="background: #3D3D3D">work it out with me in the chat</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 22px">
+              <button onClick="{{ toMaterial }}" style="padding: 13px 22px; background: {{ subtopicCtaBg }}; color: {{ subtopicCtaFg }}; border: 1.5px solid {{ subtopicCtaBorder }}; border-radius: 10px; cursor: pointer; font-size: 14.5px; font-weight: 600" style-hover="border-color: #1A1A1A">continue to material</button>
+              <button onClick="{{ backToTopic }}" style="padding: 13px 16px; background: transparent; border: 0; cursor: pointer; font-size: 14px; font-weight: 600; color: #737373" style-hover="color: #1A1A1A">back</button>
+            </div>
+          </div>
+          <div style="background: #FAF8F5; border-radius: 14px; padding: 15px">
+            <div style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 10px">your context</div>
+            <div style="display: flex; flex-direction: column; gap: 9px">
+              <sc-for list="{{ record }}" as="r" hint-placeholder-count="4">
+                <div>
+                  <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">{{ r.k }}</div>
+                  <div style="font-size: 13.5px">{{ r.v }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isMaterialScreen }}">
+      <div style="flex: 1; min-height: 0; overflow: auto; padding: 34px 32px 44px">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start">
+          <div style="max-width: 46em">
+            <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">step 8 of 8</div>
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 36px; line-height: 1.08; letter-spacing: -0.025em; margin: 0 0 6px">What should I teach from?</h1>
+            <p style="color: #737373; margin: 0 0 22px">Whatever you give me here is what I quote and cite. Asked, never enforced.</p>
+
+            <div style="background: #F5E8D4; border-radius: 14px; padding: 15px 17px; margin-bottom: 12px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px">
+                <span style="font-size: 15px; font-weight: 700">Prescribed textbook</span>
+                <span style="font-size: 11px; color: #8B6A44">{{ catalogueSource }}</span>
+              </div>
+              <div style="font-size: 13.5px; color: #5C4028; margin-bottom: 12px">{{ catalogueNote }}</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <sc-for list="{{ books }}" as="b" hint-placeholder-count="3">
+                  <button onClick="{{ b.pick }}" style="padding: 9px 15px; border: 1.5px solid {{ b.border }}; background: {{ b.bg }}; color: {{ b.fg }}; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 500" style-hover="border-color: #1A1A1A">{{ b.label }}</button>
+                </sc-for>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center; border: 1.5px solid rgba(139,106,68,0.35); border-radius: 999px; padding: 4px 4px 4px 16px; margin-top: 12px; max-width: 30em; background: #FFFFFF">
+                <input value="{{ bookDraft }}" onChange="{{ setBookDraft }}" onKeyDown="{{ bookKey }}" placeholder="add a book the list is missing" style="flex: 1; min-width: 0; padding: 8px 0; border: 0; background: transparent; font-size: 13.5px; color: #1A1A1A">
+                <button onClick="{{ addBook }}" style="padding: 8px 15px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 12.5px; font-weight: 600" style-hover="background: #3D3D3D">add</button>
+              </div>
+            </div>
+
+            <div style="background: #C8EDCD; border-radius: 14px; padding: 15px 17px; margin-bottom: 12px">
+              <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px">Paste a syllabus</div>
+              <div style="font-size: 13.5px; color: #1A5228; margin-bottom: 12px">The unit list settles scope — what is examinable and what is merely adjacent.</div>
+              <textarea value="{{ syllabusText }}" onChange="{{ setSyllabusText }}" placeholder="Unit I — … Unit II — …" rows="3" style="width: 100%; padding: 12px 14px; border: 1.5px solid rgba(26,82,40,0.25); border-radius: 12px; background: #FFFFFF; font-size: 14px; line-height: 1.5; resize: vertical; color: #1A1A1A"></textarea>
+              <button onClick="{{ addSyllabus }}" style="margin-top: 10px; padding: 9px 15px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 12.5px; font-weight: 600" style-hover="background: #3D3D3D">attach syllabus</button>
+            </div>
+
+            <div style="background: #FFD6E0; border-radius: 14px; padding: 15px 17px; margin-bottom: 12px">
+              <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px">Slides or a course page</div>
+              <div style="font-size: 13.5px; color: #A0294E; margin-bottom: 12px">Your lecturer’s notation wins over the textbook’s when the two disagree.</div>
+              <div style="display: flex; gap: 8px; align-items: center; border: 1.5px solid rgba(160,41,78,0.25); border-radius: 999px; padding: 4px 4px 4px 16px; max-width: 30em; background: #FFFFFF">
+                <input value="{{ linkDraft }}" onChange="{{ setLinkDraft }}" onKeyDown="{{ linkKey }}" placeholder="paste a link" style="flex: 1; min-width: 0; padding: 8px 0; border: 0; background: transparent; font-size: 13.5px; color: #1A1A1A">
+                <button onClick="{{ addLink }}" style="padding: 8px 15px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 12.5px; font-weight: 600" style-hover="background: #3D3D3D">attach</button>
+              </div>
+            </div>
+
+            <button onClick="{{ noMaterial }}" style="display: block; width: 100%; text-align: left; border: 1.5px solid {{ noneBorder }}; background: {{ noneBg }}; border-radius: 14px; padding: 15px 17px; cursor: pointer" style-hover="border-color: #1A1A1A">
+              <div style="font-size: 15px; font-weight: 700; margin-bottom: 3px; color: #1A1A1A">I don’t have any of this</div>
+              <div style="font-size: 13.5px; color: #737373">The session opens normally and is recorded as unsourced — the “grounded in” line says so instead of naming a book.</div>
+            </button>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px">
+              <button onClick="{{ openSession }}" style="padding: 13px 22px; background: #1A1A1A; color: #FFFFFF; border: 0; border-radius: 10px; cursor: pointer; font-size: 14.5px; font-weight: 600" style-hover="background: #3D3D3D">open the session</button>
+              <button onClick="{{ backFromMaterial }}" style="padding: 13px 16px; background: transparent; border: 0; cursor: pointer; font-size: 14px; font-weight: 600; color: #737373" style-hover="color: #1A1A1A">back</button>
+            </div>
+          </div>
+
+          <div style="background: #FAF8F5; border-radius: 14px; padding: 15px">
+            <div style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 10px">attached</div>
+            <sc-if value="{{ noMaterials }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 13px; color: #ABABAB">Nothing yet — and that is a valid way to start.</div>
+            </sc-if>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <sc-for list="{{ materials }}" as="m" hint-placeholder-count="2">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; background: #FFFFFF; border-radius: 10px; padding: 9px 11px">
+                  <span style="font-size: 13px; min-width: 0">{{ m.label }}</span>
+                  <button onClick="{{ m.remove }}" style="padding: 0; border: 0; background: transparent; cursor: pointer; font-size: 12px; color: #A0294E; white-space: nowrap" style-hover="color: #C0392B">remove</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSession }}">
+      <div style="flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(380px, 1fr) 1.12fr; grid-template-rows: 100%">
+
+        <section style="min-width: 0; min-height: 0; overflow: hidden; display: flex; flex-direction: column; border-right: 1px solid #F0ECE6">
+          <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #F0ECE6">
+            <div style="min-width: 0">
+              <div style="font-size: 13px; font-weight: 600; white-space: nowrap">{{ sessionLabel }}</div>
+              <div style="font-size: 11px; color: #ABABAB; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ sessionSub }}</div>
+            </div>
+            <button onClick="{{ goStart }}" style="padding: 7px 13px; background: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 500; color: #3D3D3D; white-space: nowrap" style-hover="background: #FAF8F5">back to start</button>
+          </div>
+
+          <div id="sl-chat-scroll" style="flex: 1; min-height: 0; overflow: auto; padding: 20px 20px 6px; display: flex; flex-direction: column; gap: 14px">
+            <sc-for list="{{ chat }}" as="m" hint-placeholder-count="4">
+              <div style="animation: sl-in 170ms ease-out">
+                <sc-if value="{{ m.isAi }}" hint-placeholder-val="{{ true }}">
+                  <div style="max-width: 40em">
+                    <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 5px">{{ m.step }}</div>
+                    <div style="background: #FAF8F5; border-radius: 14px; padding: 13px 16px; font-size: 15px">{{ m.text }}</div>
+                    <sc-if value="{{ m.hasSources }}">
+                      <div style="margin-top: 7px; background: #FFFFFF; border: 1px solid #F0ECE6; border-radius: 12px; overflow: hidden">
+                        <div style="padding: 7px 13px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373; background: #FAF8F5">grounded in</div>
+                        <sc-for list="{{ m.sources }}" as="s" hint-placeholder-count="2">
+                          <div style="display: flex; justify-content: space-between; gap: 12px; padding: 9px 13px; font-size: 12.5px; border-top: 1px solid #F0ECE6">
+                            <span>{{ s.t }}</span>
+                            <span style="color: #ABABAB; white-space: nowrap; font-size: 11px">{{ s.d }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ m.hasCode }}">
+                      <div style="margin-top: 7px; border-radius: 12px; overflow: hidden; border: 1px solid #F0ECE6">
+                        <pre style="margin: 0; padding: 14px 16px; overflow: auto; font-family: 'Courier New', Courier, monospace; font-size: 12.5px; line-height: 1.65; background: #262626; color: #F5EFE6">{{ m.code }}</pre>
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 13px; background: #FFFFFF">
+                          <sc-if value="{{ copyOn }}" hint-placeholder-val="{{ true }}">
+                            <button onClick="{{ noop }}" style="padding: 6px 12px; border: 1px solid #E8E8E8; background: #FFFFFF; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 500; color: #1A1A1A" style-hover="background: #FAF8F5">copy</button>
+                          </sc-if>
+                          <sc-if value="{{ copyOff }}">
+                            <span style="font-size: 12px; color: #ABABAB">copying revealed code is off in your settings</span>
+                          </sc-if>
+                          <button onClick="{{ goSettings }}" style="padding: 0; border: 0; background: transparent; cursor: pointer; font-size: 12px; font-weight: 600; color: #3D3D3D" style-hover="color: #1A1A1A">change</button>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ m.isTerm }}">
+                  <div style="max-width: 40em; background: #FFFFFF; border: 1px solid #F0ECE6; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden">
+                    <div style="padding: 13px 16px">
+                      <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 6px">
+                        <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #1A5228; background: #C8EDCD; border-radius: 999px; padding: 3px 9px">new term</span>
+                        <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 19px; line-height: 1.15">{{ m.term }}</span>
+                      </div>
+                      <div style="font-size: 14.5px">{{ m.defn }}</div>
+                      <div style="font-size: 12.5px; color: #737373; margin-top: 8px">Builds on: {{ m.buildsOn }}</div>
+                      <button onClick="{{ m.toggle }}" style="margin-top: 10px; padding: 0; border: 0; background: transparent; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #3D3D3D" style-hover="color: #1A1A1A">{{ m.toggleLabel }}</button>
+                    </div>
+                    <sc-if value="{{ m.open }}">
+                      <div style="padding: 0 16px 15px">
+                        <div style="font-size: 14px; color: #3D3D3D; padding-top: 2px">{{ m.more }}</div>
+                        <sc-if value="{{ m.hasSphere }}">
+                          <div style="margin-top: 12px; background: #FAF8F5; border-radius: 12px; padding: 10px 12px 6px">
+                            <svg viewBox="0 0 330 210" style="width: 100%; max-height: 210px; display: block">
+                              <circle cx="150" cy="105" r="76" fill="#F0FAF2" stroke="#1A1A1A" stroke-width="1.6"></circle>
+                              <ellipse cx="150" cy="105" rx="76" ry="23" fill="none" stroke="#737373" stroke-width="1.1" stroke-dasharray="4 4"></ellipse>
+                              <ellipse cx="150" cy="105" rx="25" ry="76" fill="none" stroke="#737373" stroke-width="1.1" stroke-dasharray="4 4"></ellipse>
+                              <line x1="150" y1="105" x2="204" y2="52" stroke="#1A1A1A" stroke-width="1.4"></line>
+                              <circle cx="150" cy="105" r="2.6" fill="#1A1A1A"></circle>
+                              <text x="176" y="86" font-family="'DM Sans', sans-serif" font-size="13" font-weight="600" fill="#1A1A1A">R</text>
+                              <line x1="150" y1="29" x2="150" y2="9" stroke="#2D7A3C" stroke-width="1.6"></line>
+                              <line x1="150" y1="9" x2="146" y2="16" stroke="#2D7A3C" stroke-width="1.6"></line>
+                              <line x1="150" y1="9" x2="154" y2="16" stroke="#2D7A3C" stroke-width="1.6"></line>
+                              <line x1="226" y1="105" x2="248" y2="105" stroke="#2D7A3C" stroke-width="1.6"></line>
+                              <line x1="248" y1="105" x2="241" y2="101" stroke="#2D7A3C" stroke-width="1.6"></line>
+                              <line x1="248" y1="105" x2="241" y2="109" stroke="#2D7A3C" stroke-width="1.6"></line>
+                              <line x1="96" y1="51" x2="80" y2="35" stroke="#2D7A3C" stroke-width="1.6"></line>
+                              <line x1="80" y1="35" x2="87" y2="37" stroke="#2D7A3C" stroke-width="1.6"></line>
+                              <line x1="80" y1="35" x2="82" y2="42" stroke="#2D7A3C" stroke-width="1.6"></line>
+                              <text x="14" y="196" font-family="'DM Sans', sans-serif" font-size="12.5" fill="#3D3D3D">every unit normal points along a radius, so κ₁ = κ₂ = 1/R everywhere</text>
+                            </svg>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ m.isYou }}">
+                  <div style="display: flex; justify-content: flex-end">
+                    <div style="max-width: 32em; background: #F5E8D4; border-radius: 14px; padding: 12px 16px; font-size: 15px">{{ m.text }}</div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ m.isNote }}">
+                  <div style="max-width: 40em; background: #FFF0F3; border-radius: 14px; padding: 12px 16px">
+                    <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #C0392B; margin-bottom: 4px">{{ m.step }}</div>
+                    <div style="font-size: 14px">{{ m.text }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="flex: 0 0 auto; border-top: 1px solid #F0ECE6; padding: 12px 20px 16px">
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px">
+              <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3">
+                <button onClick="{{ c.pick }}" style="padding: 8px 13px; border: 1px solid #E8E8E8; background: #FFFFFF; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: #1A1A1A; text-align: left" style-hover="background: #FAF8F5">{{ c.label }}</button>
+              </sc-for>
+            </div>
+            <div style="position: relative">
+              <sc-if value="{{ chatAttachOpen }}">
+                <div style="position: absolute; left: 0; bottom: 100%; margin-bottom: 9px; z-index: 30; width: 320px; max-height: 340px; overflow-y: auto; background: #FFFFFF; border: 1px solid #1A1A1A; border-radius: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.14)">
+                  <div style="padding: 10px 14px; background: #FAF8F5; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373">attach your answer</div>
+                  <sc-for list="{{ chatAttachOptions }}" as="o" hint-placeholder-count="2">
+                    <button onClick="{{ o.pick }}" style="display: flex; align-items: flex-start; gap: 11px; width: 100%; text-align: left; padding: 12px 14px; border: 0; border-bottom: 1px solid #F0ECE6; background: #FFFFFF; cursor: pointer" style-hover="background: #FAF8F5">
+                      <span style="flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px; background: {{ o.band }}; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #1A1A1A">{{ o.glyph }}</span>
+                      <span style="min-width: 0">
+                        <span style="display: block; font-size: 13.5px; font-weight: 600">{{ o.label }}</span>
+                        <span style="display: block; font-size: 11.5px; color: #737373; margin-top: 1px">{{ o.note }}</span>
+                      </span>
+                    </button>
+                  </sc-for>
+                  <div style="padding: 10px 14px; background: #FAF8F5; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373; display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                    <span>skills in this session</span>
+                    <button onClick="{{ openSkillsFromChat }}" style="padding: 0; border: 0; background: transparent; cursor: pointer; font-size: 10.5px; font-weight: 600; letter-spacing: 0; text-transform: none; color: #3D3D3D" style-hover="color: #1A1A1A">manage</button>
+                  </div>
+                  <sc-if value="{{ skillsEmpty }}">
+                    <div style="padding: 12px 14px; font-size: 12px; color: #ABABAB">None available. Add one from the skills list.</div>
+                  </sc-if>
+                  <sc-for list="{{ chatSkills }}" as="k" hint-placeholder-count="4">
+                    <button onClick="{{ k.toggle }}" style="display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 14px; border: 0; border-bottom: 1px solid #F0ECE6; background: #FFFFFF; cursor: pointer" style-hover="background: #FAF8F5">
+                      <span style="flex: 0 0 auto; width: 15px; height: 15px; border-radius: 50%; border: 1px solid {{ k.dotBorder }}; background: {{ k.dotBg }}"></span>
+                      <span style="min-width: 0">
+                        <span style="display: block; font-size: 13px; font-weight: 500; color: {{ k.fg }}">{{ k.name }}</span>
+                        <span style="display: block; font-size: 11px; color: #ABABAB">{{ k.state }}</span>
+                      </span>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div style="display: flex; gap: 8px; align-items: center; border: 1px solid #E8E8E8; border-radius: 999px; padding: 4px 4px 4px 8px">
+                <button onClick="{{ toggleChatAttach }}" title="attach a photo, a file, or change skills" style="flex: 0 0 auto; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: 50%; background: {{ chatAttachBg }}; cursor: pointer" style-hover="background: #F0ECE6">
+                  <svg viewBox="0 0 16 16" style="width: 15px; height: 15px; display: block">
+                    <path d="M9.2 4.1 4.9 8.4a2 2 0 0 0 2.8 2.8l4.6-4.6a3.2 3.2 0 0 0-4.5-4.5L2.9 6.9a4.4 4.4 0 0 0 6.2 6.2l3.4-3.4" fill="none" stroke="#1A1A1A" stroke-width="1.3" stroke-linecap="round"></path>
+                  </svg>
+                </button>
+                <input value="{{ draft }}" onChange="{{ setDraft }}" onKeyDown="{{ draftKey }}" placeholder="{{ draftPlaceholder }}" style="flex: 1; min-width: 0; padding: 8px 0; border: 0; background: transparent; font-size: 14px; color: #1A1A1A">
+                <button onClick="{{ sendDraft }}" style="padding: 9px 18px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 13px; font-weight: 600" style-hover="background: #3D3D3D">send</button>
+              </div>
+            </div>
+            <div style="font-size: 11px; color: #ABABAB; margin-top: 8px">{{ composerHint }}</div>
+          </div>
+        </section>
+
+        <section style="min-width: 0; min-height: 0; overflow: hidden; display: flex; flex-direction: column; background: #FFFFFF">
+
+          <sc-if value="{{ showBrief }}" hint-placeholder-val="{{ true }}">
+            <div style="flex: 0 0 auto; padding: 14px 20px; border-bottom: 1px solid #F0ECE6; background: #FAF8F5">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 5px">
+                <span style="font-size: 11px; font-style: italic; color: #737373">{{ briefKicker }}</span>
+                <span style="font-size: 10px; color: #ABABAB">{{ briefMeta }}</span>
+              </div>
+              <div style="font-size: 15px; line-height: 1.45">{{ briefText }}</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isMathSubject }}">
+            <div style="flex: 0 1 236px; min-height: 150px; overflow: hidden; display: flex; flex-direction: column; border-bottom: 1px solid #F0ECE6">
+              <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 20px">
+                <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373; white-space: nowrap">diagram · {{ rungLabel }}</span>
+                <span style="font-size: 11px; color: #ABABAB">one picture, marked up as we go</span>
+              </div>
+              <div style="flex: 1; min-height: 0; padding: 0 20px 12px">
+                <svg viewBox="0 0 600 330" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%; max-height: 100%; display: block">
+                  <sc-if value="{{ rung0 }}">
+                    <text x="20" y="170" font-family="'DM Sans', sans-serif" font-size="14" fill="#ABABAB">The diagram appears once the working starts.</text>
+                  </sc-if>
+                  <sc-if value="{{ rung1plus }}" hint-placeholder-val="{{ true }}">
+                    <line x1="24" y1="300" x2="576" y2="300" stroke="#1A1A1A" stroke-width="1.6"></line>
+                    <rect x="70" y="100" width="60" height="200" fill="#F5E8D4" stroke="#1A1A1A" stroke-width="1.6"></rect>
+                    <rect x="380" y="180" width="50" height="120" fill="#F5E8D4" stroke="#1A1A1A" stroke-width="1.6"></rect>
+                    <line x1="130" y1="100" x2="480" y2="100" stroke="#737373" stroke-width="1" stroke-dasharray="5 5"></line>
+                    <line x1="130" y1="100" x2="380" y2="180" stroke="#1A1A1A" stroke-width="1.3" stroke-dasharray="7 4"></line>
+                    <line x1="130" y1="100" x2="380" y2="300" stroke="#1A1A1A" stroke-width="1.3" stroke-dasharray="7 4"></line>
+                    <line x1="46" y1="100" x2="46" y2="300" stroke="#737373" stroke-width="1"></line>
+                    <text x="150" y="118" font-family="'DM Sans', sans-serif" font-size="13" font-weight="600" fill="#1A1A1A">30°</text>
+                    <text x="150" y="140" font-family="'DM Sans', sans-serif" font-size="13" font-weight="600" fill="#1A1A1A">60°</text>
+                    <text x="16" y="205" font-family="'DM Sans', sans-serif" font-size="13" font-weight="600" fill="#1A1A1A" transform="rotate(-90 24 205)">60 m</text>
+                    <text x="96" y="92" font-family="'DM Sans', sans-serif" font-size="12" font-weight="600" fill="#737373">A</text>
+                    <text x="96" y="318" font-family="'DM Sans', sans-serif" font-size="12" font-weight="600" fill="#737373">B</text>
+                    <text x="440" y="176" font-family="'DM Sans', sans-serif" font-size="12" font-weight="600" fill="#737373">C</text>
+                    <text x="440" y="318" font-family="'DM Sans', sans-serif" font-size="12" font-weight="600" fill="#737373">D</text>
+                    <text x="446" y="248" font-family="'DM Sans', sans-serif" font-size="14" font-weight="600" fill="#1A1A1A">h</text>
+                  </sc-if>
+                  <sc-if value="{{ rung2plus }}">
+                    <line x1="130" y1="300" x2="380" y2="300" stroke="#C0392B" stroke-width="2.6"></line>
+                    <text x="196" y="322" font-family="'DM Sans', sans-serif" font-size="13" font-weight="600" fill="#C0392B">BD = 20√3 m</text>
+                    <line x1="130" y1="180" x2="380" y2="180" stroke="#C0392B" stroke-width="1" stroke-dasharray="4 4"></line>
+                    <line x1="100" y1="100" x2="100" y2="180" stroke="#C0392B" stroke-width="2.6"></line>
+                    <text x="196" y="88" font-family="'DM Sans', sans-serif" font-size="13" font-weight="600" fill="#C0392B">30° subtends 60 − h, not h</text>
+                  </sc-if>
+                  <sc-if value="{{ rung3 }}">
+                    <polygon points="130,100 380,180 130,180" fill="rgba(192,57,43,0.12)" stroke="#C0392B" stroke-width="1.6"></polygon>
+                    <text x="196" y="62" font-family="'DM Sans', sans-serif" font-size="13" font-weight="600" fill="#A0294E">60 − h = 20√3 · tan 30° = 20</text>
+                  </sc-if>
+                </svg>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showWorking }}">
+            <div style="flex: 1 1 auto; min-height: 200px; display: flex; flex-direction: column">
+              <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 20px; border-bottom: 1px solid #F0ECE6">
+                <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373; white-space: nowrap">{{ workingLabel }}</span>
+                <div style="position: relative; flex: 0 0 auto">
+                  <button onClick="{{ togglePanelAttach }}" style="display: flex; align-items: center; gap: 7px; padding: 6px 12px; background: #FFFFFF; border: 1px solid {{ panelAttachBorder }}; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 500; color: #1A1A1A; white-space: nowrap" style-hover="background: #FAF8F5">
+                    <svg viewBox="0 0 16 16" style="width: 13px; height: 13px; display: block">
+                      <path d="M9.2 4.1 4.9 8.4a2 2 0 0 0 2.8 2.8l4.6-4.6a3.2 3.2 0 0 0-4.5-4.5L2.9 6.9a4.4 4.4 0 0 0 6.2 6.2l3.4-3.4" fill="none" stroke="#1A1A1A" stroke-width="1.3" stroke-linecap="round"></path>
+                    </svg>
+                    attach my answer
+                  </button>
+                  <sc-if value="{{ panelAttachOpen }}">
+                    <div style="position: absolute; right: 0; top: 100%; margin-top: 7px; z-index: 30; width: 268px; background: #FFFFFF; border: 1px solid #1A1A1A; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.14)">
+                      <div style="padding: 10px 14px; background: #FAF8F5; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373">where is your answer?</div>
+                      <sc-for list="{{ panelAttachOptions }}" as="o" hint-placeholder-count="2">
+                        <button onClick="{{ o.pick }}" style="display: flex; align-items: flex-start; gap: 11px; width: 100%; text-align: left; padding: 12px 14px; border: 0; border-bottom: 1px solid #F0ECE6; background: #FFFFFF; cursor: pointer" style-hover="background: #FAF8F5">
+                          <span style="flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px; background: {{ o.band }}; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #1A1A1A">{{ o.glyph }}</span>
+                          <span style="min-width: 0">
+                            <span style="display: block; font-size: 13.5px; font-weight: 600">{{ o.label }}</span>
+                            <span style="display: block; font-size: 11.5px; color: #737373; margin-top: 1px">{{ o.note }}</span>
+                          </span>
+                        </button>
+                      </sc-for>
+                      <div style="padding: 10px 14px; font-size: 11px; color: #ABABAB">{{ panelAttachHint }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+              <div style="flex: 1; min-height: 120px; overflow: auto">
+                <sc-if value="{{ noLines }}">
+                  <div style="padding: 20px; color: #ABABAB; font-size: 14px">{{ emptyWorking }}</div>
+                </sc-if>
+                <sc-for list="{{ lines }}" as="l" hint-placeholder-count="3">
+                  <div style="display: grid; grid-template-columns: 2em 1fr auto; gap: 12px; align-items: center; padding: 11px 20px; border-bottom: 1px solid #F0ECE6; background: {{ l.bg }}">
+                    <div style="font-size: 11.5px; color: #ABABAB">{{ l.n }}</div>
+                    <div style="font-size: 15.5px; font-weight: 500">{{ l.text }}</div>
+                    <div style="font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; color: {{ l.fg }}; white-space: nowrap">{{ l.status }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="flex: 0 0 auto; border-top: 1px solid #F0ECE6; padding: 11px 20px 14px">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px">
+                  <sc-for list="{{ palette }}" as="p" hint-placeholder-count="6">
+                    <button onClick="{{ p.pick }}" style="min-width: 32px; padding: 5px 9px; border: 1px solid #E8E8E8; background: #FFFFFF; border-radius: 8px; cursor: pointer; font-size: 13px; color: #1A1A1A" style-hover="background: #FAF8F5">{{ p.ch }}</button>
+                  </sc-for>
+                  <sc-if value="{{ hasSuggestion }}">
+                    <button onClick="{{ useSuggestion }}" style="padding: 5px 11px; border: 1px solid #C8EDCD; background: #F0FAF2; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 500; color: #1A5228" style-hover="background: #C8EDCD">fill: {{ suggestion }}</button>
+                  </sc-if>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; border: 1px solid #E8E8E8; border-radius: 999px; padding: 4px 4px 4px 16px">
+                  <input value="{{ lineDraft }}" onChange="{{ setLineDraft }}" onKeyDown="{{ lineKey }}" placeholder="{{ linePlaceholder }}" style="flex: 1; min-width: 0; padding: 8px 0; border: 0; background: transparent; font-size: 15px; font-weight: 500; color: #1A1A1A">
+                  <button onClick="{{ addLine }}" style="padding: 9px 16px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 13px; font-weight: 600" style-hover="background: #3D3D3D">add line</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isUniSubject }}">
+            <div style="flex: 0 1 auto; max-height: 132px; overflow: auto; border-top: 1px solid #F0ECE6; background: #FAF8F5">
+              <div style="padding: 10px 20px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373">terms surfaced this session</div>
+              <sc-if value="{{ noTerms }}">
+                <div style="padding: 0 20px 14px; font-size: 12.5px; color: #ABABAB">Nothing yet. A term the AI introduces appears here, and inline in the conversation where it came up.</div>
+              </sc-if>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 14px">
+                <sc-for list="{{ termShelf }}" as="t" hint-placeholder-count="2">
+                  <div style="background: #FFFFFF; border: 1px solid #F0ECE6; border-radius: 999px; padding: 6px 13px; font-size: 12.5px">
+                    <span style="font-weight: 600">{{ t.term }}</span>
+                    <span style="color: #ABABAB"> · {{ t.buildsOn }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isCodingSubject }}">
+            <div style="flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column">
+              <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #F0ECE6">
+                <div>
+                  <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373">current code · state, not chat</div>
+                  <div style="font-size: 11.5px; color: #ABABAB">app/dashboard/page.jsx · {{ codeVersion }}</div>
+                </div>
+                <button onClick="{{ openPaste }}" style="padding: 8px 14px; background: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: #1A1A1A; white-space: nowrap" style-hover="background: #FAF8F5">paste updated code</button>
+              </div>
+              <sc-if value="{{ pasteOpen }}">
+                <div style="flex: 0 0 auto; padding: 14px 20px; background: #FFF0F3; border-bottom: 1px solid #F0ECE6">
+                  <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #A0294E; margin-bottom: 8px">paste from your editor</div>
+                  <textarea value="{{ pasteText }}" onChange="{{ setPasteText }}" rows="7" style="width: 100%; padding: 12px; border: 1px solid #E8E8E8; border-radius: 10px; background: #FFFFFF; font-family: 'Courier New', Courier, monospace; font-size: 12.5px; line-height: 1.6; resize: vertical; color: #1A1A1A"></textarea>
+                  <div style="display: flex; gap: 8px; margin-top: 10px">
+                    <button onClick="{{ savePaste }}" style="padding: 9px 15px; background: #1A1A1A; color: #FFFFFF; border: 0; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600" style-hover="background: #3D3D3D">replace panel contents</button>
+                    <button onClick="{{ closePaste }}" style="padding: 9px 15px; background: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: #1A1A1A" style-hover="background: #FAF8F5">cancel</button>
+                  </div>
+                  <div style="font-size: 11px; color: #737373; margin-top: 8px">You write and run it in your own editor. The panel holds the present state so both sides can point at the same code.</div>
+                </div>
+              </sc-if>
+              <div style="flex: 1; min-height: 0; overflow: auto; background: #262626">
+                <pre style="margin: 0; padding: 18px 20px; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.7; color: #F5EFE6">{{ code }}</pre>
+              </div>
+              <div style="flex: 0 0 auto; border-top: 1px solid #F0ECE6; background: #FAF8F5">
+                <div style="padding: 10px 20px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373">documentation retrieved this session</div>
+                <sc-for list="{{ docSources }}" as="d" hint-placeholder-count="2">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 8px 20px; font-size: 12.5px; border-top: 1px solid #F0ECE6">
+                    <span>{{ d.t }}</span>
+                    <span style="font-size: 11px; color: #ABABAB; white-space: nowrap">{{ d.d }}</span>
+                  </div>
+                </sc-for>
+                <div style="padding: 9px 20px 13px; font-size: 11px; color: #ABABAB">Listed because it was actually fetched. Nothing listed means nothing was grounded.</div>
+              </div>
+            </div>
+          </sc-if>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSettings }}">
+      <div style="flex: 1; min-height: 0; overflow: auto; padding: 34px 32px 40px">
+        <div style="max-width: 720px">
+          <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #ABABAB; margin-bottom: 8px">profile · the intake record</div>
+          <h1 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 34px; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 8px">Settings</h1>
+          <p style="color: #737373; max-width: 40em; margin: 0 0 22px">Context is no longer set here — it is set by the intake, every session. This is where you see what it recorded and change what doesn’t belong to a session.</p>
+
+          <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px; margin-bottom: 18px">
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 12px">last recorded</div>
+            <sc-if value="{{ recordEmpty }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 14px; color: #ABABAB">No intake has run yet.</div>
+            </sc-if>
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <sc-for list="{{ record }}" as="r" hint-placeholder-count="4">
+                <div style="display: grid; grid-template-columns: 10em 1fr; gap: 16px; align-items: baseline">
+                  <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">{{ r.k }}</div>
+                  <div style="font-size: 14.5px">{{ r.v }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <button onClick="{{ newSession }}" style="margin-top: 14px; padding: 9px 15px; background: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: #1A1A1A" style-hover="background: #FFFFFF">run the intake again</button>
+          </div>
+
+          <div style="padding: 16px 0; border-top: 1px solid #F0ECE6; border-bottom: 1px solid #F0ECE6">
+            <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373; margin-bottom: 9px">revealed code</div>
+            <button onClick="{{ toggleCopy }}" style="display: flex; align-items: center; gap: 11px; padding: 9px 14px; border: 1px solid #E8E8E8; background: #FFFFFF; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 500; color: #1A1A1A" style-hover="background: #FAF8F5">
+              <span style="width: 17px; height: 17px; border-radius: 50%; border: 1px solid #ABABAB; display: flex; align-items: center; justify-content: center">
+                <sc-if value="{{ copyOn }}" hint-placeholder-val="{{ true }}"><span style="width: 9px; height: 9px; border-radius: 50%; background: #1A1A1A"></span></sc-if>
+              </span>
+              allow copying code the AI reveals
+            </button>
+            <div style="font-size: 12px; color: #ABABAB; margin-top: 9px; max-width: 36em">Off by default. A switch everyone can flip under deadline pressure is a switch everyone flips, so it starts closed.</div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap">
+            <button onClick="{{ back }}" style="padding: 12px 18px; background: #1A1A1A; color: #FFFFFF; border: 0; border-radius: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600" style-hover="background: #3D3D3D">{{ backLabel }}</button>
+            <button onClick="{{ reset }}" style="padding: 12px 18px; background: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600; color: #1A1A1A" style-hover="background: #FAF8F5">reset the prototype</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{ skillsOpen }}">
+    <div style="position: fixed; inset: 0; background: rgba(26,26,26,0.45); z-index: 46; display: flex; align-items: stretch; justify-content: center; padding: 28px">
+      <div style="width: 100%; max-width: 1000px; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.14); display: flex; flex-direction: column; min-height: 0">
+        <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 20px; border-bottom: 1px solid #F0ECE6">
+          <div style="display: flex; align-items: baseline; gap: 12px; min-width: 0">
+            <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 24px; letter-spacing: -0.02em">Skills</span>
+            <span style="font-size: 12px; color: #ABABAB">{{ skillsSubhead }}</span>
+          </div>
+          <button onClick="{{ closeSkills }}" style="padding: 8px 16px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 12.5px; font-weight: 600" style-hover="background: #3D3D3D">close</button>
+        </div>
+
+        <div style="flex: 1; min-height: 0; overflow: auto; padding: 20px">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start">
+            <sc-for list="{{ skills }}" as="k" hint-placeholder-count="4">
+              <div style="background: {{ k.band }}; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+                  <span style="min-width: 0">
+                    <span style="display: block; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 20px; line-height: 1.15; letter-spacing: -0.015em">{{ k.name }}</span>
+                    <span style="display: block; font-size: 11px; font-style: italic; color: {{ k.ink }}; margin-top: 2px">{{ k.scope }}</span>
+                  </span>
+                  <button onClick="{{ k.remove }}" title="delete this skill" style="flex: 0 0 auto; width: 24px; height: 24px; padding: 0; border: 1px solid rgba(26,26,26,0.2); border-radius: 999px; background: rgba(255,255,255,0.6); cursor: pointer; font-size: 13px; line-height: 1; color: #A0294E" style-hover="background: #FFFFFF">×</button>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px">
+                  <div>
+                    <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: {{ k.ink }}; margin-bottom: 2px">what it does</div>
+                    <div style="font-size: 13.5px">{{ k.does }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: {{ k.ink }}; margin-bottom: 2px">what it can’t do</div>
+                    <div style="font-size: 13.5px">{{ k.cannot }}</div>
+                  </div>
+                  <div style="background: rgba(255,255,255,0.65); border-radius: 10px; padding: 10px 12px">
+                    <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: {{ k.ink }}; margin-bottom: 2px">you have to write</div>
+                    <div style="font-size: 13.5px">{{ k.needs }}</div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+
+            <sc-if value="{{ composeClosed }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ openCompose }}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 180px; border: 1.5px dashed #D8D2C8; border-radius: 14px; background: #FFFFFF; cursor: pointer" style-hover="border-color: #1A1A1A">
+                <svg viewBox="0 0 40 40" style="width: 34px; height: 34px; display: block">
+                  <line x1="20" y1="10" x2="20" y2="30" stroke="#1A1A1A" stroke-width="1.5"></line>
+                  <line x1="10" y1="20" x2="30" y2="20" stroke="#1A1A1A" stroke-width="1.5"></line>
+                </svg>
+                <span style="font-size: 13.5px; font-weight: 600; color: #1A1A1A">add a skill</span>
+                <span style="font-size: 12px; color: #ABABAB; max-width: 22em; text-align: center">Name it, and say plainly what it won’t do — an unstated limit is where trust goes.</span>
+              </button>
+            </sc-if>
+
+            <sc-if value="{{ composeOpen }}">
+              <div style="border: 1.5px solid #1A1A1A; border-radius: 14px; padding: 16px 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 10px">
+                <div style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 19px; letter-spacing: -0.015em">New skill</div>
+                <sc-for list="{{ composeFields }}" as="f" hint-placeholder-count="4">
+                  <div>
+                    <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 4px">{{ f.label }}</div>
+                    <input value="{{ f.value }}" onChange="{{ f.set }}" placeholder="{{ f.placeholder }}" style="width: 100%; padding: 9px 12px; border: 1px solid #E8E8E8; border-radius: 9px; background: #FFFFFF; font-size: 13.5px; color: #1A1A1A">
+                  </div>
+                </sc-for>
+                <div style="display: flex; gap: 8px; margin-top: 2px">
+                  <button onClick="{{ saveSkill }}" style="padding: 10px 16px; border: 0; border-radius: 9px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 13px; font-weight: 600" style-hover="background: #3D3D3D">add it</button>
+                  <button onClick="{{ cancelCompose }}" style="padding: 10px 16px; border: 1px solid #E8E8E8; border-radius: 9px; background: #FFFFFF; cursor: pointer; font-size: 13px; font-weight: 600; color: #1A1A1A" style-hover="background: #FAF8F5">cancel</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ skillsEmpty }}">
+            <div style="margin-top: 16px; font-size: 13.5px; color: #737373; max-width: 42em">Every skill is deleted. The session still runs — it just won’t check your working, mark up a diagram, cite documentation or define a term until you add one back.</div>
+          </sc-if>
+        </div>
+
+        <div style="flex: 0 0 auto; padding: 12px 20px; border-top: 1px solid #F0ECE6; font-size: 12px; color: #ABABAB">A skill is a capability with a stated limit. Deleting one removes it from every session, not just this one.</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ prevOpen }}">
+    <div style="position: fixed; inset: 0; background: rgba(26,26,26,0.45); z-index: 45; display: flex; align-items: stretch; justify-content: center; padding: 28px">
+      <div style="width: 100%; max-width: 1000px; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.14); display: flex; flex-direction: column; min-height: 0">
+        <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 20px; border-bottom: 1px solid #F0ECE6">
+          <div style="display: flex; align-items: baseline; gap: 12px; min-width: 0">
+            <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 24px; letter-spacing: -0.02em">Previous Sessions</span>
+            <span style="font-size: 12px; color: #ABABAB">{{ prevSubhead }}</span>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <button onClick="{{ togglePrevGroup }}" style="padding: 8px 14px; border: 1px solid #E8E8E8; background: #FFFFFF; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: #1A1A1A; white-space: nowrap" style-hover="background: #FAF8F5">{{ prevGroupLabel }}</button>
+            <button onClick="{{ closePrev }}" style="padding: 8px 16px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 12.5px; font-weight: 600" style-hover="background: #3D3D3D">close</button>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-height: 0; overflow: auto">
+          <sc-if value="{{ prevEmpty }}">
+            <div style="padding: 30px 20px; font-size: 14.5px; color: #737373; max-width: 42em">Nothing unfinished. Every session you started has been finished or marked done — the technique bank holds what they were worth keeping for.</div>
+          </sc-if>
+          <sc-for list="{{ prevGroups }}" as="g" hint-placeholder-count="3">
+            <div>
+              <div style="display: flex; align-items: baseline; gap: 10px; padding: 12px 20px 9px; background: #FAF8F5">
+                <span style="font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase; color: #737373; font-weight: 600">{{ g.a }}</span>
+                <span style="font-size: 10.5px; color: #C9C9C9">·</span>
+                <span style="font-size: 12.5px; font-weight: 600">{{ g.b }}</span>
+                <span style="font-size: 11px; color: #ABABAB">{{ g.count }}</span>
+              </div>
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+                <div style="display: grid; grid-template-columns: minmax(0, 1fr) 150px auto; gap: 18px; align-items: center; padding: 13px 20px; border-bottom: 1px solid #F0ECE6">
+                  <div style="min-width: 0">
+                    <div style="display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap">
+                      <span style="font-size: 15.5px; font-weight: 600">{{ r.subtopic }}</span>
+                      <span style="background: {{ r.band }}; border-radius: 999px; padding: 2px 9px; font-size: 10.5px; color: #3D3D3D; white-space: nowrap">{{ r.path }}</span>
+                    </div>
+                    <div style="font-size: 13px; color: #737373; margin-top: 3px">{{ r.step }}</div>
+                  </div>
+                  <div>
+                    <div style="height: 5px; border-radius: 999px; background: #F0ECE6; overflow: hidden">
+                      <div style="width: {{ r.pct }}; height: 100%; background: #1A1A1A"></div>
+                    </div>
+                    <div style="font-size: 11px; color: #ABABAB; margin-top: 5px">{{ r.progress }}</div>
+                  </div>
+                  <div style="display: flex; gap: 7px; white-space: nowrap">
+                    <button onClick="{{ r.resume }}" style="padding: 7px 14px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 12px; font-weight: 600" style-hover="background: #3D3D3D">resume</button>
+                    <button onClick="{{ r.reuse }}" style="padding: 7px 13px; border: 1px solid #E8E8E8; background: #FFFFFF; border-radius: 999px; cursor: pointer; font-size: 12px; color: #1A1A1A" style-hover="background: #FAF8F5">same context</button>
+                    <button onClick="{{ r.complete }}" style="padding: 7px 13px; border: 1px solid #E8E8E8; background: #FFFFFF; border-radius: 999px; cursor: pointer; font-size: 12px; color: #1A1A1A" style-hover="background: #FAF8F5">done</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="flex: 0 0 auto; padding: 12px 20px; border-top: 1px solid #F0ECE6; font-size: 12px; color: #ABABAB">Unfinished work only. Nothing is archived by age — a session stays here until you resume it or mark it done.</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ bankOpen }}">
+    <div style="position: fixed; inset: 0; background: rgba(26,26,26,0.45); z-index: 40; display: flex; align-items: stretch; justify-content: center; padding: 28px">
+      <div style="width: 100%; max-width: 1120px; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.14); display: flex; flex-direction: column; min-height: 0">
+        <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 20px; border-bottom: 1px solid #F0ECE6">
+          <div style="display: flex; align-items: baseline; gap: 12px">
+            <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 24px; letter-spacing: -0.02em">Technique Bank</span>
+            <span style="font-size: 12px; color: #ABABAB">{{ bankSubjectLabel }} · open at all times, including mid-solve</span>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <button onClick="{{ toggleBankView }}" style="padding: 8px 14px; border: 1px solid #E8E8E8; background: #FFFFFF; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: #1A1A1A" style-hover="background: #FAF8F5">{{ bankViewLabel }}</button>
+            <button onClick="{{ closeBank }}" style="padding: 8px 16px; border: 0; border-radius: 999px; background: #1A1A1A; color: #FFFFFF; cursor: pointer; font-size: 12.5px; font-weight: 600" style-hover="background: #3D3D3D">close</button>
+          </div>
+        </div>
+
+        <sc-if value="{{ recallWarning }}">
+          <div style="flex: 0 0 auto; padding: 12px 20px; background: #FFF0F3; font-size: 13px">
+            <span style="font-weight: 600">Block A step 2 is still open.</span> The AI asked what you remember before you opened this, on purpose. Nothing here is locked — recall just works better when it comes first.
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ bankEmpty }}">
+          <div style="flex: 1; min-height: 0; padding: 28px 20px; color: #737373; font-size: 14px; max-width: 44em">This path has no cue-chain bank yet. The see → do → check → branch format came from the math procedure, and whether it transfers is still an open question rather than a missing screen.</div>
+        </sc-if>
+
+        <sc-if value="{{ bankFilled }}" hint-placeholder-val="{{ true }}">
+          <div style="flex: 1; min-height: 0; display: grid; grid-template-columns: 1.3fr 1fr">
+            <div style="min-width: 0; min-height: 0; border-right: 1px solid #F0ECE6; display: flex; flex-direction: column">
+              <sc-if value="{{ isMapView }}" hint-placeholder-val="{{ true }}">
+                <div style="flex: 1; min-height: 0; overflow: auto; padding: 18px; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(172px, 1fr); gap: 14px">
+                  <sc-for list="{{ regions }}" as="r" hint-placeholder-count="4">
+                    <div style="position: relative; border-radius: 14px; overflow: hidden; background: {{ r.bg }}; box-shadow: {{ r.shadow }}; min-height: 172px">
+                      <div style="position: absolute; top: 11px; left: 14px; right: 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+                        <span style="font-size: 12px; font-weight: 600; color: #1A1A1A">{{ r.name }}</span>
+                        <span style="font-size: 10px; color: #8B6A44">{{ r.count }}</span>
+                      </div>
+                      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position: absolute; inset: 0; width: 100%; height: 100%">
+                        <polyline points="20,66 50,36 80,64" fill="none" stroke="rgba(26,26,26,0.22)" stroke-width="0.5" vector-effect="non-scaling-stroke"></polyline>
+                      </svg>
+                      <sc-for list="{{ r.nodes }}" as="n" hint-placeholder-count="3">
+                        <button onClick="{{ n.pick }}" title="{{ n.name }}" style="position: absolute; left: {{ n.left }}; top: {{ n.top }}; transform: translate(-50%, -50%) {{ n.rot }}; width: 24px; height: 24px; padding: 0; border: 1.5px solid #1A1A1A; border-radius: {{ n.radius }}; background: {{ n.fill }}; cursor: pointer" style-hover="border-color: #C0392B"></button>
+                      </sc-for>
+                      <div style="position: absolute; bottom: 10px; left: 14px; right: 14px; font-size: 11px; color: #737373; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ r.hint }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 18px; border-top: 1px solid #F0ECE6">
+                  <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #737373"><span style="width: 13px; height: 13px; border: 1.5px solid #1A1A1A"></span>kind 1 · one road always works</div>
+                  <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #737373"><span style="width: 13px; height: 13px; border: 1.5px solid #1A1A1A; border-radius: 50%"></span>kind 2 · pick the right formula</div>
+                  <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #737373"><span style="width: 11px; height: 11px; border: 1.5px solid #1A1A1A; transform: rotate(45deg)"></span>kind 3 · a box of tools</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ isListView }}">
+                <div style="flex: 1; min-height: 0; overflow: auto">
+                  <sc-for list="{{ regions }}" as="r" hint-placeholder-count="4">
+                    <div>
+                      <div style="padding: 9px 20px; background: {{ r.bg }}; font-size: 11.5px; font-weight: 600">{{ r.name }}</div>
+                      <sc-for list="{{ r.nodes }}" as="n" hint-placeholder-count="3">
+                        <button onClick="{{ n.pick }}" style="display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 11px 20px; border: 0; border-bottom: 1px solid #F0ECE6; background: {{ n.rowBg }}; cursor: pointer" style-hover="background: #FAF8F5">
+                          <span style="font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; color: #8B6A44; flex: 0 0 3.4em">kind {{ n.k }}</span>
+                          <span style="font-size: 13.5px">{{ n.name }}</span>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="min-width: 0; overflow: auto; padding: 20px">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB">{{ entry.topic }} · kind {{ entry.k }}</div>
+              <div style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 21px; line-height: 1.2; margin: 6px 0 4px">{{ entry.name }}</div>
+              <div style="font-size: 12px; color: #737373; margin-bottom: 16px">{{ entry.kindNote }}</div>
+              <sc-if value="{{ entry.isNew }}">
+                <div style="background: #C8EDCD; border-radius: 10px; padding: 9px 12px; font-size: 12.5px; font-weight: 500; color: #1A5228; margin-bottom: 14px">Added at the end of this session.</div>
+              </sc-if>
+              <sc-for list="{{ entry.chain }}" as="c" hint-placeholder-count="4">
+                <div style="display: grid; grid-template-columns: 5em 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F0ECE6">
+                  <div style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; padding-top: 3px">{{ c.label }}</div>
+                  <div style="font-size: 14.5px">{{ c.text }}</div>
+                </div>
+              </sc-for>
+              <p style="font-size: 12px; color: #ABABAB; margin-top: 14px">Whole chain, nothing collapsed. One cue, one action, one check, a few branches — anything longer gets split in two.</p>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;studentState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;returning&quot;,&quot;first time&quot;],&quot;default&quot;:&quot;returning&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototype state&quot;},&quot;copyRevealedCode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Student settings&quot;},&quot;bankView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;constellation&quot;,&quot;list&quot;],&quot;default&quot;:&quot;constellation&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Technique bank&quot;}}">
+const CODE_A = `// app/dashboard/page.jsx
+import StatCard from "@/components/StatCard";
+
+async function getStats() {
+  // TODO: fetch /api/stats here \u2014 you write this
+}
+
+export default async function DashboardPage() {
+  const stats = await getStats();
+  return (
+    <main className="grid">
+      <StatCard label="Active" value={stats.active} />
+      <StatCard label="Churn"  value={stats.churn} />
+    </main>
+  );
+}`;
+
+const CODE_B = `// app/dashboard/page.jsx
+import StatCard from "@/components/StatCard";
+
+async function getStats() {
+  const res = await fetch(\`\${process.env.API_URL}/stats\`, {
+    next: { revalidate: 300 },
+  });
+  return res.json();
+}
+
+export default async function DashboardPage() {
+  const stats = await getStats();
+  return (
+    <main className="grid">
+      <StatCard label="Active" value={stats.active} />
+      <StatCard label="Churn"  value={stats.churn} />
+    </main>
+  );
+}`;
+
+const CODE_REVEAL = `async function getStats() {
+  const res = await fetch(\`\${process.env.API_URL}/stats\`, {
+    next: { revalidate: 300 },
+  });
+  if (!res.ok) return null;   // the card degrades, the route survives
+  return res.json();
+}`;
+
+const DOCS = [
+  { t: "nextjs.org \u00b7 Data Fetching, Caching, and Revalidating", d: "20 Aug 2026" },
+  { t: "nextjs.org \u00b7 Server Components", d: "20 Aug 2026" },
+];
+
+const MATH_CHAT = [
+  { who: "ai", step: "block a \u00b7 step 1", text: "Heights & Distances, in your board's notation. I'll use your board's names throughout \u2014 cosec, not csc." },
+  { who: "ai", step: "block a \u00b7 step 2", text: "Before you open your bank: from memory, which techniques might fit a problem like this one?" },
+];
+
+const MATH_SCRIPT = [
+  { expect: "say", chips: ["Right-triangle ratios", "Depression equals elevation at the far end", "I don't remember any"],
+    ai: [
+      { who: "ai", step: "block a \u00b7 step 2", text: "Both of those are real. The one you left out does the actual work here: the building and the tower stand on the same ground line, so the two horizontal distances are the same length." },
+      { who: "ai", step: "block a \u00b7 step 3", text: "Goal check \u2014 do you want the answer to question 7, or the method for depression problems generally?" },
+    ] },
+  { expect: "choice", chips: ["The method, not just this answer", "Just this question, I'm short on time"],
+    ai: [
+      { who: "ai", step: "block b \u00b7 step 8", text: "Method it is. Here is the problem with everything I can derive without solving anything \u2014 the two verticals, the sight lines, the given angles." },
+      { who: "ai", step: "block b \u00b7 step 9", text: "You do the working. I don't calculate. Start with the triangle you know completely, one line at a time." },
+    ], effects: { rung: 1 } },
+  { expect: "line", status: "ok", suggestion: "tan 60\u00b0 = 60 / BD",
+    ai: [{ who: "ai", step: "step 9", text: "Line 1 is right. 60\u00b0 is the depression to the foot of the tower, so that triangle is the whole 60 m over BD." }] },
+  { expect: "line", status: "ok", suggestion: "BD = 60/\u221a3 = 20\u221a3 m",
+    ai: [{ who: "ai", step: "step 9", text: "Correct. Keep going \u2014 next line." }] },
+  { expect: "line", status: "wrong", suggestion: "tan 30\u00b0 = h / 20\u221a3",
+    ai: [
+      { who: "note", step: "halt \u00b7 first wrong line", text: "Stopping at line 3. Anything below it would rest on it, so it stays unverified rather than wrong." },
+      { who: "ai", step: "step 11 \u00b7 hole, not a slip", text: "This is a gap in understanding, not a careless mistake, so we fix the idea before the arithmetic. tan 30\u00b0 is not h over BD. The 30\u00b0 sight line leaves the top of the building, so the vertical it opens onto is the part of the building above the tower \u2014 60 \u2212 h." },
+      { who: "ai", step: "rung 2", text: "I've added the horizontal at the tower's top to the same diagram and marked the segment 30\u00b0 actually subtends. Same picture, one more finding." },
+    ], effects: { rung: 2 } },
+  { expect: "say", chips: ["So 30\u00b0 gives me 60 \u2212 h", "Show me on the diagram", "Still lost"],
+    ai: [{ who: "ai", step: "step 7 \u00b7 understanding check", text: "That's it. Now rewrite line 3 with the right vertical." }] },
+  { expect: "line", status: "ok", trim: 2, suggestion: "tan 30\u00b0 = (60 \u2212 h) / 20\u221a3",
+    ai: [{ who: "ai", step: "step 9", text: "Yes. Line 3 stands now. Carry on." }] },
+  { expect: "line", status: "ok", suggestion: "60 \u2212 h = 20\u221a3 \u00d7 (1/\u221a3) = 20",
+    ai: [{ who: "ai", step: "step 9", text: "Right." }] },
+  { expect: "line", status: "ok", suggestion: "h = 60 \u2212 20 = 40 m",
+    ai: [
+      { who: "ai", step: "step 13", text: "h = 40 m. Check it back before you believe it: 40 m is less than 60 m, which it has to be, or the tower's top couldn't sit below your eye line." },
+      { who: "ai", step: "block c \u00b7 step 14", text: "Added to your bank under Heights & Distances, kind 1: \u201cdepression from a height \u2192 equal horizontals\u201d." },
+      { who: "ai", step: "block c \u00b7 step 15", text: "The other road: drop a perpendicular from the tower's top to the building and work the small triangle first. Same two ratios, one fewer subtraction \u2014 worth knowing when the building's height is the unknown instead." },
+    ], effects: { bankAdd: true, done: true } },
+];
+
+const CODE_CHAT = [
+  { who: "ai", step: "step 1", text: "Self-directed session. I confirm your stack every single session \u2014 a silent assumption is how you end up being taught syntax that doesn't exist." },
+];
+
+const CODE_SCRIPT = [
+  { expect: "choice", chips: ["Next.js 15 \u00b7 App Router", "Python \u00b7 FastAPI", "Something else"],
+    ai: [
+      { who: "ai", step: "step 2", text: "Next.js 15, App Router. Grounding on the current docs rather than on what I remember about Next.", sources: "MATERIALS" },
+      { who: "ai", step: "step 4", text: "Your dashboard refetches on every navigation. Two things before any code: a server component runs on the server once per render, and fetch inside a single render pass dedupes identical requests. Caching across requests is opt-in \u2014 that's what revalidate does." },
+      { who: "ai", step: "step 5 \u00b7 understanding check", text: "Two components on the same page fetch the same URL. How many requests leave your server?" },
+    ] },
+  { expect: "choice", chips: ["One", "Two", "Not sure"],
+    ai: [
+      { who: "ai", step: "step 5", text: "One. Dedupe is per render pass \u2014 that's why lifting the fetch into a shared helper costs you nothing." },
+      { who: "ai", step: "step 7 \u00b7 your turn", text: "Now you write it. The file in the panel has the shape in place and getStats left empty. You add the fetch and the revalidate option, run it on your machine, and paste the file back. This is the part I won't do for you." },
+    ] },
+  { expect: "paste",
+    ai: [
+      { who: "ai", step: "step 9", text: "Reading your file: getStats hands the parsed body straight back, so DashboardPage receives a plain object and never touches the response \u2014 that's why your StatCards can stay dumb. Your revalidate sits on the fetch, not the route, so this one call goes stale after five minutes while the rest of the page stays dynamic. That's the behaviour you asked for." },
+      { who: "ai", step: "step 9", text: "One real problem: no error branch. If /stats returns a 500, res.json() throws inside the render and the whole route errors \u2014 not just the card that needed the number." },
+      { who: "ai", step: "step 9", text: "Want to see how I'd write that branch?" },
+    ] },
+  { expect: "choice", chips: ["Show me", "I'll try it myself first"],
+    ai: [{ who: "ai", step: "step 9 \u00b7 revealed", text: "Two lines. The guard returns null rather than throwing \u2014 what an empty card looks like is a decision for your component, not for the fetch.", code: CODE_REVEAL }],
+    effects: { done: true } },
+];
+
+const UNI_CHAT = [
+  { who: "ai", step: "step 1", text: "Your intake says postgraduate, so I'll assume multivariable calculus and linear algebra and won't re-derive them \u2014 stop me if that's wrong." },
+  { who: "ai", step: "step 2 \u00b7 from memory", text: "Before you open your bank: what do you need in hand to compute the Gaussian curvature of a surface?" },
+];
+
+const UNI_SCRIPT = [
+  { expect: "say", chips: ["The first and second fundamental forms", "The eigenvalues of the shape operator", "I don't remember"],
+    ai: [
+      { who: "ai", step: "step 2", text: "Those are the same road from two ends. K = det(II)/det(I) is the computational one, K = \u03ba\u2081\u03ba\u2082 the geometric one, and the fact that they agree is the theorem you're about to lean on.", sources: "MATERIALS" },
+      { who: "term", term: "Second fundamental form", defn: "A quadratic form II on the tangent plane measuring how fast the surface pulls away from that plane \u2014 the normal component of the second derivative of the parametrisation.", buildsOn: "the first fundamental form, unit normals, directional derivatives",
+        more: "In coordinates II = L du\u00b2 + 2M du dv + N dv\u00b2, with L, M, N the normal components of x_uu, x_uv, x_vv. Where I measures length inside the surface, II measures bending out of it \u2014 which is why the curvature that follows is a ratio of the two.", geometry: false },
+      { who: "ai", step: "step 3", text: "Goal check \u2014 the sphere computed, or the method that works for any surface of revolution?" },
+    ] },
+  { expect: "choice", chips: ["The general method", "Just the sphere, for the problem set"],
+    ai: [
+      { who: "ai", step: "step 8", text: "Then we set the sphere up as a parametrised surface and you do the work. I don't calculate \u2014 the algebra is where the understanding actually lands." },
+      { who: "ai", step: "step 9", text: "Claim by claim, one line at a time. Line 1: the parametrisation." },
+    ] },
+  { expect: "line", status: "ok", suggestion: "x(u,v) = (R sin u cos v, R sin u sin v, R cos u)",
+    ai: [{ who: "ai", step: "step 9", text: "Standard spherical parametrisation, u the polar angle. Fine \u2014 and note it fails at the poles, which is a chart problem, not a curvature problem." }] },
+  { expect: "line", status: "ok", suggestion: "E = R\u00b2, F = 0, G = R\u00b2 sin\u00b2u",
+    ai: [
+      { who: "ai", step: "step 9", text: "Correct, so det(I) = EG \u2212 F\u00b2 = R\u2074 sin\u00b2u. F = 0 tells you the coordinate curves meet at right angles, which is why the next step stays clean." },
+      { who: "term", term: "First fundamental form", defn: "The restriction of the ambient dot product to the tangent plane \u2014 the thing that lets you measure lengths, angles and areas without ever leaving the surface.", buildsOn: "dot products, tangent planes, arc length",
+        more: "I = E du\u00b2 + 2F du dv + G dv\u00b2. Everything computable from I alone is intrinsic \u2014 and Gauss's theorem that K is intrinsic, despite being defined through II, is the surprise of the subject.", geometry: false },
+    ] },
+  { expect: "line", status: "wrong", suggestion: "K = det(II) = R\u00b2 sin u",
+    ai: [
+      { who: "note", step: "halt \u00b7 first wrong claim", text: "Stopping at claim 3. Anything after it would rest on it, so it stays unverified rather than wrong." },
+      { who: "ai", step: "step 11 \u00b7 hole, not a slip", text: "A gap, not a typo. det(II) is not K \u2014 K is the ratio det(II)/det(I). Check the units: your expression carries length\u00b2, and a curvature must carry 1/length\u00b2. That dimension check catches this error every time." },
+      { who: "term", term: "Gaussian curvature", defn: "K = \u03ba\u2081\u03ba\u2082, the product of the two principal curvatures \u2014 equivalently det(II)/det(I), and equivalently the determinant of the shape operator.", buildsOn: "principal curvatures, the shape operator, both fundamental forms",
+        more: "For a sphere of radius R every normal points straight along a radius, so the surface bends identically in every direction: \u03ba\u2081 = \u03ba\u2082 = 1/R and K = 1/R\u00b2, the same at every point. Constant positive curvature is exactly what makes the sphere homogeneous \u2014 and what makes it impossible to flatten onto a plane without distortion.", geometry: true },
+    ], effects: { rung: 2 } },
+  { expect: "say", chips: ["So K = det(II)/det(I)", "Show me the geometry again", "Still lost"],
+    ai: [{ who: "ai", step: "step 7 \u00b7 understanding check", text: "Right. Rewrite claim 3 \u2014 give me L, M, N first, then the ratio." }] },
+  { expect: "line", status: "ok", trim: 2, suggestion: "L = R, M = 0, N = R sin\u00b2u  (inward normal)",
+    ai: [{ who: "ai", step: "step 9", text: "Good \u2014 and you named the normal you chose, which is the difference between a sign convention and a sign error." }] },
+  { expect: "line", status: "ok", suggestion: "K = (LN \u2212 M\u00b2)/(EG \u2212 F\u00b2) = R\u00b2 sin\u00b2u / R\u2074 sin\u00b2u",
+    ai: [{ who: "ai", step: "step 9", text: "That's the ratio, with sin\u00b2u cancelling on both sides \u2014 which is the first hint the answer won't depend on where you are." }] },
+  { expect: "line", status: "ok", suggestion: "K = 1/R\u00b2, constant over the whole sphere",
+    ai: [
+      { who: "ai", step: "step 13", text: "Check it back: units are 1/length\u00b2, K is independent of u and v, and a larger sphere is flatter \u2014 all three are what you'd expect. That is the statement that the Gaussian curvature of a sphere of radius R is constant and equal to 1/R\u00b2." },
+      { who: "ai", step: "step 14", text: "Added to your bank under Curvature, kind 1: \u201csurface of revolution \u2192 both fundamental forms \u2192 K as a ratio\u201d." },
+      { who: "ai", step: "step 15", text: "The other road: argue \u03ba\u2081 = \u03ba\u2082 = 1/R from the geometry and take the product \u2014 three lines instead of eight. It only works because the sphere is umbilic; the fundamental-form route survives when the surface isn't." },
+    ], effects: { bankAdd: true, done: true } },
+];
+
+const BANK_MATH = [
+  { name: "Heights & Distances", band: "#F5E8D4", nodes: [
+    { k: 1, name: "Depression from a height \u2192 equal horizontals", isNew: true, chain: [
+      ["see this", "An observer at a height, two angles of depression, one unknown height."],
+      ["do this", "Draw both verticals on one ground line, mark the horizontal through the eye, solve the fully-known triangle first for the shared distance."],
+      ["check this", "Every angle you used opens onto a vertical you can name in words."],
+      ["then branch", "Elevation instead \u2192 same method, eye at the bottom. Both heights unknown \u2192 you need a third given."] ] },
+    { k: 2, name: "Which ratio for which pair of sides", chain: [
+      ["see this", "One angle known, one side known, one side wanted."],
+      ["do this", "Name the two sides relative to the angle, then pick the ratio containing exactly those two."],
+      ["check this", "The unknown appears once, top or bottom, never both."],
+      ["then branch", "No hypotenuse \u2192 tan. Hypotenuse involved \u2192 sin or cos."] ] },
+    { k: 3, name: "When the figure won't close", chain: [
+      ["see this", "No single triangle has enough givens."],
+      ["do this", "Try in turn: drop a perpendicular, extend a line to meet another, name the shared length and eliminate it."],
+      ["check this", "The construction created a triangle with two knowns."],
+      ["then branch", "Nothing closes \u2192 the missing given is probably an assumed right angle; re-read the wording."] ] },
+  ] },
+  { name: "Trigonometry", band: "#C8EDCD", nodes: [
+    { k: 1, name: "Convert everything to sin and cos", chain: [
+      ["see this", "An identity mixing tan, cot, sec and cosec."],
+      ["do this", "Rewrite every term in sin and cos, work one side only, leave the other untouched."],
+      ["check this", "The side you're working reaches towards the side you didn't touch."],
+      ["then branch", "It stalls \u2192 multiply by the conjugate, or start from the other side."] ] },
+    { k: 2, name: "Match the Pythagorean identity", chain: [
+      ["see this", "A squared trig term plus or minus 1."],
+      ["do this", "Match one of the three Pythagorean forms and substitute."],
+      ["check this", "The substitution removed a term rather than moving it."],
+      ["then branch", "No match \u2192 factor first; the form often hides inside a bracket."] ] },
+    { k: 3, name: "Angle-shaped tools", chain: [
+      ["see this", "Sums, differences, doubles or halves of angles."],
+      ["do this", "Open the box: sum and difference, double angle, half angle, product-to-sum. Match the angles you have, not the terms."],
+      ["check this", "The count of distinct angles went down."],
+      ["then branch", "Still several angles \u2192 look for a pair summing to 90\u00b0."] ] },
+  ] },
+  { name: "Integration", band: "#FFD6E0", nodes: [
+    { k: 1, name: "Substitution when the derivative is visible", chain: [
+      ["see this", "A composite function times something close to its inner derivative."],
+      ["do this", "Set u to the inner function, replace dx, integrate, substitute back."],
+      ["check this", "No x survives in the u-integral."],
+      ["then branch", "A constant is off \u2192 fix it outside. An x survives \u2192 wrong substitution."] ] },
+    { k: 2, name: "Standard forms to recognise", chain: [
+      ["see this", "A quotient with a quadratic, or a root of one."],
+      ["do this", "Complete the square, then read off the standard form."],
+      ["check this", "The bracket is a perfect square plus or minus a constant."],
+      ["then branch", "Linear on top too \u2192 split into a derivative part and a constant part."] ] },
+    { k: 3, name: "Nothing standard \u2014 the toolbox", chain: [
+      ["see this", "A product of unlike functions, or a stubborn rational function."],
+      ["do this", "Try in order: by parts, partial fractions, trig substitution, symmetry of the limits."],
+      ["check this", "The new integral is simpler, not merely different."],
+      ["then branch", "By parts loops back \u2192 that loop is the answer; solve for the integral."] ] },
+  ] },
+  { name: "Algebra", band: "#FFF0F3", nodes: [
+    { k: 1, name: "One unknown, isolate it", chain: [
+      ["see this", "A single unknown to the first power."],
+      ["do this", "Clear denominators, gather the unknown on one side, divide once at the end."],
+      ["check this", "Substituting back reproduces the original statement."],
+      ["then branch", "The unknown cancels \u2192 it's an identity or a contradiction; say which."] ] },
+    { k: 2, name: "Which factorisation pattern", chain: [
+      ["see this", "A quadratic or a difference of powers."],
+      ["do this", "Test in order: common factor, difference of squares, perfect square, split the middle term."],
+      ["check this", "Expanding your factors returns the original exactly."],
+      ["then branch", "No pattern \u2192 the roots are irrational; use the formula."] ] },
+    { k: 3, name: "Word problems", chain: [
+      ["see this", "A situation in sentences with a quantity asked for."],
+      ["do this", "Name the unknown in words, write one equation per given sentence, only then solve."],
+      ["check this", "The answer is plausible in the situation, not only in the algebra."],
+      ["then branch", "Two unknowns \u2192 there's a sentence you haven't used yet."] ] },
+  ] },
+];
+
+const BANK_UNI = [
+  { name: "Curvature", band: "#F5E8D4", nodes: [
+    { k: 1, name: "Surface of revolution \u2192 fundamental forms \u2192 K", isNew: true, chain: [
+      ["see this", "A surface given by an explicit parametrisation, curvature asked for."],
+      ["do this", "Compute E, F, G; then L, M, N with a stated normal; then K = (LN \u2212 M\u00b2)/(EG \u2212 F\u00b2)."],
+      ["check this", "Units are 1/length\u00b2, and the answer's dependence on the parameters matches the symmetry of the surface."],
+      ["then branch", "F = 0 \u2192 coordinates are orthogonal, expect cancellation. Umbilic surface \u2192 \u03ba\u2081\u03ba\u2082 is far quicker."] ] },
+    { k: 2, name: "Which curvature is being asked for", chain: [
+      ["see this", "The word curvature with no qualifier."],
+      ["do this", "Decide between Gaussian (det of the shape operator), mean (half its trace), principal (its eigenvalues) and geodesic (a curve's, not the surface's)."],
+      ["check this", "The quantity you produced is invariant under the transformations the question allows."],
+      ["then branch", "Bending without stretching is mentioned \u2192 it's Gaussian; it's the intrinsic one."] ] },
+    { k: 3, name: "When the parametrisation fights back", chain: [
+      ["see this", "Coordinates that blow up, vanish or double-cover somewhere."],
+      ["do this", "Try a second chart, an isothermal parametrisation, or an intrinsic argument via Gauss's theorem."],
+      ["check this", "The singular behaviour lives in the chart and not in the geometry."],
+      ["then branch", "The poles of a sphere are the standard case \u2014 chart problem, not a curvature problem."] ] },
+  ] },
+  { name: "Fundamental forms", band: "#C8EDCD", nodes: [
+    { k: 1, name: "Set up I before touching II", chain: [
+      ["see this", "Any surface computation at all."],
+      ["do this", "Differentiate the parametrisation, take the three dot products, record E, F, G before anything else."],
+      ["check this", "EG \u2212 F\u00b2 > 0 wherever the chart is regular."],
+      ["then branch", "It vanishes \u2192 your chart is singular there."] ] },
+    { k: 2, name: "Sign conventions on the normal", chain: [
+      ["see this", "L, M, N about to be computed."],
+      ["do this", "Fix the unit normal explicitly, in writing, before differentiating twice."],
+      ["check this", "Flipping the normal flips II and the mean curvature but leaves K alone."],
+      ["then branch", "K changed sign under the flip \u2192 arithmetic error, not a convention."] ] },
+    { k: 3, name: "Intrinsic or extrinsic", chain: [
+      ["see this", "A claim about a surface you must classify."],
+      ["do this", "Ask whether it survives isometry. Lengths, angles, areas and K do; mean curvature and the normal do not."],
+      ["check this", "Nothing intrinsic in your argument was derived from the ambient embedding."],
+      ["then branch", "It fails isometry \u2192 the claim needs the embedding; say so explicitly."] ] },
+  ] },
+  { name: "Proof strategy", band: "#FFD6E0", nodes: [
+    { k: 1, name: "State the weakest claim you can defend", chain: [
+      ["see this", "A step that promises more than the argument delivers."],
+      ["do this", "Rewrite it with its hypotheses attached, then check whether the rest of the proof still goes through."],
+      ["check this", "Every quantifier and condition appears in the sentence itself."],
+      ["then branch", "The proof breaks \u2192 the gap was real and it was load-bearing."] ] },
+    { k: 2, name: "Which invariant settles it", chain: [
+      ["see this", "Two objects claimed to be the same or different."],
+      ["do this", "Pick an invariant the equivalence must preserve and evaluate it on both."],
+      ["check this", "The invariant is genuinely preserved by the maps in question."],
+      ["then branch", "They agree \u2192 it isn't a proof of sameness; find a finer invariant."] ] },
+    { k: 3, name: "Stuck on a proof", chain: [
+      ["see this", "No route from hypotheses to conclusion."],
+      ["do this", "Try in order: a worked example, the contrapositive, weakening the conclusion, a special case with more structure."],
+      ["check this", "The special case is genuinely easier and still contains the difficulty."],
+      ["then branch", "The special case is trivial \u2192 you removed the difficulty, not the clutter."] ] },
+  ] },
+  { name: "Reading a paper", band: "#FFF0F3", nodes: [
+    { k: 1, name: "Definitions before theorems", chain: [
+      ["see this", "A paper using a term you half-know."],
+      ["do this", "Find the definition as this author states it and write down where it differs from your course's."],
+      ["check this", "You can restate the main theorem using only definitions you've pinned."],
+      ["then branch", "The definitions differ \u2192 every later statement needs re-reading under theirs."] ] },
+    { k: 2, name: "Which section actually answers you", chain: [
+      ["see this", "A long paper and a narrow question."],
+      ["do this", "Read abstract, then statements of results, then only the proof you need."],
+      ["check this", "You can say what the paper claims without having read it front to back."],
+      ["then branch", "The result is cited elsewhere \u2192 read the citing paper's summary first."] ] },
+    { k: 3, name: "The proof is compressed", chain: [
+      ["see this", "\u201cIt follows easily that\u2026\u201d"],
+      ["do this", "Expand it yourself on paper, look for the same step in a textbook treatment, or check the errata."],
+      ["check this", "Your expansion uses only what the paper had available at that point."],
+      ["then branch", "It still doesn't follow \u2192 note it as a gap in the paper, not in you."] ] },
+  ] },
+];
+
+const KIND_NOTE = {
+  1: "One road always works. Recognise it and follow it.",
+  2: "The road depends on the form \u2014 match it, then apply.",
+  3: "No guaranteed road. A box of tools, and an order to try them in.",
+};
+
+const PALETTE = ["\u221a", "\u00b0", "\u03b8", "\u00d7", "\u2212", "/", "\u00b2", "(", ")"];
+const PALETTE_UNI = ["\u221a", "\u00b2", "\u03ba", "\u03c0", "\u2202", "\u222b", "\u2212", "(", ")"];
+
+const MODELS = [
+  { name: "Llama 3.3 70B", note: "Long context, strong at following a fixed teaching procedure.", tag: "Meta \u00b7 community licence" },
+  { name: "Qwen 2.5 72B", note: "Best of these at step-by-step mathematics and notation.", tag: "Alibaba \u00b7 Apache 2.0" },
+  { name: "DeepSeek V3", note: "Cheap reasoning at length; strongest on code review.", tag: "MIT" },
+  { name: "Mixtral 8x22B", note: "Mixture of experts \u2014 fast replies, lighter on long proofs.", tag: "Mistral \u00b7 Apache 2.0" },
+  { name: "Gemma 2 27B", note: "Small enough to run on your own machine, offline.", tag: "Google \u00b7 open weights" },
+];
+
+const SCHOOL = "I\u2019m at school", UNIV = "I\u2019m at university", NEITHER = "None of these";
+
+const PREV_SEED = [
+  { id: "p1", path: "uni", pathLabel: "university", topic: "Differential geometry", subtopic: "Curvature of surfaces",
+    step: "stopped at claim 3 \u2014 det(II) is not K", pct: 38, progress: "3 of 8 claims", days: 0, when: "today", done: false,
+    ctx: { model: "Qwen 2.5 72B", learnerType: UNIV, degreeLevel: "Postgraduate", university: "IIT Bombay", degree: "M.Tech", specialisation: "Physics", materials: ["do Carmo \u00b7 Curves and Surfaces"] } },
+  { id: "p2", path: "school", pathLabel: "school \u00b7 class 10", topic: "Heights & Distances", subtopic: "Angles of depression",
+    step: "block b, step 10 \u2014 which vertical 30\u00b0 subtends", pct: 62, progress: "line 3 of 5", days: 2, when: "this week", done: false,
+    ctx: { model: "Qwen 2.5 72B", learnerType: SCHOOL, schoolClass: "10", board: "CBSE", materials: ["RD Sharma"] } },
+  { id: "p3", path: "school", pathLabel: "school \u00b7 class 10", topic: "Heights & Distances", subtopic: "Two-observer problems",
+    step: "block a, step 3 \u2014 goal not yet set", pct: 12, progress: "barely started", days: 4, when: "this week", done: false,
+    ctx: { model: "Qwen 2.5 72B", learnerType: SCHOOL, schoolClass: "10", board: "CBSE", materials: ["RD Sharma"] } },
+  { id: "p4", path: "uni", pathLabel: "university", topic: "Fundamental forms", subtopic: "Sign conventions on the normal",
+    step: "claim 2 \u2014 normal never stated in writing", pct: 25, progress: "2 of 8 claims", days: 5, when: "this week", done: false,
+    ctx: { model: "Llama 3.3 70B", learnerType: UNIV, degreeLevel: "Postgraduate", university: "IIT Bombay", degree: "M.Tech", specialisation: "Mathematics", materials: ["Pressley \u00b7 Elementary Differential Geometry"] } },
+  { id: "p5", path: "none", pathLabel: "self-directed", topic: "Next.js caching", subtopic: "Revalidation in the App Router",
+    step: "step 7 \u2014 waiting on your code", pct: 55, progress: "4 of 9 steps", days: 12, when: "earlier", done: false,
+    ctx: { model: "DeepSeek V3", learnerType: NEITHER, materials: [] } },
+  { id: "p6", path: "none", pathLabel: "self-directed", topic: "Next.js caching", subtopic: "Server components and dedupe",
+    step: "step 5 \u2014 understanding check unanswered", pct: 33, progress: "3 of 9 steps", days: 19, when: "earlier", done: false,
+    ctx: { model: "DeepSeek V3", learnerType: NEITHER, materials: [] } },
+  { id: "p7", path: "school", pathLabel: "school \u00b7 class 10", topic: "Trigonometry", subtopic: "Trigonometric identities",
+    step: "block a, step 2 \u2014 bank walk not finished", pct: 9, progress: "barely started", days: 26, when: "earlier", done: false,
+    ctx: { model: "Qwen 2.5 72B", learnerType: SCHOOL, schoolClass: "10", board: "CBSE", materials: ["NCERT Mathematics"] } },
+];
+
+const PATH_BAND = { school: "#F5E8D4", uni: "#C8EDCD", none: "#FFD6E0" };
+
+const SKILL_SEED = [
+  { id: "s1", name: "Line-by-line checking", scope: "school and university work",
+    does: "Reads your working one line at a time and stops at the first line that fails, leaving everything below it unverified rather than wrong.",
+    cannot: "Judge a block of working as a whole, or tell a careless slip from a real gap without asking you a question first.",
+    needs: "The working itself \u2014 one line per line. It has nothing to check until you write something down." },
+  { id: "s2", name: "Diagram rungs", scope: "geometry and word problems",
+    does: "Marks up one picture progressively: everything derivable, then further findings, then the confusing part solved.",
+    cannot: "Draw a diagram for a problem that isn\u2019t geometric, or climb a rung on its own without reading frustration in what you write.",
+    needs: "The problem as stated, with the given quantities. A photograph of the question is enough." },
+  { id: "s3", name: "Doc-grounded answers", scope: "coding and self-directed work",
+    does: "Fetches current documentation and lists what it actually read, so a claim about a framework is traceable to a page and a date.",
+    cannot: "Ground anything behind a login, and it won\u2019t quote a source it didn\u2019t fetch \u2014 an empty list means nothing was grounded.",
+    needs: "The framework and version, confirmed each session. Without it you get recalled syntax, which is how you learn APIs that don\u2019t exist." },
+  { id: "s4", name: "Inline term cards",
+    scope: "university and postgraduate",
+    does: "Defines a term the moment it first appears, names what it builds on, and draws the shape when the concept is geometric.",
+    cannot: "Know which terms you already hold \u2014 it fires on first use in a session, so a term you know well still surfaces once.",
+    needs: "Your level and field, so it can decide what to define and what to take for granted." },
+];
+
+const SKILL_BANDS = [
+  { band: "#F5E8D4", ink: "#5C4028" },
+  { band: "#C8EDCD", ink: "#1A5228" },
+  { band: "#FFD6E0", ink: "#A0294E" },
+  { band: "#FAF8F5", ink: "#737373" },
+];
+
+const BLANK_ANSWERS = { model: null, learnerType: null, schoolClass: null, stream: null, board: null, degreeLevel: null, university: null, uniVerified: true, degree: null, specialisation: null, topic: null, paper: null, subtopic: null, subtopicSkipped: false, materials: [] };
+
+const CLASSES = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+const STREAMS = ["MPS", "BYPC", "Arts", "Commerce"];
+const BOARDS = ["CBSE", "ICSE", "State board", "IB", "Cambridge"];
+const LEVELS = ["Undergraduate", "Postgraduate", "Doctoral", "Diploma"];
+const UNIS = ["IIT Bombay", "IIT Madras", "Delhi University", "Anna University", "BITS Pilani"];
+const DEG_BY_LEVEL = {
+  "Undergraduate": ["B.Tech", "B.Sc", "B.A", "B.Com"],
+  "Postgraduate": ["M.Tech", "M.Sc", "M.A", "MBA"],
+  "Doctoral": ["PhD"],
+  "Diploma": ["Diploma"],
+};
+const UNI_OFFERS = {
+  "Delhi University": ["B.Sc", "B.A", "B.Com", "M.Sc", "M.A", "MBA", "PhD"],
+  "BITS Pilani": ["B.Tech", "B.Sc", "M.Tech", "M.Sc", "MBA", "PhD"],
+};
+const SPECS = {
+  "M.Tech": ["Physics", "Chemistry", "Computer Science", "Mechanical", "Mathematics"],
+  "M.Sc": ["Physics", "Chemistry", "Mathematics", "Statistics"],
+  "M.A": ["Economics", "History", "English"],
+  "MBA": ["Finance", "Operations", "Marketing"],
+  "B.Tech": ["Computer Science", "Electronics", "Mechanical", "Civil"],
+  "B.Sc": ["Physics", "Chemistry", "Mathematics"],
+  "B.A": ["Economics", "History", "English"],
+  "B.Com": ["Accounting", "Taxation"],
+  "PhD": ["Mathematics", "Physics", "Chemistry", "Computer Science"],
+  "Diploma": ["Mechanical", "Electrical", "Civil"],
+};
+const BOOKS_SCHOOL = {
+  "MPS": ["NCERT Mathematics XI\u2013XII", "SL Loney \u00b7 Trigonometry", "HC Verma \u00b7 Physics"],
+  "BYPC": ["NCERT Biology XI\u2013XII", "Trueman\u2019s Biology", "NCERT Chemistry"],
+  "Arts": ["NCERT History", "NCERT Political Science", "Course reader"],
+  "Commerce": ["TS Grewal \u00b7 Accountancy", "NCERT Business Studies", "NCERT Economics"],
+  "_lower": ["NCERT Mathematics", "RD Sharma", "RS Aggarwal"],
+};
+const BOOKS_UNI = {
+  "Mathematics": ["do Carmo \u00b7 Curves and Surfaces", "Pressley \u00b7 Elementary Differential Geometry", "Department reader"],
+  "Physics": ["Griffiths \u00b7 Electrodynamics", "Landau & Lifshitz", "Department reader"],
+  "_default": ["Prescribed department reader", "Standard text for the paper"],
+};
+
+const TOPIC_SUGGEST = {
+  school: ["Heights & Distances", "Trigonometric identities", "Quadratic equations"],
+  uni: ["Differential geometry", "Real analysis", "Linear algebra"],
+  none: ["Next.js caching", "SQL joins", "Statistics for A/B tests"],
+};
+const SUBTOPIC_SUGGEST = {
+  "Heights & Distances": ["Angles of depression", "Two-observer problems", "Ladder and pole problems"],
+  "Differential geometry": ["Curvature of surfaces", "Geodesics", "Fundamental forms"],
+  "_default": ["The definitions", "A worked example", "Past-paper questions"],
+};
+
+class Component extends DCLogic {
+  state = {
+    screen: "intake", started: false,
+    a: Object.assign({}, BLANK_ANSWERS),
+    confirmed: {}, editing: null, cleared: null, modelOpen: false,
+    uniDraft: "", bookDraft: "", syllabusText: "", linkDraft: "",
+    topicText: "",
+    chat: [], cursor: 0, lines: [], rung: 0, openTerms: {},
+    draft: "", lineDraft: "",
+    bankOpen: false, bankTopic: 0, bankNode: 0, bankAdded: false, bankViewOverride: null,
+    code: CODE_A, codeVersion: "your last paste", pasteOpen: false, pasteText: CODE_B,
+    copyOverride: null, backTo: "intake", prefilled: false,
+    prev: PREV_SEED.slice(), prevOpen: false, prevByTopic: false, activePrev: null,
+    skills: SKILL_SEED.slice(), skillsOpen: false, composing: false,
+    newSkill: { name: "", does: "", cannot: "", needs: "" },
+    skillsOff: {}, panelAttachOpen: false, chatAttachOpen: false,
+  };
+
+  attachWork = (kind) => {
+    const uni = this.path() === "uni";
+    if (uni) {
+      const lines = [
+        { text: "x(u,v) = (R sin u cos v, R sin u sin v, R cos u)", status: "ok" },
+        { text: "E = R\u00b2, F = 0, G = R\u00b2 sin\u00b2u", status: "ok" },
+        { text: "K = det(II) = R\u00b2 sin u", status: "wrong" },
+        { text: "K = R\u00b2 sin u / R\u2074 sin\u00b2u", status: "unverified" },
+        { text: "K = 1 / (R\u00b2 sin u)", status: "unverified" },
+      ];
+      const ai = [
+        { who: "you", text: kind === "photo" ? "[photo of my page \u2014 5 claims]" : "[uploaded proof.pdf \u2014 5 claims]" },
+        { who: "ai", step: "step 10", text: "Read five claims off " + (kind === "photo" ? "your page" : "your file") + ". I check them in order and stop at the first that fails rather than judging the block as a whole." },
+      ].concat(UNI_SCRIPT[4].ai);
+      this.setState(s => ({ chat: s.chat.concat(ai), lines, cursor: 5, lineDraft: "", panelAttachOpen: false, chatAttachOpen: false }));
+      return;
+    }
+    const lines = [
+      { text: "tan 60\u00b0 = 60 / BD", status: "ok" },
+      { text: "BD = 60/\u221a3 = 20\u221a3 m", status: "ok" },
+      { text: "tan 30\u00b0 = h / 20\u221a3", status: "wrong" },
+      { text: "h = 20\u221a3 \u00d7 (1/\u221a3)", status: "unverified" },
+      { text: "h = 20 m", status: "unverified" },
+    ];
+    const ai = [
+      { who: "you", text: kind === "photo" ? "[photo of my page \u2014 5 lines of working]" : "[uploaded q7-working.jpg \u2014 5 lines]" },
+      { who: "ai", step: "step 10", text: "Read five lines off " + (kind === "photo" ? "your page" : "your file") + ". I check them in order and stop at the first failure rather than judging the block as a whole." },
+    ].concat(MATH_SCRIPT[4].ai);
+    this.setState(s => ({ chat: s.chat.concat(ai), lines, rung: 2, cursor: 5, lineDraft: "", panelAttachOpen: false, chatAttachOpen: false }));
+  };
+
+  attachQuestion = (kind) => {
+    this.setState(s => ({
+      chat: s.chat.concat([
+        { who: "you", text: kind === "photo" ? "[photo of the question]" : "[uploaded problem-set-4.pdf]" },
+        { who: "ai", step: "read it", text: "Got it \u2014 I\u2019ve read the statement off " + (kind === "photo" ? "the photo" : "the file") + " and it matches what\u2019s in the panel. Your working still has to come from you." },
+      ]),
+      chatAttachOpen: false, panelAttachOpen: false,
+    }));
+  };
+
+  seenChat = -1; lastChatEl = null;
+  stickChat() {
+    const el = document.getElementById("sl-chat-scroll");
+    if (!el) { this.lastChatEl = null; return; }
+    const remounted = el !== this.lastChatEl;
+    if (!remounted && this.seenChat === this.state.chat.length) return;
+    this.lastChatEl = el; this.seenChat = this.state.chat.length;
+    const go = () => { el.scrollTop = el.scrollHeight; };
+    go(); requestAnimationFrame(go); setTimeout(go, 80);
+  }
+  componentDidMount() { this.maybePrefill(); this.stickChat(); }
+  componentDidUpdate() { this.maybePrefill(); this.stickChat(); }
+
+  get returning() { return (this.props.studentState || "returning") === "returning"; }
+  get copyOn() { return this.state.copyOverride === null ? !!this.props.copyRevealedCode : this.state.copyOverride; }
+
+  maybePrefill() {
+    if (this.state.prefilled || !this.returning) return;
+    this.setState({
+      prefilled: true,
+      a: Object.assign({}, this.state.a, {
+        model: "Qwen 2.5 72B",
+        learnerType: UNIV, degreeLevel: "Postgraduate", university: "IIT Bombay", uniVerified: true,
+        degree: "M.Tech", specialisation: "Physics",
+        materials: ["do Carmo \u00b7 Curves and Surfaces"],
+      }),
+      confirmed: {},
+    });
+  }
+
+  path() {
+    const t = this.state.a.learnerType;
+    return t === SCHOOL ? "school" : (t === UNIV ? "uni" : (t === NEITHER ? "none" : null));
+  }
+  get isDoctoral() { return this.state.a.degreeLevel === "Doctoral"; }
+
+  degreesFor(a) {
+    const byLevel = DEG_BY_LEVEL[a.degreeLevel] || [];
+    const offered = UNI_OFFERS[a.university];
+    if (!offered || !a.uniVerified) return byLevel;
+    return byLevel.filter(d => offered.indexOf(d) >= 0);
+  }
+  specsFor(a) { return SPECS[a.degree] || []; }
+  booksFor(a) {
+    if (this.path() === "school") {
+      if (a.schoolClass === "11" || a.schoolClass === "12") return BOOKS_SCHOOL[a.stream] || BOOKS_SCHOOL._lower;
+      return BOOKS_SCHOOL._lower;
+    }
+    if (this.path() === "uni") return BOOKS_UNI[a.specialisation] || BOOKS_UNI._default;
+    return [];
+  }
+
+  stepDefs() {
+    const a = this.state.a;
+    const out = [{ key: "learnerType", n: 1, label: "learner", question: "Who\u2019s doing the learning?", help: "This decides what I ask next \u2014 and what I never ask.", options: [SCHOOL, UNIV, NEITHER] }];
+    if (a.learnerType === SCHOOL) {
+      out.push({ key: "schoolClass", n: 2, label: "class", question: "Which class are you in?", help: "I\u2019ll stay inside what your class has covered.", options: CLASSES,
+        extraKey: (a.schoolClass === "11" || a.schoolClass === "12") ? "stream" : null,
+        extraQuestion: "Which stream?", extraHelp: "From class 11 the same topic name means different scope in each stream.", extraOptions: STREAMS });
+      out.push({ key: "board", n: 3, label: "board", question: "Which board or curriculum?", help: "It decides notation and which textbook list I show you.", options: BOARDS });
+    } else if (a.learnerType === UNIV) {
+      out.push({ key: "degreeLevel", n: 2, label: "level", question: "Where are you in the degree?", help: "This sets how much I take for granted.", options: LEVELS });
+      out.push({ key: "university", n: 3, label: "university", question: "Which university?", help: "Pick it, or type one the list is missing.", options: UNIS, input: true,
+        inputPlaceholder: "type a university", inputNote: "Anything unlisted is accepted and carried as unverified \u2014 the degree list then falls back to the national catalogue." });
+      out.push({ key: "degree", n: 4, label: "degree", question: "Which degree?", help: "Filtered to what this university offers at your level.", options: this.degreesFor(a) });
+      out.push({ key: "specialisation", n: 5, label: "in what", question: (a.degree || "The degree") + " in what?", help: "The specialisation, not the department you sit in.", options: this.specsFor(a) });
+    }
+    return out;
+  }
+
+  set(key, value) {
+    const a = Object.assign({}, this.state.a);
+    const conf = Object.assign({}, this.state.confirmed);
+    let cleared = [];
+    a[key] = value;
+    conf[key] = true;
+
+    if (key === "learnerType") {
+      ["schoolClass", "stream", "board", "degreeLevel", "university", "degree", "specialisation", "topic", "paper", "subtopic"].forEach(k => { a[k] = null; delete conf[k]; });
+      a.materials = []; a.subtopicSkipped = false; a.uniVerified = true;
+    }
+    if (key === "schoolClass") {
+      if (value !== "11" && value !== "12" && a.stream) { a.stream = null; delete conf.stream; cleared.push("the stream, which only applies to classes 11 and 12"); }
+      if (a.materials.length) { a.materials = []; cleared.push("the textbook, since the list is per class"); }
+    }
+    if (key === "stream" || key === "board" || key === "specialisation") {
+      if (a.materials.length) { a.materials = []; cleared.push("the textbook, since the list changes with this"); }
+    }
+    if (key === "degreeLevel") {
+      const ok = this.degreesFor(a);
+      if (a.degree && ok.indexOf(a.degree) < 0) { a.degree = null; a.specialisation = null; delete conf.degree; delete conf.specialisation; cleared.push("the degree and specialisation, which aren\u2019t offered at this level"); }
+    }
+    if (key === "university") {
+      const ok = this.degreesFor(a);
+      if (a.degree && ok.indexOf(a.degree) < 0) { a.degree = null; a.specialisation = null; delete conf.degree; delete conf.specialisation; cleared.push("the degree and specialisation \u2014 this university doesn\u2019t list them"); }
+      if (a.materials.length) { a.materials = []; cleared.push("the textbook, fetched per university"); }
+    }
+    if (key === "degree") {
+      const ok = this.specsFor(a);
+      if (a.specialisation && ok.indexOf(a.specialisation) < 0) { a.specialisation = null; delete conf.specialisation; cleared.push("the specialisation, which this degree doesn\u2019t list"); }
+      if (a.materials.length) { a.materials = []; cleared.push("the textbook"); }
+    }
+    if (key === "topic" && a.subtopic) { a.subtopic = null; a.subtopicSkipped = false; cleared.push("the subtopic, chosen for the old topic"); }
+
+    this.setState({ a, confirmed: conf, editing: null, cleared: cleared.length ? cleared.join("; ") : null });
+  }
+
+  activeKey() {
+    const defs = this.stepDefs();
+    if (!this.state.a.model) return null;
+    if (this.state.editing) return this.state.editing;
+    for (let i = 0; i < defs.length; i++) {
+      const d = defs[i];
+      if (!this.state.a[d.key] || !this.state.confirmed[d.key]) return d.key;
+      if (d.extraKey && (!this.state.a[d.extraKey] || !this.state.confirmed[d.extraKey])) return d.key;
+    }
+    return null;
+  }
+
+  openSessionNow = () => {
+    const p = this.path();
+    const seed = p === "school" ? MATH_CHAT : (p === "uni" ? UNI_CHAT : CODE_CHAT);
+    this.setState({ screen: "session", started: true, chat: seed.slice(), cursor: 0, lines: [], rung: 0, openTerms: {}, code: CODE_A, codeVersion: "your last paste", pasteOpen: false, pasteText: CODE_B, bankTopic: 0, bankNode: 0, bankAdded: false, activePrev: null });
+  };
+
+  resumePrev = (p) => {
+    const school = p.path === "school", uni = p.path === "uni";
+    const a = Object.assign({}, BLANK_ANSWERS, p.ctx, { topic: p.topic, subtopic: p.subtopic, subtopicSkipped: false, uniVerified: true });
+    const seed = [
+      { who: "note", step: "resumed \u00b7 no intake", text: "Same session, so the eight steps don\u2019t run again. Back at \u201c" + p.step + "\u201d." },
+      { who: "ai", step: "carried forward", text: school
+          ? "You stopped on line 3, and the diagnosis came with you: a hole, not a slip \u2014 which vertical the 30\u00b0 sight line subtends. The diagram is where we left it, at rung 2."
+          : (uni
+            ? "You stopped on claim 3, and the diagnosis came with you: det(II) is not K, and the units are what give it away. Your first two claims still stand."
+            : "Your code panel is where you left it, and step 7 is still waiting on you \u2014 nothing moved while you were away.") },
+      { who: "ai", step: school ? "step 7 \u00b7 understanding check" : (uni ? "step 7 \u00b7 understanding check" : "step 7 \u00b7 your turn"), text: school
+          ? "So, in your words: what does 30\u00b0 open onto?"
+          : (uni ? "So, in your words: what is K the ratio of?" : "Paste the file when it runs and I\u2019ll read it.") },
+    ];
+    const lines = school
+      ? [{ text: "tan 60\u00b0 = 60 / BD", status: "ok" }, { text: "BD = 60/\u221a3 = 20\u221a3 m", status: "ok" }, { text: "tan 30\u00b0 = h / 20\u221a3", status: "wrong" }]
+      : (uni ? [{ text: "x(u,v) = (R sin u cos v, R sin u sin v, R cos u)", status: "ok" }, { text: "E = R\u00b2, F = 0, G = R\u00b2 sin\u00b2u", status: "ok" }, { text: "K = det(II) = R\u00b2 sin u", status: "wrong" }] : []);
+    this.setState({
+      a, confirmed: {}, screen: "session", started: true, prevOpen: false, activePrev: p.id,
+      cursor: 5, rung: school ? 2 : 0, lines, chat: seed, openTerms: {},
+      code: p.path === "none" ? CODE_A : CODE_A, pasteOpen: false, pasteText: CODE_B,
+    });
+  };
+
+  reusePrev = (p) => {
+    this.setState({
+      a: Object.assign({}, BLANK_ANSWERS, p.ctx, { topic: null, paper: null, subtopic: null, subtopicSkipped: false, uniVerified: true }),
+      confirmed: {}, prevOpen: false, screen: "intake", started: false, editing: null, cleared: null, activePrev: null,
+      chat: [], cursor: 0, lines: [], rung: 0, openTerms: {}, topicText: "",
+    });
+  };
+
+  completePrev = (id) => this.setState(s => ({ prev: s.prev.map(x => x.id === id ? Object.assign({}, x, { done: true }) : x) }));
+
+  get script() {
+    const p = this.path();
+    return p === "school" ? MATH_SCRIPT : (p === "uni" ? UNI_SCRIPT : CODE_SCRIPT);
+  }
+  get turn() { return this.script[this.state.cursor] || null; }
+
+  advance(text, kind) {
+    const t = this.turn;
+    if (!t) return;
+    const eff = t.effects || {};
+    const you = text ? [{ who: "you", text }] : [];
+    this.setState(s => {
+      let lines = s.lines;
+      if (kind === "line") {
+        if (typeof t.trim === "number") lines = lines.slice(0, t.trim);
+        lines = lines.map(l => l.status === "unverified" ? Object.assign({}, l, { status: "pending" }) : l);
+        lines = lines.concat([{ text, status: t.status }]);
+      }
+      return {
+        chat: s.chat.concat(you).concat(t.ai || []),
+        cursor: s.cursor + 1, lines,
+        rung: eff.rung ? eff.rung : s.rung,
+        bankAdded: eff.bankAdd ? true : s.bankAdded,
+        bankTopic: eff.bankAdd ? 0 : s.bankTopic,
+        bankNode: eff.bankAdd ? 0 : s.bankNode,
+        prev: eff.done && s.activePrev ? s.prev.map(x => x.id === s.activePrev ? Object.assign({}, x, { done: true }) : x) : s.prev,
+        draft: "", lineDraft: "",
+      };
+    });
+  }
+
+  say = (text) => {
+    if (!text || !text.trim()) return;
+    const t = this.turn;
+    const a = this.state.a;
+    if (t && (t.expect === "say" || t.expect === "choice")) {
+      const inferring = !a.subtopic && a.subtopicSkipped && this.state.cursor === 0;
+      this.advance(text.trim(), "say");
+      if (inferring) {
+        const guess = this.path() === "school" ? "Angles of depression" : (this.path() === "uni" ? "Curvature of surfaces" : "Caching in the App Router");
+        setTimeout(() => this.setState(s => ({
+          a: Object.assign({}, s.a, { subtopic: guess }),
+          chat: s.chat.concat([{ who: "note", step: "subtopic \u00b7 inferred", text: "You skipped step 7, so I\u2019m reading this as \u201c" + guess + "\u201d and writing it into your intake record. Say so if that\u2019s not it." }]),
+        })), 400);
+      }
+      return;
+    }
+    const rung = Math.min(3, this.state.rung + 1);
+    const notes = {
+      2: "Rung 2 \u2014 I\u2019ve added what else the picture gives us rather than drawing a new one. Look at what appeared.",
+      3: "Rung 3 \u2014 I\u2019ll do only the part that\u2019s confusing you and leave the rest of the working to you.",
+    };
+    this.setState(s => ({
+      chat: s.chat.concat([
+        { who: "you", text: text.trim() },
+        { who: "ai", step: "graduated disclosure", text: notes[rung] || "Tell me what\u2019s blocking you and I\u2019ll compress. There\u2019s no button for this \u2014 I read it from what you write." },
+      ]),
+      rung: this.path() === "school" ? rung : s.rung,
+      draft: "",
+    }));
+  };
+
+  photoWorking = () => {
+    const t = this.turn;
+    if (!t || t.expect !== "line" || this.state.lines.length || this.path() !== "school") return;
+    const lines = [
+      { text: "tan 60\u00b0 = 60 / BD", status: "ok" },
+      { text: "BD = 60/\u221a3 = 20\u221a3 m", status: "ok" },
+      { text: "tan 30\u00b0 = h / 20\u221a3", status: "wrong" },
+      { text: "h = 20\u221a3 \u00d7 (1/\u221a3)", status: "unverified" },
+      { text: "h = 20 m", status: "unverified" },
+    ];
+    const ai = [
+      { who: "you", text: "[photo of my page \u2014 5 lines of working]" },
+      { who: "ai", step: "step 10", text: "Read five lines off your page. I check them in order and stop at the first failure rather than judging the block as a whole." },
+    ].concat(MATH_SCRIPT[4].ai);
+    this.setState(s => ({ chat: s.chat.concat(ai), lines, rung: 2, cursor: 5, lineDraft: "" }));
+  };
+
+  renderVals() {
+    const s = this.state, a = s.a, p = this.path();
+    const school = p === "school", uni = p === "uni", none = p === "none";
+    const t = this.turn;
+    const expect = t ? t.expect : "done";
+    const defs = this.stepDefs();
+    const activeKey = this.activeKey();
+    const doctoral = this.isDoctoral;
+
+    const chip = (sel) => ({ bg: sel ? "#1A1A1A" : "#FFFFFF", fg: sel ? "#FFFFFF" : "#1A1A1A", border: sel ? "#1A1A1A" : "#E8E8E8" });
+
+    const steps = defs.map((d, i) => {
+      const val = a[d.key];
+      const conf = !!s.confirmed[d.key];
+      const extraDone = !d.extraKey || (a[d.extraKey] && s.confirmed[d.extraKey]);
+      const isActive = activeKey === d.key;
+      const isDone = !isActive && val && conf && extraDone;
+      const answer = val ? (d.extraKey && a[d.extraKey] ? val + " \u00b7 " + a[d.extraKey] : val) : "";
+      return {
+        key: d.key, n: d.n, label: d.label, question: d.question, help: d.help,
+        answer: answer + (d.key === "university" && !a.uniVerified ? " \u00b7 unverified" : ""),
+        isDone, isActive, isTodo: !isActive && !isDone,
+        mark: isDone ? "\u2713" : String(d.n),
+        dotBg: isDone ? "#1A1A1A" : (isActive ? "#FFFFFF" : "#FFFFFF"),
+        dotFg: isDone ? "#FFFFFF" : (isActive ? "#1A1A1A" : "#C9C9C9"),
+        dotBorder: isDone ? "#1A1A1A" : (isActive ? "#1A1A1A" : "#E8E8E8"),
+        hasTail: i < defs.length - 1, tailBg: isDone ? "#1A1A1A" : "#F0ECE6",
+        needsConfirm: isActive && !!val && !conf,
+        confirm: () => this.setState(st => ({ confirmed: Object.assign({}, st.confirmed, { [d.key]: true, [d.extraKey || "_x"]: true }), editing: null })),
+        edit: () => this.setState({ editing: d.key, cleared: null }),
+        options: (d.options || []).map(o => Object.assign({ label: o, pick: () => this.set(d.key, o) }, chip(val === o))),
+        hasInput: !!d.input, inputValue: s.uniDraft, inputPlaceholder: d.inputPlaceholder || "", inputNote: d.inputNote || "",
+        setInput: e => this.setState({ uniDraft: e.target.value }),
+        inputKey: e => { if (e.key === "Enter" && s.uniDraft.trim()) { this.setState({ a: Object.assign({}, a, { uniVerified: false }) }); this.set("university", s.uniDraft.trim()); } },
+        submitInput: () => { if (s.uniDraft.trim()) { this.setState({ a: Object.assign({}, a, { uniVerified: false }) }); this.set("university", s.uniDraft.trim()); } },
+        hasExtra: isActive && !!d.extraKey, extraQuestion: d.extraQuestion || "", extraHelp: d.extraHelp || "",
+        extraOptions: (d.extraOptions || []).map(o => Object.assign({ label: o, pick: () => this.set(d.extraKey, o) }, chip(a[d.extraKey] === o))),
+        hasCleared: isActive && !!s.cleared, clearedNote: s.cleared ? "Kept everything still valid. Cleared " + s.cleared + " \u2014 re-asked below." : "",
+      };
+    });
+
+    const intakeReady = !activeKey && !!a.model && !!a.learnerType;
+    const modelPicked = MODELS.filter(m => m.name === a.model)[0] || null;
+
+    const openPrev = s.prev.filter(x => !x.done).slice().sort((x, y) => x.days - y.days);
+    const prevRow = (p) => ({
+      subtopic: p.subtopic, path: p.pathLabel, band: PATH_BAND[p.path], step: p.step,
+      pct: p.pct + "%", progress: p.progress,
+      resume: () => this.resumePrev(p), reuse: () => this.reusePrev(p), complete: () => this.completePrev(p.id),
+    });
+    const prevGroups = [];
+    if (s.prevByTopic) {
+      const seen = [];
+      openPrev.forEach(p => { if (seen.indexOf(p.topic) < 0) seen.push(p.topic); });
+      seen.forEach(topic => {
+        const rows = openPrev.filter(p => p.topic === topic);
+        prevGroups.push({ a: topic, b: rows[0].when, count: rows.length === 1 ? "1 session" : rows.length + " sessions", rows: rows.map(prevRow) });
+      });
+    } else {
+      ["today", "this week", "earlier"].forEach(band => {
+        const inBand = openPrev.filter(p => p.when === band);
+        const seen = [];
+        inBand.forEach(p => { if (seen.indexOf(p.topic) < 0) seen.push(p.topic); });
+        seen.forEach(topic => {
+          const rows = inBand.filter(p => p.topic === topic);
+          prevGroups.push({ a: band, b: topic, count: rows.length === 1 ? "1 session" : rows.length + " sessions", rows: rows.map(prevRow) });
+        });
+      });
+    }
+
+    const ok = (key, val) => ({ done: !!val && !!s.confirmed[key], pending: !!val && !s.confirmed[key] });
+    const railDefs = [
+      { n: "\u25cf", label: "model", done: !!a.model },
+      Object.assign({ n: 1, label: "learner" }, ok("learnerType", a.learnerType)),
+      Object.assign({ n: 2, label: school ? "class" : "level" }, ok(school ? "schoolClass" : "degreeLevel", school ? a.schoolClass : a.degreeLevel), { skip: none }),
+      Object.assign({ n: 3, label: school ? "board" : "university" }, ok(school ? "board" : "university", school ? a.board : a.university), { skip: none }),
+      Object.assign({ n: 4, label: "degree" }, ok("degree", a.degree), { skip: none || school }),
+      Object.assign({ n: 5, label: "in what" }, ok("specialisation", a.specialisation), { skip: none || school }),
+      { n: 6, label: doctoral ? "paper" : "topic", done: !!(a.topic || a.paper) },
+      { n: 7, label: "subtopic", done: !!a.subtopic || a.subtopicSkipped, skip: doctoral },
+      { n: 8, label: "material", done: s.screen === "session" },
+    ];
+    const currentN = s.screen === "topic" ? 6 : (s.screen === "subtopic" ? 7 : (s.screen === "material" ? 8 : (activeKey ? (defs.filter(d => d.key === activeKey)[0] || {}).n : 5)));
+    const rail = railDefs.map((r, i) => {
+      const cur = r.n === currentN && s.screen !== "session";
+      return {
+        label: r.skip ? r.label + " · skipped" : r.label,
+        mark: r.skip ? "\u2013" : (r.done ? "\u2713" : (r.pending ? "\u00b7" : String(r.n))),
+        weight: cur ? 600 : 400,
+        fg: r.skip ? "#C9C9C9" : (cur ? "#1A1A1A" : (r.done ? "#3D3D3D" : "#ABABAB")),
+        dotBg: r.done && !r.skip ? "#1A1A1A" : "#FFFFFF",
+        dotFg: r.done && !r.skip ? "#FFFFFF" : (cur || r.pending ? "#1A1A1A" : "#C9C9C9"),
+        dotBorder: r.skip ? "#F0ECE6" : (r.done || cur ? "#1A1A1A" : (r.pending ? "#C9C9C9" : "#E8E8E8")),
+        hasLine: i < railDefs.length - 1, lineBg: r.done ? "#1A1A1A" : "#F0ECE6",
+      };
+    });
+
+    const recPairs = [];
+    if (a.model) recPairs.push(["model", a.model]);
+    if (a.learnerType) recPairs.push(["learner", a.learnerType]);
+    if (a.schoolClass) recPairs.push(["class", a.schoolClass + (a.stream ? " \u00b7 " + a.stream : "")]);
+    if (a.board) recPairs.push(["board", a.board]);
+    if (a.degreeLevel) recPairs.push(["level", a.degreeLevel]);
+    if (a.university) recPairs.push(["university", a.university + (a.uniVerified ? "" : " \u00b7 unverified")]);
+    if (a.degree) recPairs.push(["degree", a.degree + (a.specialisation ? " in " + a.specialisation : "")]);
+    if (a.topic || a.paper) recPairs.push([doctoral ? "paper" : "topic", a.paper || a.topic]);
+    if (a.subtopic) recPairs.push(["subtopic", a.subtopic]);
+    else if (a.subtopicSkipped) recPairs.push(["subtopic", "left to the chat"]);
+    if (a.materials.length) recPairs.push(["material", a.materials.join(", ")]);
+    const record = recPairs.map(r => ({ k: r[0], v: r[1] }));
+
+    const books = this.booksFor(a).concat(a.materials.filter(m => this.booksFor(a).indexOf(m) < 0 && m.indexOf("syllabus") < 0 && m.indexOf("http") < 0));
+    const materialSources = a.materials.length
+      ? a.materials.map(m => ({ t: m, d: "your material" }))
+      : [{ t: "general knowledge \u2014 no material of yours to cite", d: "unsourced" }];
+
+    const chat = s.chat.map((m, i) => ({
+      key: i,
+      isAi: m.who === "ai", isYou: m.who === "you", isNote: m.who === "note", isTerm: m.who === "term",
+      step: m.step || "", text: m.text || "",
+      hasSources: !!m.sources, sources: m.sources === "MATERIALS" ? materialSources : (m.sources || []),
+      hasCode: !!m.code, code: m.code || "",
+      term: m.term || "", defn: m.defn || "", buildsOn: m.buildsOn || "", more: m.more || "",
+      hasSphere: !!m.geometry, open: !!s.openTerms[i],
+      toggleLabel: s.openTerms[i] ? "show less" : (m.geometry ? "more, with the geometry" : "more"),
+      toggle: () => this.setState(st => ({ openTerms: Object.assign({}, st.openTerms, { [i]: !st.openTerms[i] }) })),
+    }));
+
+    const statusMap = {
+      ok: { label: "checked", fg: "#2D7A3C", bg: "#FFFFFF" },
+      wrong: { label: uni ? "first wrong claim" : "first wrong line", fg: "#C0392B", bg: "#FFF0F3" },
+      unverified: { label: "unverified", fg: "#ABABAB", bg: "#FAF8F5" },
+      pending: { label: "pending", fg: "#ABABAB", bg: "#FFFFFF" },
+    };
+    const lines = s.lines.map((l, i) => {
+      const st = statusMap[l.status] || statusMap.pending;
+      return { n: i + 1, text: l.text, status: st.label, fg: st.fg, bg: st.bg };
+    });
+
+    const doneChips = school ? ["Give me a harder one", "Open my bank"] : (uni ? ["Now the torus", "What breaks for negative curvature?"] : ["Ask about caching again"]);
+    const chips = (t && t.chips ? t.chips : (t ? [] : doneChips)).map(label => ({ label, pick: () => this.say(label) }));
+
+    const bank = school ? BANK_MATH : (uni ? BANK_UNI : []);
+    const topicR = bank[s.bankTopic] || bank[0] || { name: "", nodes: [] };
+    const node = (topicR.nodes || [])[s.bankNode] || (topicR.nodes || [])[0] || { k: 1, name: "", chain: [] };
+    const regions = bank.map((r, ri) => ({
+      name: r.name, count: r.nodes.length + " entries", hint: r.nodes[0].name, bg: r.band,
+      shadow: ri === s.bankTopic ? "0 0 0 2px #1A1A1A" : "0 1px 3px rgba(0,0,0,0.06)",
+      nodes: r.nodes.map((n, ni) => {
+        const pos = [{ left: "20%", top: "66%" }, { left: "50%", top: "36%" }, { left: "80%", top: "64%" }][ni] || { left: "50%", top: "50%" };
+        const sel = ri === s.bankTopic && ni === s.bankNode;
+        return {
+          name: n.name, k: n.k, left: pos.left, top: pos.top,
+          rot: n.k === 3 ? "rotate(45deg)" : "rotate(0deg)",
+          radius: n.k === 2 ? "50%" : "2px",
+          fill: sel ? "#1A1A1A" : (n.isNew && s.bankAdded ? "#FFFFFF" : "rgba(255,255,255,0.55)"),
+          rowBg: sel ? "#FAF8F5" : "#FFFFFF",
+          pick: () => this.setState({ bankTopic: ri, bankNode: ni }),
+        };
+      }),
+    }));
+    const bankView = s.bankViewOverride || (this.props.bankView || "constellation");
+    const termShelf = s.chat.filter(m => m.who === "term").map(m => ({ term: m.term, buildsOn: m.buildsOn }));
+
+    const brief = school
+      ? { kicker: "the problem", meta: (a.topic || "Heights & Distances"), text: "From the top of a 60 m tall building, the angles of depression of the top and the bottom of a tower are 30° and 60°. Find the height of the tower." }
+      : (uni ? { kicker: "the statement", meta: (a.paper || a.topic || "differential geometry"), text: "Show that the Gaussian curvature of a sphere of radius R is constant and equal to 1/R²." } : null);
+
+    const subLabel = school ? "School" : (uni ? "University" : "Self-directed");
+
+    return {
+      isIntake: s.screen === "intake", isTopicScreen: s.screen === "topic", isSubtopicScreen: s.screen === "subtopic",
+      isMaterialScreen: s.screen === "material", isSession: s.screen === "session", isSettings: s.screen === "settings",
+      showRail: s.screen === "intake" || s.screen === "topic" || s.screen === "subtopic" || s.screen === "material",
+      rail, steps, record, recordShort: record.slice(0, 4), recordEmpty: !record.length,
+
+      nav: [
+        { id: "intake", label: "start", meta: "", go: () => this.setState({ screen: "intake" }) },
+        { id: "session", label: "session", meta: s.started ? subLabel.toLowerCase() : "none yet", go: () => this.setState({ screen: s.started ? "session" : "intake" }) },
+        { id: "bank", label: "technique bank", meta: "", go: () => this.setState({ bankOpen: true }) },
+        { id: "skills", label: "skills", meta: s.skills.length ? (s.skills.filter(k => !s.skillsOff[k.id]).length + " on") : "none", go: () => this.setState({ skillsOpen: true }) },
+        { id: "settings", label: "settings", meta: "", go: () => this.setState({ backTo: s.screen, screen: "settings" }) },
+      ].map(n => ({
+        label: n.label, meta: n.meta, hasMeta: !!n.meta, go: n.go,
+        active: s.screen === n.id || (n.id === "intake" && (s.screen === "topic" || s.screen === "subtopic" || s.screen === "material")),
+        weight: s.screen === n.id ? 600 : 400,
+        color: s.screen === n.id ? "#1A1A1A" : "#737373",
+      })),
+
+      intakeTitle: this.returning && !intakeReady ? "Still true?" : "Set up this session",
+      intakeBlurb: this.returning
+        ? ""
+        : "Eight steps before the chat opens. Each answer narrows the next question, and anything you change re-asks only what it invalidates.",
+      hasPrev: !!openPrev.length, prevCount: openPrev.length,
+      prevHint: openPrev.length ? (openPrev.length > 3 ? "tap to see all " + openPrev.length : "tap to open the list") : "nothing unfinished",
+      prevLatest: openPrev.slice(0, 3).map(p => ({
+        topic: p.topic, when: p.days === 0 ? "today" : p.days + "d", step: p.step, pct: p.pct + "%",
+        band: PATH_BAND[p.path], resume: () => this.resumePrev(p),
+      })),
+      hasMorePrev: openPrev.length > 3,
+      morePrevLabel: (openPrev.length - 3) + " more behind the header",
+      prevOpen: s.prevOpen,
+      openPrev: () => this.setState({ prevOpen: true }),
+      closePrev: () => this.setState({ prevOpen: false }),
+      prevEmpty: !openPrev.length,
+      prevSubhead: openPrev.length + " unfinished \u00b7 completed work isn\u2019t listed",
+      prevGroupLabel: s.prevByTopic ? "group by recency" : "group by topic",
+      togglePrevGroup: () => this.setState({ prevByTopic: !s.prevByTopic }),
+      prevGroups,
+
+      intakeReady,
+      models: MODELS.map(m => ({
+        name: m.name, note: m.note, tag: m.tag,
+        bg: a.model === m.name ? "#FAF8F5" : "#FFFFFF",
+        pick: () => this.setState({ a: Object.assign({}, a, { model: m.name }), modelOpen: false }),
+      })),
+      modelOpen: s.modelOpen,
+      toggleModel: () => this.setState({ modelOpen: !s.modelOpen }),
+      modelLabel: modelPicked ? modelPicked.name : "Choose a model",
+      modelNote: modelPicked ? modelPicked.note : "Nothing runs until one is selected.",
+      modelMeta: modelPicked ? modelPicked.tag : "required",
+      modelCaret: s.modelOpen ? "close" : "change",
+      modelBorder: modelPicked ? "#E8E8E8" : "#1A1A1A",
+      modelFg: modelPicked ? "#1A1A1A" : "#737373",
+      modelHint: modelPicked
+        ? "Locked for the session, like the subject \u2014 swapping models mid-solve would change how the working is judged."
+        : "Pick the model first: it decides what the teaching procedure can rely on, so it is asked before anything about you.",
+      toTopic: () => this.setState({ screen: "topic", cleared: null }),
+      newSession: () => this.setState({ screen: "intake", started: false, editing: null, cleared: null, confirmed: {}, chat: [], cursor: 0, lines: [], rung: 0, openTerms: {}, topicText: "", bankOpen: false, prefilled: false, a: Object.assign({}, a, { topic: null, paper: null, subtopic: null, subtopicSkipped: false }) }),
+      hasResume: !!openPrev.length,
+      resumeTopic: openPrev.length ? openPrev[0].topic : "",
+      resumeStep: openPrev.length ? openPrev[0].step : "",
+      resumeWhen: openPrev.length ? (openPrev[0].days === 0 ? "today" : openPrev[0].days + " days ago") : "",
+      resume: () => { if (openPrev.length) this.resumePrev(openPrev[0]); },
+
+      topicTitle: doctoral ? "Which paper?" : "What are we working on?",
+      topicHelp: doctoral ? "A title, a DOI, or drop the PDF. I read the topic off it rather than asking you to name one." : "A topic name, or paste the question itself.",
+      topicPlaceholder: doctoral ? "e.g. 10.1007/s00220-024-05012-8 \u2014 or the title" : (school ? "e.g. \u201cq7 depression angles 30 and 60\u201d" : (uni ? "e.g. differential geometry \u2014 problem set 4" : "e.g. my dashboard refetches on every navigation")),
+      topicCta: doctoral ? "read the paper and open the chat" : "continue to the subtopic",
+      topicText: s.topicText,
+      setTopicText: e => this.setState({ topicText: e.target.value }),
+      topicSuggestions: (TOPIC_SUGGEST[p] || TOPIC_SUGGEST.none).map(x => ({ label: x, pick: () => this.setState({ topicText: x }) })),
+      photoable: school,
+      photoTopic: () => { this.set("topic", "Question 7 \u00b7 photographed"); this.setState({ screen: "subtopic" }); },
+      submitTopic: () => {
+        const txt = s.topicText.trim() || (TOPIC_SUGGEST[p] || TOPIC_SUGGEST.none)[0];
+        if (doctoral) { this.setState({ a: Object.assign({}, a, { paper: txt, subtopicSkipped: true }) }); setTimeout(this.openSessionNow, 0); return; }
+        this.set("topic", txt);
+        this.setState({ screen: "subtopic" });
+      },
+      backToIntake: () => this.setState({ screen: "intake" }),
+      isDoctoral: doctoral,
+
+      subtopicHelp: a.topic ? "Suggestions come from " + a.topic + " in your syllabus." : "Suggestions come from your syllabus.",
+      subtopicOptions: (SUBTOPIC_SUGGEST[a.topic] || SUBTOPIC_SUGGEST._default).map(x => Object.assign({ label: x, pick: () => this.set("subtopic", x) }, chip(a.subtopic === x))),
+      skipSubtopic: () => { this.setState({ a: Object.assign({}, a, { subtopic: null, subtopicSkipped: true }), screen: "material" }); },
+      toMaterial: () => this.setState({ a: Object.assign({}, a, { subtopicSkipped: a.subtopic ? false : true }), screen: "material" }),
+      subtopicCtaBg: a.subtopic ? "#1A1A1A" : "#FFFFFF",
+      subtopicCtaFg: a.subtopic ? "#FFFFFF" : "#1A1A1A",
+      subtopicCtaBorder: a.subtopic ? "#1A1A1A" : "#E8E8E8",
+      backToTopic: () => this.setState({ screen: "topic" }),
+
+      catalogueSource: none ? "no catalogue for this path" : (uni ? "fetched from " + (a.university || "your university") : "fetched for " + (a.board || "your board")),
+      catalogueNote: none
+        ? "Nothing prescribed here \u2014 attach a syllabus or a link instead, or start with neither."
+        : "One tap. If the list is wrong or missing something, add it yourself \u2014 your correction is what I teach from.",
+      books: books.map(b => Object.assign({ label: b, pick: () => this.setState({ a: Object.assign({}, a, { materials: a.materials.indexOf(b) >= 0 ? a.materials.filter(m => m !== b) : a.materials.concat([b]) }) }) }, chip(a.materials.indexOf(b) >= 0))),
+      bookDraft: s.bookDraft,
+      setBookDraft: e => this.setState({ bookDraft: e.target.value }),
+      addBook: () => { if (s.bookDraft.trim()) this.setState({ a: Object.assign({}, a, { materials: a.materials.concat([s.bookDraft.trim()]) }), bookDraft: "" }); },
+      bookKey: e => { if (e.key === "Enter" && s.bookDraft.trim()) this.setState({ a: Object.assign({}, a, { materials: a.materials.concat([s.bookDraft.trim()]) }), bookDraft: "" }); },
+      syllabusText: s.syllabusText,
+      setSyllabusText: e => this.setState({ syllabusText: e.target.value }),
+      addSyllabus: () => { if (s.syllabusText.trim()) this.setState({ a: Object.assign({}, a, { materials: a.materials.concat(["pasted syllabus \u00b7 " + s.syllabusText.trim().split("\n")[0].slice(0, 28)]) }), syllabusText: "" }); },
+      linkDraft: s.linkDraft,
+      setLinkDraft: e => this.setState({ linkDraft: e.target.value }),
+      addLink: () => { if (s.linkDraft.trim()) this.setState({ a: Object.assign({}, a, { materials: a.materials.concat([s.linkDraft.trim()]) }), linkDraft: "" }); },
+      linkKey: e => { if (e.key === "Enter" && s.linkDraft.trim()) this.setState({ a: Object.assign({}, a, { materials: a.materials.concat([s.linkDraft.trim()]) }), linkDraft: "" }); },
+      noMaterial: () => this.setState({ a: Object.assign({}, a, { materials: [] }) }),
+      noneBorder: a.materials.length ? "#E8E8E8" : "#1A1A1A",
+      noneBg: a.materials.length ? "#FFFFFF" : "#FAF8F5",
+      materials: a.materials.map(m => ({ label: m, remove: () => this.setState({ a: Object.assign({}, a, { materials: a.materials.filter(x => x !== m) }) }) })),
+      noMaterials: !a.materials.length,
+      openSession: this.openSessionNow,
+      backFromMaterial: () => this.setState({ screen: doctoral ? "topic" : "subtopic" }),
+
+      isMathSubject: school, isUniSubject: uni, isCodingSubject: none,
+      sessionLabel: subLabel + " \u00b7 locked for this session",
+      sessionSub: record.map(r => r.v).join(" \u00b7 ") + (a.materials.length ? "" : " \u00b7 unsourced"),
+      chat, lines, noLines: !s.lines.length, chips,
+      showBrief: !!brief, briefKicker: brief ? brief.kicker : "", briefMeta: brief ? brief.meta : "", briefText: brief ? brief.text : "",
+      showWorking: school || uni,
+      workingLabel: school ? "your working \u00b7 line by line" : "your reasoning trail \u00b7 claim by claim",
+      emptyWorking: school
+        ? "Nothing yet. Enter one line at a time, or photograph a page of working and it gets split into lines and checked in order."
+        : "Nothing yet. One claim per line \u2014 I check them in order and stop at the first one that doesn\u2019t hold.",
+      noTerms: !termShelf.length, termShelf,
+
+      draft: s.draft, setDraft: e => this.setState({ draft: e.target.value }),
+      draftKey: e => { if (e.key === "Enter") this.say(s.draft); },
+      sendDraft: () => this.say(s.draft),
+      draftPlaceholder: expect === "line" ? "Talk to the AI \u2014 working goes in the panel on the right"
+        : (expect === "paste" ? "Paste your file into the panel when it runs" : "Type your answer"),
+      composerHint: expect === "line"
+        ? "Say \u201cI\u2019m stuck\u201d and the picture climbs a rung. There\u2019s no give-me-the-answer button \u2014 frustration is read, not pressed."
+        : (expect === "paste" ? "Step 7 waits on you. Nothing moves until your code is in the panel."
+          : "No cap on clarifying turns \u2014 the AI asks until the concept is pinned."),
+
+      lineDraft: s.lineDraft, setLineDraft: e => this.setState({ lineDraft: e.target.value }),
+      lineKey: e => { if (e.key === "Enter" && expect === "line") this.advance(s.lineDraft.trim() || (t.suggestion || ""), "line"); },
+      addLine: () => { if (expect === "line") this.advance(s.lineDraft.trim() || (t.suggestion || ""), "line"); },
+      linePlaceholder: expect === "line" ? (school ? "Next line of your working" : "Next claim") : "Closed at this step",
+      palette: (uni ? PALETTE_UNI : PALETTE).map(ch => ({ ch, pick: () => this.setState(st => ({ lineDraft: st.lineDraft + ch })) })),
+      hasSuggestion: expect === "line" && !!(t && t.suggestion),
+      suggestion: t && t.suggestion ? t.suggestion : "",
+      useSuggestion: () => this.setState({ lineDraft: (t && t.suggestion) || "" }),
+      photoWorking: this.photoWorking,
+
+      rung0: s.rung === 0, rung1plus: s.rung >= 1, rung2plus: s.rung >= 2, rung3: s.rung >= 3,
+      rungLabel: ["not drawn yet", "rung 1 \u00b7 everything derivable", "rung 2 \u00b7 further findings added", "rung 3 \u00b7 the confusing part solved"][s.rung],
+
+      code: s.code, codeVersion: s.codeVersion, docSources: DOCS,
+      pasteOpen: s.pasteOpen, pasteText: s.pasteText,
+      openPaste: () => this.setState({ pasteOpen: true }),
+      closePaste: () => this.setState({ pasteOpen: false }),
+      setPasteText: e => this.setState({ pasteText: e.target.value }),
+      savePaste: () => {
+        this.setState({ code: s.pasteText, codeVersion: "updated just now", pasteOpen: false });
+        if (expect === "paste") setTimeout(() => this.advance("[pasted app/dashboard/page.jsx \u2014 runs clean]", "paste"), 60);
+      },
+
+      copyOn: this.copyOn, copyOff: !this.copyOn, noop: () => {},
+      toggleCopy: () => this.setState({ copyOverride: !this.copyOn }),
+      goStart: () => this.setState({ screen: "intake" }),
+      goSettings: () => this.setState({ backTo: s.screen, screen: "settings" }),
+      back: () => this.setState({ screen: s.backTo && s.backTo !== "settings" ? s.backTo : "intake" }),
+      backLabel: s.backTo === "session" ? "back to the session" : "back to start",
+      reset: () => this.setState({
+        screen: "intake", started: false, prefilled: false, confirmed: {}, editing: null, cleared: null,
+        a: Object.assign({}, BLANK_ANSWERS),
+        prev: PREV_SEED.slice(), prevOpen: false, prevByTopic: false, activePrev: null,
+        chat: [], cursor: 0, lines: [], rung: 0, openTerms: {}, bankAdded: false, code: CODE_A, copyOverride: null, topicText: "", modelOpen: false,
+      }),
+
+      panelAttachOpen: s.panelAttachOpen,
+      panelAttachBorder: s.panelAttachOpen ? "#1A1A1A" : "#E8E8E8",
+      togglePanelAttach: () => this.setState({ panelAttachOpen: !s.panelAttachOpen, chatAttachOpen: false }),
+      panelAttachOptions: [
+        { label: "Take a photo", note: "Your working on paper, as it is.", glyph: "\u25a2", band: "#F5E8D4", pick: () => this.attachWork("photo") },
+        { label: "Upload a file", note: "A PDF, an image, or a scan.", glyph: "\u2191", band: "#C8EDCD", pick: () => this.attachWork("file") },
+      ],
+      panelAttachHint: expect === "line"
+        ? "Split into lines and checked in order. A misread is treated as a question, not a mistake."
+        : "The panel is closed at this step \u2014 attaching now just shows me what you have.",
+
+      chatAttachOpen: s.chatAttachOpen,
+      chatAttachBg: s.chatAttachOpen ? "#F0ECE6" : "transparent",
+      toggleChatAttach: () => this.setState({ chatAttachOpen: !s.chatAttachOpen, panelAttachOpen: false }),
+      chatAttachOptions: [
+        { label: "Photo of my working", note: "Checked line by line in the panel.", glyph: "\u25a2", band: "#F5E8D4", pick: () => this.attachWork("photo") },
+        { label: "Upload a file", note: "PDF, image or scan of your answer.", glyph: "\u2191", band: "#C8EDCD", pick: () => this.attachWork("file") },
+        { label: "Photo of the question", note: "I read the statement, not the answer.", glyph: "?", band: "#FFD6E0", pick: () => this.attachQuestion("photo") },
+      ],
+      chatSkills: s.skills.map(k => {
+        const off = !!s.skillsOff[k.id];
+        return {
+          name: k.name, state: off ? "off for this session" : "active",
+          dotBg: off ? "#FFFFFF" : "#1A1A1A", dotBorder: off ? "#C9C9C9" : "#1A1A1A",
+          fg: off ? "#ABABAB" : "#1A1A1A",
+          toggle: () => this.setState(st => ({ skillsOff: Object.assign({}, st.skillsOff, { [k.id]: !st.skillsOff[k.id] }) })),
+        };
+      }),
+      openSkillsFromChat: () => this.setState({ skillsOpen: true, chatAttachOpen: false }),
+
+      skillsOpen: s.skillsOpen,
+      closeSkills: () => this.setState({ skillsOpen: false, composing: false }),
+      skillsSubhead: s.skills.length
+        ? s.skills.length + " available \u00b7 each with a stated limit"
+        : "none available \u00b7 sessions run without them",
+      skillsEmpty: !s.skills.length,
+      skills: s.skills.map((k, i) => {
+        const tone = SKILL_BANDS[i % SKILL_BANDS.length];
+        return {
+          name: k.name, scope: k.scope, does: k.does, cannot: k.cannot, needs: k.needs,
+          band: tone.band, ink: tone.ink,
+          remove: () => this.setState(st => ({ skills: st.skills.filter(x => x.id !== k.id) })),
+        };
+      }),
+      composeOpen: s.composing, composeClosed: !s.composing,
+      openCompose: () => this.setState({ composing: true, newSkill: { name: "", does: "", cannot: "", needs: "" } }),
+      cancelCompose: () => this.setState({ composing: false }),
+      composeFields: [
+        { key: "name", label: "name", placeholder: "e.g. Past-paper drilling" },
+        { key: "does", label: "what it does", placeholder: "one line" },
+        { key: "cannot", label: "what it can\u2019t do", placeholder: "the honest limit" },
+        { key: "needs", label: "you have to write", placeholder: "what you must supply" },
+      ].map(f => ({
+        label: f.label, placeholder: f.placeholder, value: s.newSkill[f.key],
+        set: e => this.setState(st => ({ newSkill: Object.assign({}, st.newSkill, { [f.key]: e.target.value }) })),
+      })),
+      saveSkill: () => {
+        const n = s.newSkill;
+        if (!n.name.trim()) return;
+        this.setState(st => ({
+          skills: st.skills.concat([{
+            id: "s" + Date.now(), name: n.name.trim(), scope: "added by you",
+            does: n.does.trim() || "Not described yet.",
+            cannot: n.cannot.trim() || "No limit stated \u2014 which is itself a limit.",
+            needs: n.needs.trim() || "Nothing stated.",
+          }]),
+          composing: false, newSkill: { name: "", does: "", cannot: "", needs: "" },
+        }));
+      },
+
+      bankOpen: s.bankOpen,
+      closeBank: () => this.setState({ bankOpen: false }),
+      bankEmpty: none || !bank.length, bankFilled: !none && !!bank.length,
+      bankSubjectLabel: subLabel.toLowerCase(),
+      recallWarning: s.bankOpen && s.screen === "session" && !none && s.cursor <= 1,
+      isMapView: bankView === "constellation", isListView: bankView !== "constellation",
+      bankViewLabel: bankView === "constellation" ? "switch to plain list" : "switch to the map",
+      toggleBankView: () => this.setState({ bankViewOverride: bankView === "constellation" ? "list" : "constellation" }),
+      regions,
+      entry: {
+        topic: topicR.name, k: node.k, name: node.name, kindNote: KIND_NOTE[node.k],
+        isNew: !!node.isNew && s.bankAdded,
+        chain: (node.chain || []).map(c => ({ label: c[0], text: c[1] })),
+      },
+    };
+  }
+}
+
+</script>
+</body>
+</html>

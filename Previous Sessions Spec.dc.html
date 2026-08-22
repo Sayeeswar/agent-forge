@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" />
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: #FFFFFF; color: #1A1A1A; font-family: 'DM Sans', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #3D3D3D; text-underline-offset: 3px; }
+  a:hover { color: #1A1A1A; }
+  ::selection { background: #FFD6E0; }
+  p { text-wrap: pretty; }
+</style>
+</helmet>
+
+<div style="max-width: 1080px; margin: 0 auto; padding: 0 32px 96px">
+
+  <header style="padding: 72px 0 40px">
+    <div style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #ABABAB; margin-bottom: 18px">Self learning · design spec · v2</div>
+    <h1 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 60px; line-height: 1.02; letter-spacing: -0.03em; margin: 0 0 20px; max-width: 20em">Previous Sessions</h1>
+    <p style="font-size: 20px; line-height: 1.5; color: #3D3D3D; max-width: 34em; margin: 0 0 32px">Unfinished work is the only thing worth showing. A header and three recent sessions sit in the sidebar; clicking the header opens every session still open, grouped twice over — by when, and by what.</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px">
+      <div style="background: #F5E8D4; border-radius: 999px; padding: 7px 15px; font-size: 12.5px">replaces the single resume card</div>
+      <div style="background: #C8EDCD; border-radius: 999px; padding: 7px 15px; font-size: 12.5px">sidebar list + overlay showcase</div>
+      <div style="background: #FFD6E0; border-radius: 999px; padding: 7px 15px; font-size: 12.5px">completed work disappears</div>
+    </div>
+  </header>
+
+  <section style="padding: 32px 0; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">Decisions Locked</h2>
+    <p style="color: #737373; max-width: 40em; margin: 0 0 26px">Settled in review. Everything below follows from these.</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px">
+      <sc-for list="{{ locked }}" as="d" hint-placeholder-count="6">
+        <div style="background: #FAF8F5; border-radius: 14px; padding: 16px 18px">
+          <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">{{ d.k }}</div>
+          <div style="font-size: 15px">{{ d.v }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="padding: 44px 0 32px; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">In the Sidebar</h2>
+    <p style="color: #737373; max-width: 40em; margin: 0 0 28px">Below the nav, above the session record. Always visible, whatever screen you are on — so unfinished work is never something you have to remember to look for.</p>
+
+    <div style="display: grid; grid-template-columns: 264px 1fr; gap: 30px; align-items: start">
+      <div style="border: 1px solid #F0ECE6; border-radius: 16px; overflow: hidden; background: #FFFFFF">
+        <div style="padding: 16px 16px 12px">
+          <div style="font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 19px; letter-spacing: -0.02em">Self learning</div>
+          <div style="font-size: 10.5px; color: #ABABAB; margin-top: 2px">study, not answers</div>
+        </div>
+        <div style="padding: 0 14px 12px">
+          <div style="background: #1A1A1A; color: #FFFFFF; border-radius: 8px; padding: 9px 12px; font-size: 12.5px; font-weight: 600; text-align: center">+ new session</div>
+        </div>
+        <div style="padding: 2px 0 10px">
+          <sc-for list="{{ navSample }}" as="n" hint-placeholder-count="4">
+            <div style="padding: 8px 18px; font-size: 12.5px; color: #737373">{{ n.label }}</div>
+          </sc-for>
+        </div>
+
+        <div style="border-top: 1px solid #F0ECE6; padding: 13px 18px 8px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+            <span style="font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #1A1A1A; font-weight: 600">previous sessions</span>
+            <span style="display: flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: #F5E8D4; font-size: 10.5px; font-weight: 600; color: #5C4028">7</span>
+          </div>
+          <div style="font-size: 10.5px; color: #ABABAB; margin-top: 3px">tap to see all seven</div>
+        </div>
+
+        <div style="padding: 4px 12px 14px; display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{ sidebarSample }}" as="s" hint-placeholder-count="3">
+            <div style="background: {{ s.band }}; border-radius: 10px; padding: 9px 11px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+                <span style="font-size: 12.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ s.topic }}</span>
+                <span style="font-size: 9.5px; color: #737373; white-space: nowrap">{{ s.when }}</span>
+              </div>
+              <div style="font-size: 10.5px; color: #5C4028; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ s.step }}</div>
+              <div style="margin-top: 7px; height: 3px; border-radius: 999px; background: rgba(26,26,26,0.12); overflow: hidden">
+                <div style="width: {{ s.pct }}; height: 100%; background: #1A1A1A"></div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="font-size: 11px; color: #ABABAB; padding: 2px 2px 0">4 more behind the header</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0">
+        <sc-for list="{{ sidebarRules }}" as="r" hint-placeholder-count="6">
+          <div style="padding: 15px 0; border-top: 1px solid #F0ECE6">
+            <div style="font-size: 16px; font-weight: 600; margin-bottom: 3px">{{ r.t }}</div>
+            <div style="font-size: 14.5px; color: #737373">{{ r.d }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 44px 0 32px; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">The Showcase</h2>
+    <p style="color: #737373; max-width: 42em; margin: 0 0 28px">Clicking the header opens an overlay over whatever you were doing — the same behaviour as the technique bank, for the same reason: you might be mid-solve and only want to look.</p>
+
+    <div style="background: #FAF8F5; border-radius: 20px; padding: 22px">
+      <div style="background: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.10)">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 20px; border-bottom: 1px solid #F0ECE6">
+          <div style="display: flex; align-items: baseline; gap: 12px">
+            <span style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 23px; letter-spacing: -0.02em">Previous Sessions</span>
+            <span style="font-size: 12px; color: #ABABAB">7 unfinished · completed work isn’t listed</span>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <div style="border: 1px solid #E8E8E8; border-radius: 999px; padding: 7px 13px; font-size: 12px; color: #1A1A1A">group by topic</div>
+            <div style="background: #1A1A1A; color: #FFFFFF; border-radius: 999px; padding: 7px 15px; font-size: 12px; font-weight: 600">close</div>
+          </div>
+        </div>
+
+        <sc-for list="{{ showcase }}" as="g" hint-placeholder-count="3">
+          <div>
+            <div style="display: flex; align-items: baseline; gap: 10px; padding: 13px 20px 9px; background: #FAF8F5">
+              <span style="font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase; color: #737373; font-weight: 600">{{ g.when }}</span>
+              <span style="font-size: 10.5px; color: #C9C9C9">·</span>
+              <span style="font-size: 12.5px; font-weight: 600">{{ g.topic }}</span>
+              <span style="font-size: 11px; color: #ABABAB">{{ g.count }}</span>
+            </div>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+              <div style="display: grid; grid-template-columns: 1fr 168px auto; gap: 18px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #F0ECE6">
+                <div style="min-width: 0">
+                  <div style="display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap">
+                    <span style="font-size: 16px; font-weight: 600">{{ r.subtopic }}</span>
+                    <span style="background: {{ r.pathBand }}; border-radius: 999px; padding: 2px 9px; font-size: 10.5px; color: #3D3D3D">{{ r.path }}</span>
+                  </div>
+                  <div style="font-size: 13px; color: #737373; margin-top: 3px">{{ r.step }}</div>
+                </div>
+                <div>
+                  <div style="height: 5px; border-radius: 999px; background: #F0ECE6; overflow: hidden">
+                    <div style="width: {{ r.pct }}; height: 100%; background: #1A1A1A"></div>
+                  </div>
+                  <div style="font-size: 11px; color: #ABABAB; margin-top: 5px">{{ r.progress }}</div>
+                </div>
+                <div style="display: flex; gap: 7px; white-space: nowrap">
+                  <div style="background: #1A1A1A; color: #FFFFFF; border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 600">resume</div>
+                  <div style="border: 1px solid #E8E8E8; border-radius: 999px; padding: 7px 13px; font-size: 12px">same context</div>
+                  <div style="border: 1px solid #E8E8E8; border-radius: 999px; padding: 7px 13px; font-size: 12px">done</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+
+        <div style="padding: 14px 20px; font-size: 12.5px; color: #ABABAB">Nothing is archived or hidden by age. Seven stays seven until you resume it or mark it done.</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 22px">
+      <sc-for list="{{ showcaseNotes }}" as="n" hint-placeholder-count="4">
+        <div style="background: {{ n.band }}; border-radius: 14px; padding: 16px 18px">
+          <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C4028; margin-bottom: 6px">{{ n.k }}</div>
+          <div style="font-size: 14.5px">{{ n.v }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="padding: 44px 0 32px; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">Grouping, Twice Over</h2>
+    <p style="color: #737373; max-width: 42em; margin: 0 0 24px">Each heading carries both facts: recency first, because that is how a student remembers a session, then the topic, because that is how they choose one. Two lines of hierarchy, one row of type.</p>
+    <div style="border: 1px solid #F0ECE6; border-radius: 16px; overflow: hidden">
+      <div style="display: grid; grid-template-columns: 1fr 1.2fr 1.3fr; background: #FAF8F5; padding: 11px 18px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373">
+        <div>band</div><div>contains</div><div>note</div>
+      </div>
+      <sc-for list="{{ bands }}" as="b" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: 1fr 1.2fr 1.3fr; padding: 13px 18px; border-top: 1px solid #F0ECE6; font-size: 14px">
+          <div style="font-weight: 600; padding-right: 12px">{{ b.band }}</div>
+          <div style="color: #3D3D3D; padding-right: 12px">{{ b.contains }}</div>
+          <div style="color: #737373">{{ b.note }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <p style="font-size: 13.5px; color: #ABABAB; margin-top: 14px; max-width: 42em">Within a recency band, topics are ordered by how recently they were touched, not alphabetically. A “group by topic” toggle in the header inverts the pair for a student who thinks in subjects rather than in days.</p>
+  </section>
+
+  <section style="padding: 44px 0 32px; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">Completion</h2>
+    <p style="color: #737373; max-width: 42em; margin: 0 0 24px">Both routes, and the student’s word wins. Completed sessions leave the list entirely — this is a list of open work, not a history.</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px">
+      <sc-for list="{{ completion }}" as="c" hint-placeholder-count="4">
+        <div style="border: 1px solid #F0ECE6; border-radius: 14px; padding: 16px 18px">
+          <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ABABAB; margin-bottom: 6px">{{ c.k }}</div>
+          <div style="font-size: 14.5px">{{ c.v }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="padding: 44px 0 32px; border-top: 1px solid #F0ECE6">
+    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">The Three Actions</h2>
+    <p style="color: #737373; max-width: 42em; margin: 0 0 24px">No more than three, and each one goes somewhere different. Nothing here opens a summary or a read-only view — a session you can’t continue isn’t worth listing.</p>
+    <div style="border: 1px solid #F0ECE6; border-radius: 16px; overflow: hidden">
+      <div style="display: grid; grid-template-columns: 0.8fr 1.2fr 1.3fr; background: #FAF8F5; padding: 11px 18px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #737373">
+        <div>action</div><div>what it does</div><div>why it exists</div>
+      </div>
+      <sc-for list="{{ actions }}" as="a" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: 0.8fr 1.2fr 1.3fr; padding: 13px 18px; border-top: 1px solid #F0ECE6; font-size: 14px">
+          <div style="font-weight: 600; padding-right: 12px">{{ a.a }}</div>
+          <div style="color: #3D3D3D; padding-right: 12px">{{ a.what }}</div>
+          <div style="color: #737373">{{ a.why }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <sc-if value="{{ showOpen }}" hint-placeholder-val="{{ true }}">
+    <section style="padding: 44px 0 0; border-top: 1px solid #F0ECE6">
+      <h2 style="font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 8px">Open for You</h2>
+      <p style="color: #737373; max-width: 42em; margin: 0 0 24px">Three I decided rather than guessed silently. Say the word on any of them and I’ll change it before building.</p>
+      <sc-for list="{{ open }}" as="o" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: 1.5em 1fr; gap: 14px; padding: 15px 0; border-top: 1px solid #F0ECE6">
+          <div style="font-size: 13px; color: #ABABAB; padding-top: 2px">{{ o.n }}</div>
+          <div>
+            <div style="font-size: 16px; font-weight: 600; margin-bottom: 3px">{{ o.q }}</div>
+            <div style="font-size: 14px; color: #737373">{{ o.note }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </section>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1140},&quot;showOpenItems&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Document&quot;}}">
+const LOCKED = [
+  ["placement", "In the sidebar, under the nav. A header, a count, and the three most recent unfinished sessions."],
+  ["the click", "Clicking the header opens an overlay showcase — the technique bank’s behaviour, not a screen change."],
+  ["contents", "Only sessions not marked complete. Completed work is gone from this list entirely."],
+  ["grouping", "Headings carry recency and topic together: “this week · Differential geometry”."],
+  ["each entry", "Learner path, topic and subtopic, the step it stopped at, and how far it got."],
+  ["actions", "Resume, start fresh with the same context, mark complete. Three, no more."],
+];
+
+const NAV = [{ label: "start" }, { label: "session" }, { label: "technique bank" }, { label: "settings" }];
+
+const SIDEBAR = [
+  { topic: "Differential geometry", when: "2d", step: "claim 3 · first wrong claim", pct: "38%", band: "#C8EDCD" },
+  { topic: "Heights & Distances", when: "5d", step: "block b · step 10", pct: "62%", band: "#F5E8D4" },
+  { topic: "Next.js caching", when: "1w", step: "step 7 · waiting on your code", pct: "55%", band: "#FFD6E0" },
+];
+
+const SIDEBAR_RULES = [
+  { t: "The header is the control", d: "It is a button, not a label. The count beside it is the number of unfinished sessions, and it is the only place that number appears." },
+  { t: "Three, most recent first", d: "Ordered by when they were last touched. A fourth session pushes the oldest out of the sidebar and into the showcase — nothing is lost, only hidden." },
+  { t: "Each card carries four facts", d: "Topic, how long ago, the step it stopped at, and a progress bar. Enough to recognise a session without opening it." },
+  { t: "Colour is the learner path", d: "Cream for school, mint for university, pink for self-directed — the same three bands the intake uses, so the sidebar reads at a glance." },
+  { t: "Never pre-selected", d: "Carried over from v1: a session stops because it got hard, so re-entering is always a deliberate tap." },
+  { t: "Empty state", d: "With nothing unfinished, the header stays and reads “nothing unfinished” with no count. It never disappears — its absence would look like a bug." },
+];
+
+const SHOWCASE = [
+  { when: "today", topic: "Differential geometry", count: "1 session", rows: [
+    { subtopic: "Curvature of surfaces", path: "university", pathBand: "#C8EDCD", step: "stopped at claim 3 — det(II) is not K", pct: "38%", progress: "3 of 8 claims" },
+  ] },
+  { when: "this week", topic: "Heights & Distances", count: "2 sessions", rows: [
+    { subtopic: "Angles of depression", path: "school · class 10", pathBand: "#F5E8D4", step: "block b, step 10 — which vertical 30° subtends", pct: "62%", progress: "line 3 of 5" },
+    { subtopic: "Two-observer problems", path: "school · class 10", pathBand: "#F5E8D4", step: "block a, step 3 — goal not yet set", pct: "12%", progress: "barely started" },
+  ] },
+  { when: "this week", topic: "Fundamental forms", count: "1 session", rows: [
+    { subtopic: "Sign conventions on the normal", path: "university", pathBand: "#C8EDCD", step: "claim 2 — normal never stated in writing", pct: "25%", progress: "2 of 8 claims" },
+  ] },
+  { when: "earlier", topic: "Next.js caching", count: "2 sessions", rows: [
+    { subtopic: "Revalidation in the App Router", path: "self-directed", pathBand: "#FFD6E0", step: "step 7 — waiting on your code", pct: "55%", progress: "4 of 9 steps" },
+    { subtopic: "Server components and dedupe", path: "self-directed", pathBand: "#FFD6E0", step: "step 5 — understanding check unanswered", pct: "33%", progress: "3 of 9 steps" },
+  ] },
+  { when: "earlier", topic: "Trigonometry", count: "1 session", rows: [
+    { subtopic: "Trigonometric identities", path: "school · class 10", pathBand: "#F5E8D4", step: "block a, step 2 — bank walk not finished", pct: "9%", progress: "barely started" },
+  ] },
+];
+
+const SHOWCASE_NOTES = [
+  { k: "why an overlay", v: "You can open it mid-solve without losing your place, and close it without navigating. The same argument that made the technique bank an overlay.", band: "#F5E8D4" },
+  { k: "why rows, not cards", v: "A card grid flatters four sessions and buries twenty. Rows scan vertically and give the step text room to be a sentence rather than a truncation.", band: "#C8EDCD" },
+  { k: "the progress bar", v: "Steps completed over steps in the procedure — not a score. It answers “is this nearly done or barely begun”, which is the only question the list has to answer.", band: "#FFD6E0" },
+  { k: "no search", v: "Unfinished sessions are few by nature. A search field here would be an admission that the list had failed.", band: "#FAF8F5" },
+];
+
+const BANDS = [
+  { band: "today", contains: "Anything touched since midnight.", note: "Almost always what the student came back for." },
+  { band: "this week", contains: "The last seven days, today excluded.", note: "The band where most real returns happen." },
+  { band: "earlier", contains: "Everything older, however old.", note: "No further subdivision, and no archiving by age." },
+];
+
+const COMPLETION = [
+  { k: "auto", v: "Reaching block C — the technique-bank entry and the alternative route — marks the session complete. That is the procedure’s own definition of finished." },
+  { k: "by hand", v: "“Done” on any entry marks it complete at any point, including one the student never intends to return to." },
+  { k: "override", v: "The student’s word wins in both directions: an auto-completed session can be reopened, and an unfinished one closed." },
+  { k: "afterwards", v: "It leaves the list. This is open work, not a history — and the technique bank already holds what the session was worth keeping for." },
+];
+
+const ACTIONS = [
+  { a: "Resume", what: "Reopens the session at its step, with the working, diagram rung and diagnosis intact. No intake.", why: "The v1 behaviour, unchanged: the context still stands because it is the same session." },
+  { a: "Same context", what: "Starts a new session pre-filled from this one’s intake record — everything but topic and subtopic.", why: "The common case of a second problem from the same chapter, without eight steps of retyping." },
+  { a: "Done", what: "Marks it complete and removes it from the list.", why: "Half-finished work a student has moved past should be dismissable in one tap, not archived." },
+];
+
+const OPEN = [
+  { q: "Deleting is not offered", note: "You picked three actions, and delete wasn’t one. “Done” covers dismissal, so nothing is destructive and nothing is unrecoverable — but there is then no way to remove a session you started by mistake." },
+  { q: "The list has no ceiling", note: "You chose to let it grow. At thirty entries the showcase becomes a long scroll with no filter, by design. I’d revisit it only if that actually happens in use." },
+  { q: "Completed sessions have no home", note: "They leave the list and aren’t listed anywhere else. Their durable residue is the technique bank entry. If you ever want a history view, that is a new surface rather than a change here." },
+];
+
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      locked: LOCKED.map(x => ({ k: x[0], v: x[1] })),
+      navSample: NAV,
+      sidebarSample: SIDEBAR,
+      sidebarRules: SIDEBAR_RULES,
+      showcase: SHOWCASE,
+      showcaseNotes: SHOWCASE_NOTES,
+      bands: BANDS,
+      completion: COMPLETION,
+      actions: ACTIONS,
+      showOpen: this.props.showOpenItems !== false,
+      open: OPEN.map((o, i) => ({ n: i + 1, q: o.q, note: o.note })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
