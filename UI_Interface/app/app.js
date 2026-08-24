@@ -6,9 +6,9 @@
      ============================================================ */
 
   const SUBJECTS = [
-    { id: 'coding', label: 'Coding', emoji: '💻', dot: '#DDEBFA',
+    { id: 'coding', label: 'Coding', emoji: '💻', dot: 'var(--blue)',
       desc: 'Write real code in your own project. The AI teaches from what you paste in — it never hands you a finished answer.' },
-    { id: 'math', label: 'Math', emoji: '📐', dot: '#FFD6E0',
+    { id: 'math', label: 'Math', emoji: '📐', dot: 'var(--pink)',
       desc: 'Work problems one line at a time. The AI never calculates for you — it teaches you to find the road yourself.' }
   ];
   const SUBJECT_LABEL = Object.fromEntries(SUBJECTS.map(s => [s.id, s.label]));
@@ -633,7 +633,7 @@
       <button class="sidebar-new" data-action="goStart"><span>＋</span> New session</button>
       <div class="sidebar-section-label">Menu</div>
       <button class="sidebar-link ${state.screen === 'bank' ? 'active' : ''}" data-action="openBank">
-        <span>Technique bank</span><span class="dot" style="background:${SUBJECT_DOT[subj] || '#ccc'}"></span>
+        <span>Technique bank</span><span class="dot" style="background:${SUBJECT_DOT[subj] || 'var(--border)'}"></span>
       </button>
       <button class="sidebar-link ${state.screen === 'settings' ? 'active' : ''}" data-action="goSettings"><span>Settings</span></button>
       ${resumables.length ? `<div class="sidebar-section-label">Unfinished</div>` + resumables.map(s => `
@@ -789,18 +789,18 @@
     if (session.topic === 'Trigonometry') {
       const marks = session.diagramMarks;
       return `<svg viewBox="0 0 400 200" width="100%" height="100%">
-        <polygon points="60,170 340,170 340,40" fill="none" stroke="#1A1A1A" stroke-width="2"/>
-        <text x="46" y="184" font-family="DM Sans" font-size="12" font-weight="700" fill="#1A1A1A">A</text>
-        <text x="344" y="184" font-family="DM Sans" font-size="12" font-weight="700" fill="#1A1A1A">B</text>
-        <text x="344" y="34" font-family="DM Sans" font-size="12" font-weight="700" fill="#1A1A1A">C</text>
-        <text x="80" y="162" font-family="DM Sans" font-size="12" fill="#3D3D3D">θ</text>
-        ${marks.map((mk, i) => `<text x="200" y="${60 + i * 16}" font-family="DM Sans" font-size="11" font-weight="700" fill="#C0392B">step ${mk.n} noted</text>`).join('')}
+        <polygon points="60,170 340,170 340,40" fill="none" style="stroke:var(--ink)" stroke-width="2"/>
+        <text x="46" y="184" font-family="DM Sans" font-size="12" font-weight="700" style="fill:var(--ink)">A</text>
+        <text x="344" y="184" font-family="DM Sans" font-size="12" font-weight="700" style="fill:var(--ink)">B</text>
+        <text x="344" y="34" font-family="DM Sans" font-size="12" font-weight="700" style="fill:var(--ink)">C</text>
+        <text x="80" y="162" font-family="DM Sans" font-size="12" style="fill:var(--ink-soft)">θ</text>
+        ${marks.map((mk, i) => `<text x="200" y="${60 + i * 16}" font-family="DM Sans" font-size="11" font-weight="700" style="fill:var(--pink-ink)">step ${mk.n} noted</text>`).join('')}
       </svg>`;
     }
     const dots = Math.min(session.lines.length, 8);
     return `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px">
       <div style="color:var(--muted);font-size:12.5px;text-align:center;padding:0 20px">A worked diagram builds here once the shape of the problem is clear.</div>
-      <div style="display:flex;gap:6px">${Array.from({ length: 8 }).map((_, i) => `<span style="width:9px;height:9px;border-radius:50%;background:${i < dots ? '#1A1A1A' : '#F0ECE6'}"></span>`).join('')}</div>
+      <div style="display:flex;gap:6px">${Array.from({ length: 8 }).map((_, i) => `<span style="width:9px;height:9px;border-radius:50%;background:${i < dots ? 'var(--ink)' : 'var(--bg-line)'}"></span>`).join('')}</div>
     </div>`;
   }
 
@@ -816,12 +816,12 @@
           <span class="v">${escapeHtml(truncate(session.topicRaw, 60))}</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          ${session.status === 'active' ? `<button class="btn btn-ghost btn-sm" data-action="wrapUp" ${wrapEnabled ? '' : 'disabled'}>Wrap up</button>` : `<span class="chip" style="background:var(--green);border:0">Completed</span>`}
+          ${session.status === 'active' ? `<button class="btn btn-ghost btn-sm" data-action="wrapUp" ${wrapEnabled ? '' : 'disabled'}>Wrap up</button>` : `<span class="chip" style="background:var(--green);color:var(--green-ink);border:0">Completed</span>`}
           <button class="btn btn-ghost btn-sm" data-action="openBank">Technique bank</button>
           <button class="btn btn-ghost btn-sm" data-action="goStart">Back to start</button>
         </div>
       </div>
-      ${session.blocker ? `<div style="padding:9px 22px;background:var(--pink-soft);font-size:12.5px;color:#8a2740">Picking back up — ${escapeHtml(session.blocker)}</div>` : ''}
+      ${session.blocker ? `<div style="padding:9px 22px;background:var(--pink-soft);font-size:12.5px;color:var(--pink-ink)">Picking back up — ${escapeHtml(session.blocker)}</div>` : ''}
     `;
 
     const chat = `
