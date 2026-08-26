@@ -1,0 +1,7 @@
+{
+  "name": "self-learning-tutor",
+  "private": true,
+  "scripts": {
+    "dev:client": "npm --prefix client run dev"
+  }
+}

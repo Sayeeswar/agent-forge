@@ -1,0 +1,134 @@
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: white;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+.quizButton {
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.quizButton:hover {
+  background: var(--color-accent-dark);
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hint {
+  color: var(--color-text-faint);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.userBubble {
+  align-self: flex-end;
+  background: var(--color-accent);
+  color: white;
+  border-radius: var(--radius-md) var(--radius-md) 4px var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  max-width: 65%;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.assistantBubble {
+  align-self: flex-start;
+  background: white;
+  color: var(--color-text);
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 4px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  max-width: 70%;
+  font-size: 14px;
+  box-shadow: var(--shadow-soft);
+  white-space: pre-wrap;
+}
+
+.errorBubble {
+  align-self: flex-start;
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border: 1px solid var(--color-error-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.errorBubble button {
+  border: 1px solid var(--color-error-text);
+  background: transparent;
+  color: var(--color-error-text);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.inputBar {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+  background: white;
+}
+
+.input {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.sendButton {
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--color-accent);
+  color: white;
+}
+
+.sendButton:hover {
+  background: var(--color-accent-dark);
+}

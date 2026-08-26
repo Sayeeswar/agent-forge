@@ -1,0 +1,58 @@
+.card {
+  background: white;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 10px;
+  max-width: 420px;
+}
+
+.meta {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+  margin-bottom: 6px;
+}
+
+.question {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.option,
+.optionCorrect,
+.optionWrong {
+  text-align: left;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 13px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--color-accent);
+}
+
+.optionCorrect {
+  background: var(--color-success-bg);
+  border-color: var(--color-success-border);
+  color: var(--color-success-text);
+  font-weight: 600;
+}
+
+.optionWrong {
+  background: var(--color-error-bg);
+  border-color: var(--color-error-border);
+  color: var(--color-error-text);
+}
