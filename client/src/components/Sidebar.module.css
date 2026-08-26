@@ -1,0 +1,166 @@
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--color-bg-alt);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarCollapsed {
+  composes: sidebar;
+  width: 64px;
+}
+
+.scrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-text);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.collapseButton {
+  border: 1px solid var(--color-border);
+  background: white;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.collapseButton:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.newSessionButton {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.newSessionButton:hover {
+  background: var(--color-accent-dark);
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.navItem,
+.navItemActive {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: left;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.navItemActive {
+  background: white;
+  color: var(--color-text);
+  font-weight: 600;
+  box-shadow: var(--shadow-soft);
+}
+
+.navIcon {
+  font-size: 15px;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+.navLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navBadge {
+  font-size: 10px;
+  color: var(--color-text-faint);
+  flex-shrink: 0;
+}
+
+.sessionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sessionsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.countBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-accent);
+  background: white;
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+.sessionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moreHint {
+  font-size: 11px;
+  color: var(--color-text-faint);
+  text-align: center;
+  padding-top: 2px;
+}
