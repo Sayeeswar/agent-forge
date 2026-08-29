@@ -1,0 +1,44 @@
+import styles from './SourceBar.module.css';
+import { useAppState } from '../../context/AppStateContext.jsx';
+
+const META = {
+  pr: { icon: '🔗', label: 'GitHub PR' },
+  local: { icon: '📁', label: 'Local path' },
+};
+
+const ORDER = ['pr', 'local'];
+
+export default function SourceBar() {
+  const { state, actions } = useAppState();
+  const entries = ORDER.filter((type) => state.sources[type]);
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div className={styles.bar}>
+      <span className={styles.caption}>Source</span>
+
+      {entries.map((type) => {
+        const active = state.activeSourceType === type;
+        return (
+          <button
+            key={type}
+            type="button"
+            className={active ? styles.chipActive : styles.chip}
+            aria-pressed={active}
+            title={state.sources[type].value}
+            onClick={() => actions.setActiveSource(type)}
+          >
+            <span aria-hidden="true">{META[type].icon}</span>
+            <span className={styles.label}>{META[type].label}</span>
+            <span className={styles.value}>{state.sources[type].value}</span>
+          </button>
+        );
+      })}
+
+      {entries.length > 1 && (
+        <span className={styles.hint}>click to switch active</span>
+      )}
+    </div>
+  );
+}
