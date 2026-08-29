@@ -1,11 +1,23 @@
 import styles from './CodePanelHeader.module.css';
 
-export default function CodePanelHeader({ code, onCollapse }) {
+const TITLES = {
+  pr: 'Pull request',
+  suggestions: 'Suggested fixes',
+  code: 'Proposed code',
+};
+
+export default function CodePanelHeader({ kind, code, pr, suggestions, onCollapse }) {
+  let subtitle = null;
+  if (kind === 'pr' && pr) subtitle = `PR #${pr.number}`;
+  else if (kind === 'suggestions' && suggestions?.length) {
+    subtitle = `${suggestions.length} file${suggestions.length === 1 ? '' : 's'}`;
+  } else if (kind === 'code' && code) subtitle = code.filename;
+
   return (
     <header className={styles.header}>
       <div className={styles.titleGroup}>
-        <span className={styles.title}>Proposed code</span>
-        {code && <span className={styles.filename}>{code.filename}</span>}
+        <span className={styles.title}>{TITLES[kind] ?? 'Code'}</span>
+        {subtitle && <span className={styles.filename}>{subtitle}</span>}
       </div>
 
       <button

@@ -14,27 +14,38 @@ import {
   cannedReplies,
 } from '../data/sampleData.js';
 
-const DEFAULT_PROVIDER = 'openrouter';
 import { runSendSimulation } from '../lib/sendSimulator.js';
 import { getKeyStatus, postValidateKey } from '../lib/keysApi.js';
+import {
+  getGithubStatus,
+  postValidateGithubToken,
+  fetchPullRequest,
+} from '../lib/githubApi.js';
+import { postAnalyze } from '../lib/analysisApi.js';
+
+const DEFAULT_PROVIDER = 'openrouter';
 
 const initialState = {
   messages: [],
   status: 'idle', // 'idle' | 'pending'
   pendingStatusIndex: 0,
+  statusLabel: null, // overrides the cycling status text during a real call
   // Active LLM provider. Drives the model dropdown list below and which key the
   // Connect API popup targets.
   provider: DEFAULT_PROVIDER, // 'openrouter' | 'openai'
   model: providerModels[DEFAULT_PROVIDER][0],
   models: providerModels[DEFAULT_PROVIDER],
   sources: {
-    pr: null, // { value: string } | null
+    pr: null, // { value: string, pr?: PullRequestSummary } | null
     local: null, // { value: string } | null
   },
   activeSourceType: null, // 'pr' | 'local' | null
   panel: {
     expanded: false,
+    kind: 'code', // 'code' | 'pr' | 'suggestions'
     code: null, // { filename, language, content } | null
+    pr: null, // PullRequestSummary | null
+    suggestions: null, // AnalysisSuggestion[] | null
   },
   // Module 2 — LLM API key connection state. Sourced from the C# backend
   // (GET /api/keys/status on load, POST /api/keys/validate on connect).
@@ -42,6 +53,9 @@ const initialState = {
     openai: { connected: false },
     openrouter: { connected: false },
   },
+  // Module 3 — GitHub connection state (GET /api/github/status on load,
+  // POST /api/github/validate on connect).
+  github: { connected: false, login: null },
 };
 
 let idSeq = 0;
@@ -76,10 +90,99 @@ function reducer(state, action) {
         messages: [...state.messages, message],
         status: 'idle',
         panel: reply.code
-          ? { expanded: true, code: reply.code }
+          ? {
+              expanded: true,
+              kind: 'code',
+              code: reply.code,
+              pr: null,
+              suggestions: null,
+            }
           : state.panel,
       };
     }
+
+    case 'ANALYZE_START':
+      return {
+        ...state,
+        status: 'pending',
+        pendingStatusIndex: 0,
+        statusLabel: action.label ?? 'Analyzing…',
+        messages: action.prompt
+          ? [
+              ...state.messages,
+              { id: nextId(), role: 'user', text: action.prompt },
+            ]
+          : state.messages,
+      };
+
+    case 'ANALYZE_RESULT': {
+      const { result } = action;
+      const findings = result.findings ?? [];
+      const suggestions = result.suggestions ?? [];
+      const message = {
+        id: nextId(),
+        role: 'assistant',
+        text: result.summary || 'Analysis complete.',
+        findings,
+        suggestions,
+      };
+      return {
+        ...state,
+        messages: [...state.messages, message],
+        status: 'idle',
+        statusLabel: null,
+        panel: suggestions.length
+          ? {
+              expanded: true,
+              kind: 'suggestions',
+              code: null,
+              pr: state.panel.pr ?? state.sources.pr?.pr ?? null,
+              suggestions,
+            }
+          : state.panel,
+      };
+    }
+
+    case 'ANALYZE_ERROR':
+      return {
+        ...state,
+        status: 'idle',
+        statusLabel: null,
+        messages: [
+          ...state.messages,
+          {
+            id: nextId(),
+            role: 'assistant',
+            text: action.error,
+            findings: [],
+            suggestions: [],
+          },
+        ],
+      };
+
+    case 'SHOW_PR':
+      return {
+        ...state,
+        panel: {
+          expanded: true,
+          kind: 'pr',
+          code: null,
+          suggestions: null,
+          pr: action.pr ?? state.panel.pr ?? state.sources.pr?.pr ?? null,
+        },
+      };
+
+    case 'SHOW_SUGGESTIONS':
+      return {
+        ...state,
+        panel: {
+          expanded: true,
+          kind: 'suggestions',
+          code: null,
+          pr: state.panel.pr ?? state.sources.pr?.pr ?? null,
+          suggestions: action.suggestions ?? [],
+        },
+      };
 
     case 'SET_MODEL':
       return { ...state, model: action.model };
@@ -106,6 +209,23 @@ function reducer(state, action) {
 
     case 'SET_ACTIVE_SOURCE':
       return { ...state, activeSourceType: action.sourceType };
+
+    case 'SET_PR_SOURCE':
+      return {
+        ...state,
+        sources: {
+          ...state.sources,
+          pr: { value: action.url, pr: action.pr },
+        },
+        activeSourceType: 'pr',
+        panel: {
+          expanded: true,
+          kind: 'pr',
+          code: null,
+          pr: action.pr,
+          suggestions: null,
+        },
+      };
 
     case 'EXPAND_PANEL':
       return { ...state, panel: { ...state.panel, expanded: true } };
@@ -137,6 +257,15 @@ function reducer(state, action) {
         },
       };
 
+    case 'SET_GITHUB_STATUS':
+      return {
+        ...state,
+        github: {
+          connected: !!action.connected,
+          login: action.login ?? state.github.login,
+        },
+      };
+
     default:
       return state;
   }
@@ -150,6 +279,10 @@ export function AppStateProvider({ children }) {
   const replyCursor = useRef(0);
   const cancelRef = useRef(null);
 
+  // Latest state for callbacks that must not churn the memoized `actions`.
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   // Clean up any in-flight fake request on unmount.
   useEffect(
     () => () => {
@@ -158,8 +291,8 @@ export function AppStateProvider({ children }) {
     []
   );
 
-  // Module 2 — pull saved key status from the backend once on load. If the
-  // backend is down, both providers just stay disconnected.
+  // Module 2/3 — pull saved connection state from the backend once on load. If
+  // the backend is down, everything just stays disconnected.
   const refreshKeyStatus = useCallback(async () => {
     try {
       const status = await getKeyStatus();
@@ -170,6 +303,16 @@ export function AppStateProvider({ children }) {
       });
     } catch {
       // no-op: leave providers as-is (disconnected)
+    }
+    try {
+      const gh = await getGithubStatus();
+      dispatch({
+        type: 'SET_GITHUB_STATUS',
+        connected: gh.connected,
+        login: gh.login,
+      });
+    } catch {
+      // no-op: leave GitHub as-is (disconnected)
     }
   }, []);
 
@@ -187,27 +330,119 @@ export function AppStateProvider({ children }) {
     return result;
   }, []);
 
-  const sendMessage = useCallback((rawText) => {
-    const text = rawText.trim();
-    if (!text) return;
-
-    dispatch({ type: 'USER_SEND', text });
-
-    const index = Math.min(replyCursor.current, cannedReplies.length - 1);
-    replyCursor.current += 1;
-    const reply = cannedReplies[index];
-
-    if (cancelRef.current) cancelRef.current();
-    cancelRef.current = runSendSimulation({
-      statusMessages,
-      reply,
-      onStatusStep: (i) => dispatch({ type: 'STATUS_STEP', index: i }),
-      onComplete: (r) => {
-        cancelRef.current = null;
-        dispatch({ type: 'ASSISTANT_REPLY', reply: r });
-      },
-    });
+  // Module 3 — validate a GitHub token (GET /user). On success the backend has
+  // written GITHUB_TOKEN to .env; flip the connected flag and keep the login.
+  const validateGithubToken = useCallback(async (token) => {
+    const result = await postValidateGithubToken({ token });
+    if (result.ok) {
+      dispatch({
+        type: 'SET_GITHUB_STATUS',
+        connected: true,
+        login: result.login,
+      });
+    }
+    return result;
   }, []);
+
+  // Module 3 — fetch a PR via the backend and, on success, add it as the active
+  // source + show it in the panel. Returns the result so the dialog can block
+  // on failure.
+  const fetchAndAddPr = useCallback(async (url) => {
+    const result = await fetchPullRequest(url);
+    if (result.ok && result.pr) {
+      dispatch({ type: 'SET_PR_SOURCE', url, pr: result.pr });
+    }
+    return result;
+  }, []);
+
+  // Module 4 — build the analyzer's `files` payload from a fetched PR.
+  const prFilesPayload = (pr) =>
+    (pr?.files ?? []).map((f) => ({
+      path: f.filename,
+      content: f.content ?? null,
+      patch: f.patch ?? null,
+    }));
+
+  // Module 4 — run a real analysis and route the result into chat + panel.
+  const runAnalysis = useCallback(async ({ prompt, label, instruction }) => {
+    const s = stateRef.current;
+    const pr = s.sources.pr?.pr;
+    if (!pr) {
+      dispatch({
+        type: 'ANALYZE_ERROR',
+        error: 'Fetch a pull request first (use the “+” button).',
+      });
+      return;
+    }
+
+    const history = s.messages
+      .filter((m) => typeof m.text === 'string' && m.text.length > 0)
+      .map((m) => ({ role: m.role, text: m.text }));
+
+    dispatch({ type: 'ANALYZE_START', prompt, label });
+
+    const result = await postAnalyze({
+      provider: s.provider,
+      model: s.model,
+      instruction,
+      files: prFilesPayload(pr),
+      history,
+    });
+
+    if (result.ok) {
+      dispatch({ type: 'ANALYZE_RESULT', result });
+    } else {
+      dispatch({
+        type: 'ANALYZE_ERROR',
+        error: result.error || 'The analysis request failed.',
+      });
+    }
+  }, []);
+
+  const analyzePr = useCallback(
+    () =>
+      // No `instruction` here on purpose: the default analysis prompt is
+      // authored in the C# backend (CodeAnalyzer.cs), not in React.
+      runAnalysis({
+        prompt: 'Analyse this PR',
+        label: 'Analyzing the pull request…',
+      }),
+    [runAnalysis]
+  );
+
+  const sendMessage = useCallback(
+    (rawText) => {
+      const text = rawText.trim();
+      if (!text) return;
+
+      const s = stateRef.current;
+
+      // With a PR active, sends are real follow-up analysis calls.
+      if (s.activeSourceType === 'pr' && s.sources.pr?.pr) {
+        runAnalysis({ prompt: text, label: 'Analyzing…', instruction: text });
+        return;
+      }
+
+      // Otherwise keep the Module 1 canned-reply simulation.
+      dispatch({ type: 'USER_SEND', text });
+
+      const index = Math.min(replyCursor.current, cannedReplies.length - 1);
+      replyCursor.current += 1;
+      const reply = cannedReplies[index];
+
+      if (cancelRef.current) cancelRef.current();
+      cancelRef.current = runSendSimulation({
+        statusMessages,
+        reply,
+        onStatusStep: (i) => dispatch({ type: 'STATUS_STEP', index: i }),
+        onComplete: (r) => {
+          cancelRef.current = null;
+          dispatch({ type: 'ASSISTANT_REPLY', reply: r });
+        },
+      });
+    },
+    [runAnalysis]
+  );
 
   const actions = useMemo(
     () => ({
@@ -223,8 +458,21 @@ export function AppStateProvider({ children }) {
       togglePanel: () => dispatch({ type: 'TOGGLE_PANEL' }),
       validateKey,
       refreshKeyStatus,
+      validateGithubToken,
+      fetchAndAddPr,
+      analyzePr,
+      showPr: () => dispatch({ type: 'SHOW_PR' }),
+      showSuggestions: (suggestions) =>
+        dispatch({ type: 'SHOW_SUGGESTIONS', suggestions }),
     }),
-    [sendMessage, validateKey, refreshKeyStatus]
+    [
+      sendMessage,
+      validateKey,
+      refreshKeyStatus,
+      validateGithubToken,
+      fetchAndAddPr,
+      analyzePr,
+    ]
   );
 
   const value = useMemo(() => ({ state, actions }), [state, actions]);

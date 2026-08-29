@@ -1,6 +1,8 @@
 import styles from './CodePanel.module.css';
 import CodePanelHeader from './CodePanelHeader.jsx';
 import CodeView from './CodeView.jsx';
+import PrView from './PrView.jsx';
+import SuggestionsView from './SuggestionsView.jsx';
 import MakeChangesButton from './MakeChangesButton.jsx';
 import { useAppState } from '../../context/AppStateContext.jsx';
 
@@ -22,12 +24,24 @@ export default function CodePanel() {
     );
   }
 
+  const { kind } = state.panel;
+
   return (
     <aside className={styles.panel}>
-      <CodePanelHeader code={state.panel.code} onCollapse={actions.collapsePanel} />
+      <CodePanelHeader
+        kind={kind}
+        code={state.panel.code}
+        pr={state.panel.pr}
+        suggestions={state.panel.suggestions}
+        onCollapse={actions.collapsePanel}
+      />
 
       <div className={styles.content}>
-        <CodeView code={state.panel.code} />
+        {kind === 'pr' && <PrView pr={state.panel.pr} />}
+        {kind === 'suggestions' && (
+          <SuggestionsView suggestions={state.panel.suggestions} />
+        )}
+        {kind === 'code' && <CodeView code={state.panel.code} />}
       </div>
 
       <div className={styles.footer}>

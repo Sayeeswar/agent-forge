@@ -161,8 +161,139 @@ export default function ConnectApiDialog({ onClose }) {
             {busy ? 'Validating…' : 'Validate & connect'}
           </button>
         </div>
+
+        <div className={styles.divider} />
+
+        <GithubSection onClose={onClose} />
       </form>
     </div>
+  );
+}
+
+function GithubSection({ onClose }) {
+  const { state, actions } = useAppState();
+  const [token, setToken] = useState('');
+  const [revealed, setRevealed] = useState(false);
+  const [phase, setPhase] = useState('idle'); // idle | validating | success | error
+  const [result, setResult] = useState(null);
+
+  const busy = phase === 'validating';
+  const connected = state.github.connected;
+
+  async function run() {
+    const trimmed = token.trim();
+    if (!trimmed || busy) return;
+
+    setPhase('validating');
+    setResult(null);
+
+    const r = await actions.validateGithubToken(trimmed);
+    setResult(r);
+
+    if (r.ok) {
+      setPhase('success');
+      window.setTimeout(onClose, 900);
+    } else {
+      setPhase('error');
+    }
+  }
+
+  return (
+    <section className={styles.githubSection}>
+      <h3 className={styles.sectionTitle}>GitHub</h3>
+      <p className={styles.blurb}>
+        Paste a personal access token so the app can read pull requests. It is
+        checked with <code>GET /user</code> and saved to <code>.env</code> only if
+        that call succeeds.
+      </p>
+
+      {connected && (
+        <p className={styles.connectedNote}>
+          Connected{state.github.login ? ` as ${state.github.login}` : ''}. Enter a
+          new token to replace it.
+        </p>
+      )}
+
+      <label className={styles.label}>
+        GitHub token
+        <span className={styles.inputWrap}>
+          <input
+            className={styles.input}
+            type={revealed ? 'text' : 'password'}
+            value={token}
+            placeholder="github_pat_… or ghp_…"
+            autoComplete="off"
+            spellCheck="false"
+            disabled={busy}
+            onChange={(event) => setToken(event.target.value)}
+          />
+          <button
+            type="button"
+            className={styles.reveal}
+            onClick={() => setRevealed((v) => !v)}
+            disabled={busy}
+            aria-label={revealed ? 'Hide token' : 'Show token'}
+          >
+            {revealed ? 'Hide' : 'Show'}
+          </button>
+        </span>
+      </label>
+
+      {(busy || result) && (
+        <div className={styles.transcript} role="status" aria-live="polite">
+          <div className={styles.tRow}>
+            <span className={styles.tHead}>Request</span>
+            {busy && !result ? (
+              <span className={styles.tBody}>
+                <span className={styles.spinner} aria-hidden="true" />
+                Calling GitHub /user…
+              </span>
+            ) : (
+              <span className={styles.tBody}>
+                GET {result?.request?.url ?? 'https://api.github.com/user'}
+              </span>
+            )}
+          </div>
+
+          {result && (
+            <div className={styles.tRow}>
+              <span className={styles.tHead}>Response</span>
+              {result.ok ? (
+                <span className={styles.tBody}>
+                  {result.response?.status ?? 200} · login: {result.login}
+                  {result.scopes?.length
+                    ? `\nscopes: ${result.scopes.join(', ')}`
+                    : ''}
+                </span>
+              ) : (
+                <span className={styles.tBodyError}>
+                  {result.response?.status
+                    ? `HTTP ${result.response.status}`
+                    : 'no response'}
+                  {result.response?.body ? `\n${result.response.body}` : ''}
+                  {result.error ? `\n\n${result.error}` : ''}
+                </span>
+              )}
+            </div>
+          )}
+
+          {phase === 'success' && (
+            <p className={styles.successLine}>✓ GitHub connected — saving…</p>
+          )}
+        </div>
+      )}
+
+      <div className={styles.actions}>
+        <button
+          type="button"
+          className={styles.confirm}
+          onClick={run}
+          disabled={!token.trim() || busy || phase === 'success'}
+        >
+          {busy ? 'Validating…' : 'Validate & connect'}
+        </button>
+      </div>
+    </section>
   );
 }
 

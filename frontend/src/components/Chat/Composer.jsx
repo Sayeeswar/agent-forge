@@ -72,8 +72,13 @@ export default function Composer() {
           mode={dialogMode}
           onClose={() => setDialogMode(null)}
           onSubmit={(value) => {
-            actions.setSource(dialogMode, value);
-            setDialogMode(null);
+            if (dialogMode === 'pr') {
+              // Live fetch via the backend; SourceDialog keeps itself open if
+              // this resolves { ok: false }.
+              return actions.fetchAndAddPr(value);
+            }
+            actions.setSource('local', value);
+            return { ok: true };
           }}
         />
       )}

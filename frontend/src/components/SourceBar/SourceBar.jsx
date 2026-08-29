@@ -20,18 +20,21 @@ export default function SourceBar() {
 
       {entries.map((type) => {
         const active = state.activeSourceType === type;
+        const entry = state.sources[type];
+        const display =
+          type === 'pr' && entry.pr?.title ? entry.pr.title : entry.value;
         return (
           <button
             key={type}
             type="button"
             className={active ? styles.chipActive : styles.chip}
             aria-pressed={active}
-            title={state.sources[type].value}
+            title={entry.value}
             onClick={() => actions.setActiveSource(type)}
           >
             <span aria-hidden="true">{META[type].icon}</span>
             <span className={styles.label}>{META[type].label}</span>
-            <span className={styles.value}>{state.sources[type].value}</span>
+            <span className={styles.value}>{display}</span>
           </button>
         );
       })}

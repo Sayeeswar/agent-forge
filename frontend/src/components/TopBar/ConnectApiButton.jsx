@@ -31,6 +31,21 @@ export default function ConnectApiButton() {
             </li>
           );
         })}
+
+        <li
+          className={styles.statusItem}
+          title={
+            state.github.connected
+              ? `GitHub: connected${state.github.login ? ` as ${state.github.login}` : ''}`
+              : 'GitHub: not connected'
+          }
+        >
+          <span
+            className={state.github.connected ? styles.dotOn : styles.dotOff}
+            aria-hidden="true"
+          />
+          <span className={styles.statusLabel}>GitHub</span>
+        </li>
       </ul>
 
       <button

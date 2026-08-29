@@ -243,3 +243,28 @@
   color: var(--color-disabled-text);
   cursor: not-allowed;
 }
+
+.divider {
+  height: 1px;
+  margin: var(--space-5) 0;
+  background: var(--color-border);
+}
+
+.githubSection {
+  display: block;
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.blurb code {
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}

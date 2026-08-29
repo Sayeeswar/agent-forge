@@ -5,6 +5,7 @@ import { useAppState } from '../../context/AppStateContext.jsx';
 export default function PendingIndicator() {
   const { state } = useAppState();
   const status =
+    state.statusLabel ??
     statusMessages[state.pendingStatusIndex] ??
     statusMessages[statusMessages.length - 1];
 
