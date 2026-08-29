@@ -3,6 +3,9 @@ namespace PrReviewChat.Api.Models;
 /// <summary>One file handed to the analyzer (already fetched elsewhere).</summary>
 public sealed record AnalyzeFile(string Path, string? Content, string? Patch, string? Language);
 
+/// <summary>An image handed to the analyzer as a base64 data URL (vision call).</summary>
+public sealed record AnalyzeImage(string Path, string DataUrl);
+
 /// <summary>A prior chat turn, for follow-up questions.</summary>
 public sealed record AnalyzeMessage(string Role, string Text);
 
@@ -13,7 +16,8 @@ public sealed record AnalyzeRequest(
     string? Instruction,
     IReadOnlyList<AnalyzeFile>? Files,
     string? Diff,
-    IReadOnlyList<AnalyzeMessage>? History);
+    IReadOnlyList<AnalyzeMessage>? History,
+    IReadOnlyList<AnalyzeImage>? Images = null);
 
 /// <summary>One issue the LLM found. No code here — that lives in suggestions.</summary>
 public sealed record AnalysisFinding(

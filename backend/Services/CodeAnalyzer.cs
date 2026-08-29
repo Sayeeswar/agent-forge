@@ -18,8 +18,10 @@ public sealed class CodeAnalyzer
 
     private const string SystemPrompt = """
         You are a meticulous senior code reviewer. You are given source files
-        already fetched from a GitHub pull request (full file content and/or a
-        unified diff). Statically review the code — you cannot run it.
+        (full file content and/or a unified diff), or a single file, or an image
+        (e.g. a screenshot of code, a diagram, or a chart). Statically review
+        what you are given — you cannot run it. Review an image against the same
+        standards below wherever they apply.
 
         Detect and report:
         - Syntax errors
@@ -120,8 +122,15 @@ public sealed class CodeAnalyzer
         var (codePayload, promptChars, truncated) = BuildCodePayload(req);
         meta = meta with { PromptChars = promptChars, TruncatedFiles = truncated };
 
-        if (promptChars == 0)
-            return Fail(meta, "No file content or diff was supplied to analyze.");
+        var images = req.Images ?? Array.Empty<AnalyzeImage>();
+        var hasHistory = (req.History?.Count ?? 0) > 0;
+
+        if (promptChars == 0 && images.Count == 0 && !hasHistory)
+            return Fail(meta, "No file content, diff, or image was supplied to analyze.");
+
+        var instruction = string.IsNullOrWhiteSpace(req.Instruction)
+            ? "Review the supplied code for errors and issues per the standards."
+            : req.Instruction!.Trim();
 
         var messages = new List<object> { new { role = "system", content = SystemPrompt } };
         foreach (var h in req.History ?? Array.Empty<AnalyzeMessage>())
@@ -130,14 +139,23 @@ public sealed class CodeAnalyzer
             if (!string.IsNullOrWhiteSpace(h.Text))
                 messages.Add(new { role, content = h.Text });
         }
-        messages.Add(new { role = "user", content = codePayload });
-        messages.Add(new
+
+        if (images.Count > 0)
         {
-            role = "user",
-            content = string.IsNullOrWhiteSpace(req.Instruction)
-                ? "Analyze this pull request for errors and issues per the standards."
-                : req.Instruction!.Trim(),
-        });
+            var text = codePayload.Length > 0
+                ? $"{codePayload}\n\n{instruction}"
+                : instruction;
+            var parts = new List<object> { new { type = "text", text } };
+            foreach (var img in images)
+                parts.Add(new { type = "image_url", image_url = new { url = img.DataUrl } });
+            messages.Add(new { role = "user", content = parts });
+        }
+        else
+        {
+            if (codePayload.Length > 0)
+                messages.Add(new { role = "user", content = codePayload });
+            messages.Add(new { role = "user", content = instruction });
+        }
 
         var body = new
         {

@@ -9,6 +9,8 @@ builder.Services.Configure<GitHubOptions>(
     builder.Configuration.GetSection(GitHubOptions.SectionName));
 builder.Services.Configure<AnalysisOptions>(
     builder.Configuration.GetSection(AnalysisOptions.SectionName));
+builder.Services.Configure<FileReviewOptions>(
+    builder.Configuration.GetSection(FileReviewOptions.SectionName));
 
 builder.Services.AddHttpClient("provider", client =>
 {
@@ -23,6 +25,7 @@ builder.Services.AddSingleton<DotEnvFile>();
 builder.Services.AddSingleton<ProviderValidator>();
 builder.Services.AddSingleton<GitHubClient>();
 builder.Services.AddSingleton<CodeAnalyzer>();
+builder.Services.AddSingleton<FileReviewService>();
 
 const string GitHubTokenEnvVar = "GITHUB_TOKEN";
 
@@ -193,6 +196,47 @@ app.MapPost("/api/analyze", async (
     }
 
     var result = await analyzer.AnalyzeAsync(provider, apiKey, req, ct);
+    return Results.Ok(result);
+});
+
+// ---- POST /api/file/review ----------------------------------------------------
+// Module 5: validate a single local file path, redirect .ipynb, otherwise hand
+// the file to the analyzer. Reads the file; writes nothing.
+app.MapPost("/api/file/review", async (
+    FileReviewRequest req,
+    FileReviewService fileReview,
+    ProviderValidator validator,
+    DotEnvFile dotEnv,
+    CancellationToken ct) =>
+{
+    var provider = req.Provider?.Trim().ToLowerInvariant();
+    if (string.IsNullOrEmpty(provider)
+        || (provider != "openai" && provider != "openrouter"))
+    {
+        return Results.Ok(new FileReviewResult(
+            false, "no-key", null, null, "Provider must be 'openai' or 'openrouter'."));
+    }
+
+    if (!validator.TryGetProvider(provider, out var cfg))
+        return Results.Ok(new FileReviewResult(
+            false, "no-key", null, null, $"Unknown provider '{provider}'."));
+
+    var apiKey = dotEnv.Get(cfg.EnvVar);
+    if (string.IsNullOrWhiteSpace(apiKey))
+    {
+        return Results.Ok(new FileReviewResult(
+            false, "no-key", null, null,
+            $"{provider} is not connected. Add a key in Connect API first."));
+    }
+
+    var path = req.Path?.Trim();
+    if (string.IsNullOrEmpty(path))
+    {
+        return Results.Ok(new FileReviewResult(
+            false, "path-missing", null, null, "No path was supplied."));
+    }
+
+    var result = await fileReview.ProcessSingleFileAsync(path, provider, req.Model ?? cfg.Model, apiKey, ct);
     return Results.Ok(result);
 });
 

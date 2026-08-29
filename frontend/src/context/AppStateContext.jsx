@@ -22,6 +22,9 @@ import {
   fetchPullRequest,
 } from '../lib/githubApi.js';
 import { postAnalyze } from '../lib/analysisApi.js';
+import { postFileReview } from '../lib/fileReviewApi.js';
+
+const basename = (p) => String(p).split(/[\\/]/).filter(Boolean).pop() || String(p);
 
 const DEFAULT_PROVIDER = 'openrouter';
 
@@ -266,6 +269,43 @@ function reducer(state, action) {
         },
       };
 
+    case 'FILE_REVIEWED': {
+      const { path, message, analysis } = action;
+      const assistant = analysis
+        ? {
+            id: nextId(),
+            role: 'assistant',
+            text: analysis.summary || 'Analysis complete.',
+            findings: analysis.findings ?? [],
+            suggestions: analysis.suggestions ?? [],
+          }
+        : { id: nextId(), role: 'assistant', text: message, findings: [], suggestions: [] };
+
+      const suggestions = analysis?.suggestions ?? [];
+
+      return {
+        ...state,
+        messages: [
+          ...state.messages,
+          { id: nextId(), role: 'user', text: `Review ${basename(path)}` },
+          assistant,
+        ],
+        sources: { ...state.sources, local: { value: path } },
+        activeSourceType: 'local',
+        status: 'idle',
+        statusLabel: null,
+        panel: suggestions.length
+          ? {
+              expanded: true,
+              kind: 'suggestions',
+              code: null,
+              pr: state.panel.pr,
+              suggestions,
+            }
+          : state.panel,
+      };
+    }
+
     default:
       return state;
   }
@@ -363,41 +403,48 @@ export function AppStateProvider({ children }) {
       patch: f.patch ?? null,
     }));
 
-  // Module 4 — run a real analysis and route the result into chat + panel.
-  const runAnalysis = useCallback(async ({ prompt, label, instruction }) => {
-    const s = stateRef.current;
-    const pr = s.sources.pr?.pr;
-    if (!pr) {
-      dispatch({
-        type: 'ANALYZE_ERROR',
-        error: 'Fetch a pull request first (use the “+” button).',
+  // Module 4/5 — run a real analysis and route the result into chat + panel.
+  // `withContent` sends the PR file blobs; follow-ups pass false so only the
+  // conversation history + the new question go to the LLM (cheaper).
+  const runAnalysis = useCallback(
+    async ({ prompt, label, instruction, withContent = false }) => {
+      const s = stateRef.current;
+      const isPr = s.activeSourceType === 'pr' && !!s.sources.pr?.pr;
+      const isLocal = s.activeSourceType === 'local' && !!s.sources.local;
+
+      if (!isPr && !isLocal) {
+        dispatch({
+          type: 'ANALYZE_ERROR',
+          error: 'Add a pull request or a file first (use the “+” button).',
+        });
+        return;
+      }
+
+      const history = s.messages
+        .filter((m) => typeof m.text === 'string' && m.text.length > 0)
+        .map((m) => ({ role: m.role, text: m.text }));
+
+      dispatch({ type: 'ANALYZE_START', prompt, label });
+
+      const result = await postAnalyze({
+        provider: s.provider,
+        model: s.model,
+        instruction,
+        files: withContent && isPr ? prFilesPayload(s.sources.pr.pr) : [],
+        history,
       });
-      return;
-    }
 
-    const history = s.messages
-      .filter((m) => typeof m.text === 'string' && m.text.length > 0)
-      .map((m) => ({ role: m.role, text: m.text }));
-
-    dispatch({ type: 'ANALYZE_START', prompt, label });
-
-    const result = await postAnalyze({
-      provider: s.provider,
-      model: s.model,
-      instruction,
-      files: prFilesPayload(pr),
-      history,
-    });
-
-    if (result.ok) {
-      dispatch({ type: 'ANALYZE_RESULT', result });
-    } else {
-      dispatch({
-        type: 'ANALYZE_ERROR',
-        error: result.error || 'The analysis request failed.',
-      });
-    }
-  }, []);
+      if (result.ok) {
+        dispatch({ type: 'ANALYZE_RESULT', result });
+      } else {
+        dispatch({
+          type: 'ANALYZE_ERROR',
+          error: result.error || 'The analysis request failed.',
+        });
+      }
+    },
+    []
+  );
 
   const analyzePr = useCallback(
     () =>
@@ -406,9 +453,34 @@ export function AppStateProvider({ children }) {
       runAnalysis({
         prompt: 'Analyse this PR',
         label: 'Analyzing the pull request…',
+        withContent: true,
       }),
     [runAnalysis]
   );
+
+  // Module 5 — validate a local file path on the backend and route it to the
+  // LLM. Returns { ok } so SourceDialog can stay open on a validation failure.
+  const reviewLocalFile = useCallback(async (path) => {
+    const s = stateRef.current;
+    const result = await postFileReview({
+      path,
+      provider: s.provider,
+      model: s.model,
+    });
+
+    if (!result.ok) {
+      return { ok: false, error: result.error || 'The file could not be reviewed.' };
+    }
+
+    dispatch({
+      type: 'FILE_REVIEWED',
+      path,
+      kind: result.kind,
+      message: result.message,
+      analysis: result.kind === 'review' ? result.analysis : null,
+    });
+    return { ok: true };
+  }, []);
 
   const sendMessage = useCallback(
     (rawText) => {
@@ -417,9 +489,17 @@ export function AppStateProvider({ children }) {
 
       const s = stateRef.current;
 
-      // With a PR active, sends are real follow-up analysis calls.
-      if (s.activeSourceType === 'pr' && s.sources.pr?.pr) {
-        runAnalysis({ prompt: text, label: 'Analyzing…', instruction: text });
+      // With a PR or a reviewed file active, sends are real follow-up analysis
+      // calls (history only — the file/PR blob is not re-sent).
+      const prActive = s.activeSourceType === 'pr' && s.sources.pr?.pr;
+      const fileActive = s.activeSourceType === 'local' && s.sources.local;
+      if (prActive || fileActive) {
+        runAnalysis({
+          prompt: text,
+          label: 'Analyzing…',
+          instruction: text,
+          withContent: false,
+        });
         return;
       }
 
@@ -461,6 +541,7 @@ export function AppStateProvider({ children }) {
       validateGithubToken,
       fetchAndAddPr,
       analyzePr,
+      reviewLocalFile,
       showPr: () => dispatch({ type: 'SHOW_PR' }),
       showSuggestions: (suggestions) =>
         dispatch({ type: 'SHOW_SUGGESTIONS', suggestions }),
@@ -472,6 +553,7 @@ export function AppStateProvider({ children }) {
       validateGithubToken,
       fetchAndAddPr,
       analyzePr,
+      reviewLocalFile,
     ]
   );
 

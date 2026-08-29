@@ -8,13 +8,15 @@ const COPY = {
     placeholder: 'https://github.com/owner/repo/pull/123',
     confirm: 'Fetch & add',
     hint: 'The PR is fetched from GitHub now — it is only added if that succeeds.',
+    working: 'Fetching the pull request…',
   },
   local: {
-    title: 'Provide a local file or folder path',
-    label: 'File or folder path',
-    placeholder: 'C:\\path\\to\\file-or-folder',
-    confirm: 'Add source',
-    hint: null,
+    title: 'Provide a local file path',
+    label: 'File path',
+    placeholder: 'C:\\path\\to\\file.py',
+    confirm: 'Review file',
+    hint: 'The path is checked and the file is sent to the LLM now. Folders are not supported yet.',
+    working: 'Checking the file and sending it to the LLM…',
   },
 };
 
@@ -92,7 +94,7 @@ export default function SourceDialog({ mode, onClose, onSubmit }) {
         {busy && (
           <p className={styles.status}>
             <span className={styles.spinner} aria-hidden="true" />
-            Fetching from GitHub…
+            {copy.working}
           </p>
         )}
 

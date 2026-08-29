@@ -21,8 +21,11 @@ export default function SourceBar() {
       {entries.map((type) => {
         const active = state.activeSourceType === type;
         const entry = state.sources[type];
-        const display =
-          type === 'pr' && entry.pr?.title ? entry.pr.title : entry.value;
+        let display = entry.value;
+        if (type === 'pr' && entry.pr?.title) display = entry.pr.title;
+        else if (type === 'local') {
+          display = String(entry.value).split(/[\\/]/).filter(Boolean).pop() || entry.value;
+        }
         return (
           <button
             key={type}
