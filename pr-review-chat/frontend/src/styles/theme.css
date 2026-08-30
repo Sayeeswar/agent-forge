@@ -1,0 +1,100 @@
+/* Design tokens + minimal reset. Light theme only for Module 1;
+   a later dark mode is a token swap under a [data-theme] selector. */
+
+:root {
+  /* Surfaces */
+  --color-bg: #f7f7f5;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f0efea;
+  --color-rail: #efeee9;
+
+  /* Text */
+  --color-text: #2b2a27;
+  --color-text-muted: #6b6a64;
+  --color-text-faint: #9a9891;
+
+  /* Lines + accents */
+  --color-border: #e3e1da;
+  --color-border-strong: #d0cec5;
+  --color-accent: #c15f3c;          /* warm clay, Claude-ish */
+  --color-accent-weak: #f3e4dd;
+  --color-focus: #c15f3c;
+
+  /* Chat bubbles */
+  --color-user-bubble: #eceae3;
+  --color-assistant-bubble: transparent;
+
+  /* State */
+  --color-disabled-bg: #eceae3;
+  --color-disabled-text: #a8a69d;
+
+  /* Typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.85rem;
+  --text-base: 0.95rem;
+  --text-lg: 1.05rem;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+  /* Layout */
+  --chat-max-width: 48rem;
+  --rail-collapsed: 44px;
+  --rail-expanded: 28rem;
+  --topbar-height: 52px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+textarea,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

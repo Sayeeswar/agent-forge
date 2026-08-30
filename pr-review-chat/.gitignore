@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.DS_Store
+*.local
+.vite/
+
+# Secrets — API keys are written here by the backend at runtime. Never commit.
+.env
+.env.*
+!.env.example
+
+# .NET build output
+backend/bin/
+backend/obj/
+.vs/
