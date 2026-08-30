@@ -271,25 +271,39 @@ function reducer(state, action) {
 
     case 'FILE_REVIEWED': {
       const { path, message, analysis } = action;
-      const assistant = analysis
-        ? {
-            id: nextId(),
-            role: 'assistant',
-            text: analysis.summary || 'Analysis complete.',
-            findings: analysis.findings ?? [],
-            suggestions: analysis.suggestions ?? [],
-          }
-        : { id: nextId(), role: 'assistant', text: message, findings: [], suggestions: [] };
+
+      const outgoing = [
+        { id: nextId(), role: 'user', text: `Review ${basename(path)}` },
+      ];
+
+      // e.g. the ".ipynb was auto-exported to a script" note before the review.
+      if (analysis && message) {
+        outgoing.push({
+          id: nextId(),
+          role: 'assistant',
+          text: message,
+          findings: [],
+          suggestions: [],
+        });
+      }
+
+      outgoing.push(
+        analysis
+          ? {
+              id: nextId(),
+              role: 'assistant',
+              text: analysis.summary || 'Analysis complete.',
+              findings: analysis.findings ?? [],
+              suggestions: analysis.suggestions ?? [],
+            }
+          : { id: nextId(), role: 'assistant', text: message, findings: [], suggestions: [] }
+      );
 
       const suggestions = analysis?.suggestions ?? [];
 
       return {
         ...state,
-        messages: [
-          ...state.messages,
-          { id: nextId(), role: 'user', text: `Review ${basename(path)}` },
-          assistant,
-        ],
+        messages: [...state.messages, ...outgoing],
         sources: { ...state.sources, local: { value: path } },
         activeSourceType: 'local',
         status: 'idle',
