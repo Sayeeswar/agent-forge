@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using PrReviewChat.Api.Models;
 
@@ -25,10 +27,10 @@ public sealed class FileReviewService
         ".ttf", ".otf", ".woff", ".woff2",
     };
 
-    private const string IpynbMessage =
-        "This is a Jupyter notebook (.ipynb). Export it as a Python script first " +
-        "— e.g. `jupyter nbconvert --to script \"{0}\"`, or File → Export in " +
-        "Jupyter/VS Code — then supply that .py file instead.";
+    private const string IpynbFallbackMessage =
+        "\"{0}\" could not be read as a notebook (invalid JSON, or it has no code " +
+        "cells). Export it as a Python script — e.g. `jupyter nbconvert --to " +
+        "script \"{0}\"` — and supply that .py file instead.";
 
     private const string UnsupportedMessage =
         "This looks like a binary or non-text file (spreadsheet, PDF, archive, " +
@@ -64,12 +66,47 @@ public sealed class FileReviewService
             return Err("not-a-file", "No file found at this path — it points to a folder.");
 
         var ext = Path.GetExtension(path);
+        var name = Path.GetFileName(path);
 
-        // 3 — .ipynb: redirect, never sent to the LLM.
+        // 3 — .ipynb: auto-export the code cells to a script, then review that.
         if (string.Equals(ext, ".ipynb", StringComparison.OrdinalIgnoreCase))
         {
-            return new FileReviewResult(true, "ipynb-redirect",
-                string.Format(IpynbMessage, Path.GetFileName(path)), null, null);
+            string notebookJson;
+            try
+            {
+                if (new FileInfo(path).Length > _options.MaxFileBytes)
+                    return Err("too-large",
+                        $"This notebook is larger than the {Mb(_options.MaxFileBytes)} review limit.");
+                notebookJson = await File.ReadAllTextAsync(path, ct);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Could not read notebook {Path}", path);
+                return Err("review-failed", $"Could not read the notebook: {ex.Message}");
+            }
+
+            var script = ConvertNotebookToScript(notebookJson, out var codeCells);
+            if (script is null)
+            {
+                return new FileReviewResult(true, "ipynb-redirect",
+                    string.Format(IpynbFallbackMessage, name), null, null);
+            }
+
+            var scriptName = Path.GetFileNameWithoutExtension(path) + ".py";
+            var header =
+                $"# Auto-exported from {name} — {codeCells} code cell(s), markdown kept " +
+                "as comments, outputs dropped.\n\n";
+            var nbRequest = new AnalyzeRequest(
+                provider, model, null,
+                new[] { new AnalyzeFile(scriptName, header + script, null, "python") },
+                null, null, null);
+
+            var nbAnalysis = await _analyzer.AnalyzeAsync(provider, apiKey, nbRequest, ct);
+            return nbAnalysis.Ok
+                ? new FileReviewResult(true, "review",
+                    $"Exported {name} to a Python script ({codeCells} code cell(s)) and reviewed it.",
+                    nbAnalysis, null)
+                : new FileReviewResult(false, "review-failed", null, nbAnalysis, nbAnalysis.Error);
         }
 
         // 4 — classify and build the analyzer request.
@@ -149,5 +186,93 @@ public sealed class FileReviewService
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Turns an .ipynb (nbformat v4) into a plain Python script: code cells
+    /// concatenated in order, IPython magics / shell escapes commented out,
+    /// markdown cells kept as <c>#</c> comments, outputs dropped. Returns null
+    /// if the JSON isn't a notebook or has no code cells.
+    /// </summary>
+    private static string? ConvertNotebookToScript(string json, out int codeCells)
+    {
+        codeCells = 0;
+
+        JsonDocument doc;
+        try { doc = JsonDocument.Parse(json); }
+        catch (JsonException) { return null; }
+
+        using (doc)
+        {
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object
+                || !root.TryGetProperty("cells", out var cells)
+                || cells.ValueKind != JsonValueKind.Array)
+            {
+                return null;
+            }
+
+            var sb = new StringBuilder();
+            var index = 0;
+
+            foreach (var cell in cells.EnumerateArray())
+            {
+                if (cell.ValueKind != JsonValueKind.Object) continue;
+
+                var type = cell.TryGetProperty("cell_type", out var t)
+                           && t.ValueKind == JsonValueKind.String
+                    ? t.GetString()
+                    : null;
+
+                var source = ReadCellSource(cell).Replace("\r\n", "\n");
+                if (source.Length == 0) continue;
+
+                index++;
+                var lines = source.Split('\n');
+
+                if (type == "code")
+                {
+                    codeCells++;
+                    sb.Append($"# %% [code] cell {index}\n");
+                    foreach (var line in lines)
+                    {
+                        var trimmed = line.TrimStart();
+                        sb.Append(trimmed.StartsWith('%') || trimmed.StartsWith('!')
+                            ? "# " + line
+                            : line).Append('\n');
+                    }
+                    sb.Append('\n');
+                }
+                else if (type == "markdown")
+                {
+                    sb.Append($"# %% [markdown] cell {index}\n");
+                    foreach (var line in lines)
+                        sb.Append("# ").Append(line).Append('\n');
+                    sb.Append('\n');
+                }
+                // raw cells are dropped
+            }
+
+            return codeCells == 0 ? null : sb.ToString();
+        }
+    }
+
+    private static string ReadCellSource(JsonElement cell)
+    {
+        if (!cell.TryGetProperty("source", out var s)) return "";
+
+        if (s.ValueKind == JsonValueKind.String)
+            return s.GetString() ?? "";
+
+        if (s.ValueKind == JsonValueKind.Array)
+        {
+            var sb = new StringBuilder();
+            foreach (var part in s.EnumerateArray())
+                if (part.ValueKind == JsonValueKind.String)
+                    sb.Append(part.GetString());
+            return sb.ToString();
+        }
+
+        return "";
     }
 }

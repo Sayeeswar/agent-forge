@@ -26,9 +26,11 @@ See [`CLAUDE.md`](CLAUDE.md) for the binding architecture rules.
      per-file diff, and each file's full content at the PR head) and renders it
      in the panel.
    - **Local file path** → the backend checks the path exists and is a file
-     (not a folder), redirects `.ipynb` to an "export to `.py` first" message,
-     sends images to a vision model, rejects other binaries (spreadsheets, PDF,
-     archives) with a "convert to text first" note, and reads text/code as-is.
+     (not a folder), **auto-exports a `.ipynb`** to a Python script (code cells
+     concatenated, magics commented out, markdown kept as comments) and reviews
+     that, sends images to a vision model, rejects other binaries (spreadsheets,
+     PDF, archives) with a "convert to text first" note, and reads text/code
+     as-is.
 3. **Review.** "Analyse this PR" (or submitting a file) sends the code to the
    model selected in the dropdown. The backend prompts for a structured JSON
    result and returns:
