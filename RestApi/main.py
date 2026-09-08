@@ -5,7 +5,8 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine, String, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-
+from fastapi import Query, HTTPException
+from sqlalchemy import func
 
 
 
@@ -231,6 +232,68 @@ def home():
 
     </html>
     """
+# ============================================================
+# SEARCH CUSTOMERS
+# GET /customers/search?name=ravi
+# GET /customers/search?email=gmail.com
+# GET /customers/search?phone=987
+# ============================================================
+
+def normalize_phone(phone: str) -> str:
+    return "".join(
+        character
+        for character in phone
+        if character.isdigit()
+    ) 
+
+@app.get("/customers/search")
+def search_customer(
+    name: str | None = Query(default=None),
+    email: str | None = Query(default=None),
+    phone: str | None = Query(default=None),
+):
+    if phone:
+        phone = normalize_phone(phone)
+
+    # database search...
+    search_fields = {
+        "name": name,
+        "email": email,
+        "phone": phone,
+    }
+
+    with Session(engine) as session:
+
+        for field, value in search_fields.items():
+
+            if not value:
+                continue
+
+            column = getattr(Customer, field)
+
+            customer = (
+                session.query(Customer)
+                .filter(
+                    func.lower(column).contains(value.lower())
+                )
+                .first()
+            )
+
+            if customer:
+                return {
+                    "id": customer.id,
+                    "name": customer.name,
+                    "email": customer.email,
+                    "phone": customer.phone,
+                    "address": customer.address,
+                    "created_at": customer.created_at,
+                }
+
+        raise HTTPException(
+            status_code=404,
+            detail="Customer not found."
+        )
+    
 @app.get("/customers")
 def get_all_customers():
 
@@ -510,3 +573,6 @@ def patch_customer(
                 "created_at": customer.created_at
             }
         }
+    
+
+
