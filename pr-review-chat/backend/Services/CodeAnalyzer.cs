@@ -61,6 +61,7 @@ public sealed class CodeAnalyzer
           "findings": [
             {
               "title": "short label",
+              "description": "clear, human-readable explanation of the issue",
               "whatIsWrong": "the symptom",
               "whyItIsWrong": "the root cause, not just the symptom",
               "file": "path exactly as given in the input",
@@ -306,13 +307,16 @@ public sealed class CodeAnalyzer
                 {
                     if (el.ValueKind != JsonValueKind.Object) continue;
                     var file = Str(el, "file") ?? "";
-                    var what = Str(el, "whatIsWrong") ?? Str(el, "what") ?? "";
+                    var what = Str(el, "description")
+                        ?? Str(el, "whatIsWrong")
+                        ?? Str(el, "what")
+                        ?? "";
                     if (file.Length == 0 && what.Length == 0) continue;
 
                     findings.Add(new AnalysisFinding(
                         Title: Str(el, "title") ?? "Issue",
                         WhatIsWrong: what,
-                        WhyItIsWrong: Str(el, "whyItIsWrong") ?? Str(el, "why") ?? "",
+                        WhyItIsWrong: Str(el, "whyItIsWrong") ?? Str(el, "why") ?? Str(el, "reason") ?? "",
                         File: file,
                         Line: Int(el, "line"),
                         EndLine: Int(el, "endLine"),

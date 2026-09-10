@@ -26,6 +26,39 @@ import { postFileReview } from '../lib/fileReviewApi.js';
 
 const basename = (p) => String(p).split(/[\\/]/).filter(Boolean).pop() || String(p);
 
+const looksLikeCode = (text) => {
+  const trimmed = text.trim();
+  if (trimmed.length < 20) return false;
+
+  const codeSignals = [
+    /(^|\n)\s*(def|class|function|const|let|var|import|from|if|for|while|return|public|private|using|namespace|print|await)\b/m,
+    /[{}()[\];]/,
+    /=>/,
+    /:\s*(\/\/|#|$)/m,
+  ];
+
+  const hits = codeSignals.filter((pattern) => pattern.test(trimmed)).length;
+  const hasMultipleLines = trimmed.split(/\n/).filter((line) => line.trim()).length > 1;
+
+  return hasMultipleLines ? hits >= 1 : hits >= 2;
+};
+
+const inferLanguage = (text) => {
+  if (/(^|\n)\s*(def|class|import|from|print)\b/m.test(text)) {
+    return 'python';
+  }
+
+  if (/(^|\n)\s*(function|const|let|var|return|await)\b/m.test(text) || /=>/.test(text)) {
+    return 'javascript';
+  }
+
+  if (/(^|\n)\s*(public|private|using|namespace|class)\b/m.test(text)) {
+    return 'csharp';
+  }
+
+  return 'text';
+};
+
 const DEFAULT_PROVIDER = 'openrouter';
 
 const initialState = {
@@ -421,12 +454,13 @@ export function AppStateProvider({ children }) {
   // `withContent` sends the PR file blobs; follow-ups pass false so only the
   // conversation history + the new question go to the LLM (cheaper).
   const runAnalysis = useCallback(
-    async ({ prompt, label, instruction, withContent = false }) => {
+    async ({ prompt, label, instruction, withContent = false, files = [] }) => {
       const s = stateRef.current;
       const isPr = s.activeSourceType === 'pr' && !!s.sources.pr?.pr;
       const isLocal = s.activeSourceType === 'local' && !!s.sources.local;
+      const hasFiles = Array.isArray(files) && files.length > 0;
 
-      if (!isPr && !isLocal) {
+      if (!isPr && !isLocal && !hasFiles) {
         dispatch({
           type: 'ANALYZE_ERROR',
           error: 'Add a pull request or a file first (use the “+” button).',
@@ -444,7 +478,7 @@ export function AppStateProvider({ children }) {
         provider: s.provider,
         model: s.model,
         instruction,
-        files: withContent && isPr ? prFilesPayload(s.sources.pr.pr) : [],
+        files: withContent && isPr ? prFilesPayload(s.sources.pr.pr) : files,
         history,
       });
 
@@ -512,6 +546,33 @@ export function AppStateProvider({ children }) {
           prompt: text,
           label: 'Analyzing…',
           instruction: text,
+          withContent: false,
+        });
+        return;
+      }
+
+      if (looksLikeCode(text)) {
+        const language = inferLanguage(text);
+        const extension = language === 'python'
+          ? 'py'
+          : language === 'javascript'
+            ? 'js'
+            : language === 'csharp'
+              ? 'cs'
+              : 'txt';
+
+        runAnalysis({
+          prompt: text,
+          label: 'Reviewing pasted code…',
+          instruction: 'Review the pasted code for errors, logic issues, and code-quality problems.',
+          files: [
+            {
+              path: `pasted-code.${extension}`,
+              content: text,
+              patch: null,
+              language,
+            },
+          ],
           withContent: false,
         });
         return;

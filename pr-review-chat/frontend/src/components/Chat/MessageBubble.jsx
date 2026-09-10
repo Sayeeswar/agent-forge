@@ -7,11 +7,26 @@ const SEVERITY_CLASS = {
   Low: 'sevLow',
 };
 
+const SEVERITY_ORDER = ['High', 'Medium', 'Low'];
+
 function Finding({ finding }) {
   const sevClass = SEVERITY_CLASS[finding.severity] || 'sevMedium';
   const where = [finding.file, finding.line != null ? `line ${finding.line}` : null]
     .filter(Boolean)
     .join(' · ');
+
+  const explanation =
+    finding.description ||
+    finding.whatIsWrong ||
+    finding.explanation ||
+    finding.message ||
+    '';
+
+  const why =
+    finding.whyItIsWrong ||
+    finding.why_it_is_wrong ||
+    finding.reason ||
+    '';
 
   return (
     <li className={styles.finding}>
@@ -23,16 +38,16 @@ function Finding({ finding }) {
         {finding.warning && <span className={styles.warnTag}>warning</span>}
       </div>
 
-      {finding.whatIsWrong && (
+      {explanation && (
         <p className={styles.findingLine}>
-          <span className={styles.findingLabel}>What</span>
-          {finding.whatIsWrong}
+          <span className={styles.findingLabel}>Explanation</span>
+          {explanation}
         </p>
       )}
-      {finding.whyItIsWrong && (
+      {why && (
         <p className={styles.findingLine}>
           <span className={styles.findingLabel}>Why</span>
-          {finding.whyItIsWrong}
+          {why}
         </p>
       )}
       <p className={styles.findingMeta}>
@@ -49,6 +64,11 @@ export default function MessageBubble({ message }) {
   const findings = message.findings ?? [];
   const suggestions = message.suggestions ?? [];
 
+  const groupedFindings = SEVERITY_ORDER.reduce((acc, level) => {
+    acc[level] = findings.filter((finding) => finding.severity === level);
+    return acc;
+  }, {});
+
   return (
     <div className={isUser ? styles.userRow : styles.assistantRow}>
       <div className={isUser ? styles.userBubble : styles.assistantBubble}>
@@ -56,11 +76,29 @@ export default function MessageBubble({ message }) {
         <p className={styles.text}>{message.text}</p>
 
         {!isUser && findings.length > 0 && (
-          <ul className={styles.findings}>
-            {findings.map((f, i) => (
-              <Finding key={`${f.file}-${f.line}-${i}`} finding={f} />
-            ))}
-          </ul>
+          <div className={styles.findingsSection}>
+            {SEVERITY_ORDER.map((level) => {
+              const items = groupedFindings[level] ?? [];
+
+              if (items.length === 0) {
+                return null;
+              }
+
+              return (
+                <div key={level} className={styles.severityGroup}>
+                  <h4 className={`${styles.severityHeader} ${styles[SEVERITY_CLASS[level]]}`}>
+                    {level}
+                  </h4>
+
+                  <ul className={styles.findings}>
+                    {items.map((f, i) => (
+                      <Finding key={`${f.file}-${f.line}-${i}`} finding={f} />
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
         )}
 
         {!isUser && suggestions.length > 0 && (

@@ -14,11 +14,11 @@ builder.Services.Configure<FileReviewOptions>(
 
 builder.Services.AddHttpClient("provider", client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromSeconds(300);
 });
 builder.Services.AddHttpClient("github", client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromSeconds(300);
 });
 
 builder.Services.AddSingleton<DotEnvFile>();
