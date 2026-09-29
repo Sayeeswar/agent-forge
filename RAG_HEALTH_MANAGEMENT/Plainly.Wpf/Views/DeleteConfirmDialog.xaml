@@ -1,0 +1,19 @@
+<Window x:Class="Plainly.Wpf.Views.DeleteConfirmDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Delete this report?" Width="480" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="{StaticResource BrushBg}" FontFamily="{StaticResource FontBody}">
+
+    <StackPanel Margin="28">
+        <TextBlock Text="Delete this report?" Style="{StaticResource H2}" FontSize="22" Margin="0,0,0,16" />
+        <TextBlock FontSize="17" TextWrapping="Wrap" Margin="0,0,0,8">
+            <Run Text="{Binding PendingDelete.Name, Mode=OneWay}" FontWeight="SemiBold" />
+            <Run Text=" will be removed. The app will no longer use it to answer your questions. You can upload it again at any time." />
+        </TextBlock>
+        <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+            <Button Style="{StaticResource BtnPrimary}" Content="Delete report" Command="{Binding ConfirmDeleteCommand}" Margin="0,0,12,0" Padding="18,12" />
+            <Button Style="{StaticResource BtnSecondary}" Content="Keep it" Command="{Binding CancelDeleteCommand}" Padding="18,12" />
+        </StackPanel>
+    </StackPanel>
+</Window>

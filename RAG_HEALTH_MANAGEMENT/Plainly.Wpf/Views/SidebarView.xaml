@@ -1,0 +1,169 @@
+<UserControl x:Class="Plainly.Wpf.Views.SidebarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border BorderThickness="0,0,2,0" BorderBrush="{StaticResource BrushDivider}">
+        <DockPanel LastChildFill="True">
+
+            <!-- Brand -->
+            <Border DockPanel.Dock="Top" Padding="28,28,28,24" BorderThickness="0,0,0,2" BorderBrush="{StaticResource BrushDivider}">
+                <StackPanel>
+                    <TextBlock Text="Plainly" Style="{StaticResource H1}" FontSize="22" />
+                    <TextBlock Text="Answers from your own health documents"
+                               Style="{StaticResource MutedText}" FontSize="15" Margin="0,6,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Footer: documents-ready blurb + new conversation -->
+            <Border DockPanel.Dock="Bottom" Padding="28,24" BorderThickness="0,2,0,0" BorderBrush="{StaticResource BrushDivider}">
+                <StackPanel>
+                    <TextBlock Text="6 documents ready to answer your questions"
+                               Style="{StaticResource MutedText}" FontSize="15" TextWrapping="Wrap" Margin="0,0,0,14" />
+                    <Button Style="{StaticResource BtnSecondary}" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" Command="{Binding NewConversationCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{StaticResource IconPath}" Data="{StaticResource IconPlus}" Width="16" Height="16" />
+                            <TextBlock Text="New conversation" Margin="8,0,0,0" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Nav -->
+            <StackPanel DockPanel.Dock="Top">
+                <Button Command="{Binding GoToChatCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource NavLink}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsChatActive}" Value="True">
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="Background" Value="{StaticResource BrushSurface}" />
+                                    <Setter Property="BorderThickness" Value="4,0,0,0" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource BrushAccent}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource IconPath}" Data="{StaticResource IconChat}" />
+                        <TextBlock Text="Chat" FontSize="17" Margin="14,0,0,0" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Previous chats: only meaningful while on the Chat screen -->
+                <StackPanel Visibility="{Binding IsChatActive, Converter={StaticResource BoolToVis}}"
+                            Background="{StaticResource BrushSurface}">
+                    <Button Command="{Binding Chat.ToggleHistoryCommand}" Style="{StaticResource BtnBase}"
+                            Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"
+                            Padding="40,10,28,10" FontWeight="SemiBold" Foreground="{StaticResource BrushNeutral800}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Previous chats" FontSize="15" />
+                            <Path Grid.Column="1" Data="{StaticResource IconChevronDown}"
+                                  Width="16" Height="16" Stroke="{StaticResource BrushNeutral800}">
+                                <Path.Style>
+                                    <Style TargetType="Path" BasedOn="{StaticResource IconPath}">
+                                        <Setter Property="RenderTransform">
+                                            <Setter.Value>
+                                                <RotateTransform Angle="180" CenterX="8" CenterY="8" />
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Chat.HistoryOpen}" Value="False">
+                                                <Setter Property="RenderTransform">
+                                                    <Setter.Value>
+                                                        <RotateTransform Angle="0" CenterX="8" CenterY="8" />
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
+                        </Grid>
+                    </Button>
+                    <ItemsControl ItemsSource="{Binding Chat.Sessions}"
+                                  Visibility="{Binding Chat.HistoryOpen, Converter={StaticResource BoolToVis}}"
+                                  MaxHeight="236">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button BorderThickness="0" HorizontalContentAlignment="Left" Padding="40,8,28,8"
+                                        Command="{Binding DataContext.Chat.SelectSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource BtnBase}">
+                                            <Setter Property="FontWeight" Value="Normal" />
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Style.Triggers>
+                                                <DataTrigger Value="True">
+                                                    <DataTrigger.Binding>
+                                                        <MultiBinding Converter="{StaticResource IndexEquals}">
+                                                            <Binding Path="Index" />
+                                                            <Binding Path="DataContext.Chat.CurrentSession.Index" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                                        </MultiBinding>
+                                                    </DataTrigger.Binding>
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                    <Setter Property="Background" Value="{StaticResource BrushNeutral300}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding ShortTitle}" FontSize="16" FontWeight="Normal" TextTrimming="CharacterEllipsis" MaxWidth="196" />
+                                        <TextBlock Text="{Binding When}" FontSize="14" FontWeight="Normal" Foreground="{StaticResource BrushNeutral700}" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <Button Command="{Binding GoToUploadCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource NavLink}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsUploadActive}" Value="True">
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="Background" Value="{StaticResource BrushSurface}" />
+                                    <Setter Property="BorderThickness" Value="4,0,0,0" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource BrushAccent}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource IconPath}" Data="{StaticResource IconUpload}" />
+                        <TextBlock Text="Upload Report" FontSize="17" Margin="14,0,0,0" />
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{Binding GoToLibraryCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource NavLink}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsLibraryActive}" Value="True">
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="Background" Value="{StaticResource BrushSurface}" />
+                                    <Setter Property="BorderThickness" Value="4,0,0,0" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource BrushAccent}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource IconPath}" Data="{StaticResource IconLibrary}" />
+                        <TextBlock Text="Document Library" FontSize="17" Margin="14,0,0,0" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+    </Border>
+</UserControl>

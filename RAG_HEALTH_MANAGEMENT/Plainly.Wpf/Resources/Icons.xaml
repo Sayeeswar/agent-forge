@@ -1,0 +1,22 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Line-icon geometries, ported from the prototype's inline SVG `d` paths (24x24 viewbox) -->
+    <Geometry x:Key="IconChat">M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z</Geometry>
+    <Geometry x:Key="IconUpload">M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M17 8l-5-5-5 5 M12 3v12</Geometry>
+    <Geometry x:Key="IconLibrary">M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z</Geometry>
+    <Geometry x:Key="IconPlus">M12 5v14M5 12h14</Geometry>
+    <Geometry x:Key="IconDocument">M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6</Geometry>
+    <Geometry x:Key="IconPhoto">M3 3h18v18H3z M9 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M21 15l-5-5L5 21</Geometry>
+    <Geometry x:Key="IconCheck">M20 6L9 17l-5-5</Geometry>
+    <Geometry x:Key="IconClose">M18 6L6 18M6 6l12 12</Geometry>
+    <Geometry x:Key="IconSearch">M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0 M21 21l-4.35-4.35</Geometry>
+    <Geometry x:Key="IconTrash">M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6</Geometry>
+    <Geometry x:Key="IconLock">M3 11h18v11H3z M7 11V7a5 5 0 0 1 10 0v4</Geometry>
+    <Geometry x:Key="IconInfo">M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M12 16v-4M12 8h.01</Geometry>
+    <Geometry x:Key="IconSend">M5 12h14M13 6l6 6-6 6</Geometry>
+    <Geometry x:Key="IconChevronDown">M6 9l6 6 6-6</Geometry>
+    <Geometry x:Key="IconClock">M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M12 6v6l4 2</Geometry>
+    <Geometry x:Key="IconAttach">M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48</Geometry>
+
+</ResourceDictionary>
